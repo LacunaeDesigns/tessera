@@ -1,0 +1,11 @@
+# local-only
+.claude/settings.local.json
+node_modules/
+dist/
+tmp/
+*.log
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
