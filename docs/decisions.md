@@ -27,6 +27,7 @@ Format: date · decision · reasoning · who.
 
 - **2026-07-10 · The kit teaches its own assembly (walkthrough finding).** The first physical century walkthrough produced a blank envelope: the protocol said to seal the letter sheet, travel half, and instructions page, and never said the cover sheet faces out — so the "do not open yet" page was sealed inside the thing it protects. Fix: a sealer-facing line printed on the cover sheet ("This page goes on the outside. Fold it around the sealed envelope, or paste it to the front."), the walkthrough protocol now seals cover-out and cold-reads the cover before the instructions page, and a new D-check pins it. Spec clarification, not a format change; the v0.2 envelope template remains the structural answer.
 
+- **2026-07-10 · Landing image licensing cleared (author).** The four watercolor section backgrounds and the twelve wax-seal images are confirmed open source; standing author gate 6 is closed. The landing may ship publicly, which resolves the landing-goes-real ship-sequencing question to "one release": the front-door swap lands on `dev` and ships with v0.1 via /release.
 - **2026-07-10 · Print kit adopts the landing faces (revisit clause exercised).** The design-language §Typography revisit clause (vendor a single OFL face, decide by print-output quality) is exercised early, at v0.1 instead of v0.3, because the landing redesign gave the product its typographic identity and the physical walkthrough supplied print evidence. `fonts/` now owns Young Serif + Courier Prime (OFL, copied from the landing, which keeps its own set). Base mapping: display = cover + sheet headings, typewriter = instructions page + sheet footers; every use keeps its system stack as fallback. The letter body is deliberately undecided until the one-page specimen (`specimen.html`, temporary) is printed and judged on paper; EB Garamond is the recorded fallback if both candidates disappoint. Token SVG untouched (fixtures are law). CACHE_VERSION untouched (the triple moves via /release).
 
 ## Standing author gates
@@ -35,4 +36,4 @@ Format: date · decision · reasoning · who.
 3. Anything physical/commercial (kits, bound books).
 4. Estate-pack legal review.
 5. Gallery moderation policy before the commons opens.
-6. Landing image licensing before the landing ships publicly: the four watercolor section backgrounds were placeholder-sourced (the design handoff flags their licensing as unconfirmed) and the twelve wax-seal images are third-party product photography.
+6. ~~Landing image licensing before the landing ships publicly~~ — cleared 2026-07-10: author confirmed the four watercolor backgrounds and twelve wax-seal images are open source (see decision entry above).

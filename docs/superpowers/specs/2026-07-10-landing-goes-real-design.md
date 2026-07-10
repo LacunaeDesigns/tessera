@@ -1,8 +1,9 @@
 # Landing goes real — design
 
 *2026-07-10 · promotes the landing to the front door and replaces its ceremonial
-sealing with the one real seal path · **awaiting author review** — contains two
-product decisions and a ship-sequencing constraint, flagged below*
+sealing with the one real seal path · **approved** — author cleared the image
+licensing gate (decisions.md), resolving open decision A to A1 (one release);
+B resolved to the recommended migrate() bump; C settled at the plan's prose gate*
 
 ## Intent
 
