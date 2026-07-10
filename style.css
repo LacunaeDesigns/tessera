@@ -97,6 +97,25 @@ main { max-width: 42rem; margin: 0 auto; padding: 1rem 1.25rem 4rem; }
 @keyframes seal-in { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sealed-token { animation: none; } }
 
+/* ---- the opening door (v0.2) ---- */
+.open-drop { border: 2px dashed var(--hairline); border-radius: 4px; padding: 2rem 1rem;
+             text-align: center; color: var(--faint); margin: 1.25rem 0; }
+.open-drop.open-drop-armed { border-color: var(--wax); color: var(--ink); }
+.open-drop input { display: block; margin: 0.75rem auto 0; font-family: var(--ui); font-size: 16px; max-width: 100%; }
+.verify-checks { list-style: none; padding: 0; margin: 0.75rem 0; font-family: var(--ui); font-size: 0.92rem; }
+.verify-checks li { display: flex; gap: 0.5rem; align-items: baseline; padding: 0.25rem 0; }
+.verify-ok { color: var(--faint); }
+.verify-bad { color: var(--wax); }
+.verify-warn { color: var(--wax); font-family: var(--ui); font-size: 0.92rem; }
+.token-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1rem 0; }
+.token-compare figure { margin: 0; border: 1px solid var(--hairline); border-radius: 4px; padding: 0.5rem; }
+.token-compare img, .token-compare svg { width: 100%; height: auto; display: block; }
+.token-compare figcaption { color: var(--faint); font-family: var(--ui); font-size: 0.8rem; padding-top: 0.4rem; }
+.token-large { margin: 1rem 0; }
+.token-large svg { width: 100%; height: auto; }
+.opened-letter .letter-body { white-space: pre-wrap; max-width: 65ch; font-size: 1.05rem; line-height: 1.7; }
+@media (max-width: 480px) { .token-compare { grid-template-columns: 1fr; } }
+
 .ledger { display: grid; gap: 0.6rem; }
 .ledger-row { display: flex; justify-content: space-between; gap: 0.75rem; align-items: start;
               border: 1px solid var(--hairline); border-radius: 4px; padding: 0.75rem 0.9rem; }

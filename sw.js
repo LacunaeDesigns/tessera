@@ -20,6 +20,7 @@ var CORE = [
   'js/token.js',
   'js/export.js',
   'js/compose.js',
+  'js/open.js',
   'js/print.js',
   'js/registry.js',
   'data/occasions.js',

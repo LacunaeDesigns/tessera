@@ -170,11 +170,15 @@
         if (facts.id && facts.id !== derivedId) {
           warnings.push('the letter ID does not match one re-derived from the letter and its facts.');
         }
-        var redrawn = T.renderTokenSvg(seedHex, facts.id || derivedId).sheet + '\n';
+        /* the id is drawn into the SVG that the screen injects, and this
+           manifest is foreign: only a well-formed id may pass; anything
+           else falls back to the hex-derived one (XSS guard) */
+        var safeId = (facts.id && /^TSR-[0-9a-f]{4}-[0-9a-f]{4}$/.test(facts.id)) ? facts.id : derivedId;
+        var t = T.renderTokenSvg(seedHex, safeId);
         var enclosed = asText(tokenEntry.data);
-        var same = redrawn === enclosed;
+        var same = (t.sheet + '\n') === enclosed;
         if (!same) warnings.push('the enclosed token does not match one re-drawn from this letter; if you hold a printed half, trust the paper and compare the broken edge by eye.');
-        return same;
+        return { ok: same, redrawnFull: t.full, redrawnSheet: t.sheet, enclosed: enclosed };
       });
     }
 
@@ -182,17 +186,211 @@
       return {
         facts: facts,
         checks: results[0],
-        tokenOk: results[1],
+        tokenOk: results[1] ? results[1].ok : results[1],
+        token: results[1] ? { redrawnFull: results[1].redrawnFull, redrawnSheet: results[1].redrawnSheet, enclosed: results[1].enclosed } : null,
         letterText: letterText,
         warnings: warnings
       };
     });
   }
 
+  /* ---- screen wiring (browser only; nothing below runs under Node) ---- */
+
+  var view = null;         // { result }
+  var askedThisSession = {}; // date interstitial: asked once per letter
+
+  function $(sel) { return document.querySelector(sel); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function todayIso() {
+    var d = new Date();
+    var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+
+  function start() {
+    view = null;
+    renderIntake();
+  }
+
+  function renderIntake(problem) {
+    var c = $('#open-root');
+    if (!c) return;
+    c.innerHTML = '';
+    c.appendChild(el('h2', 'compose-q', 'Open a letter.'));
+    c.appendChild(el('p', 'hint', 'Choose the letter’s zip file, or drop it here. Nothing you open leaves this device.'));
+    if (problem) c.appendChild(el('p', 'verify-warn', problem));
+
+    var drop = el('div', 'open-drop');
+    drop.appendChild(el('p', '', 'Drop the letter here'));
+    var input = el('input', '');
+    input.type = 'file';
+    input.accept = '.zip,application/zip';
+    input.setAttribute('aria-label', 'Choose the letter’s zip file');
+    drop.appendChild(input);
+    c.appendChild(drop);
+
+    input.addEventListener('change', function () {
+      if (input.files && input.files[0]) intake(input.files[0]);
+    });
+    drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('open-drop-armed'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('open-drop-armed'); });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault();
+      drop.classList.remove('open-drop-armed');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) intake(e.dataTransfer.files[0]);
+    });
+  }
+
+  function intake(file) {
+    var c = $('#open-root');
+    c.innerHTML = '';
+    c.appendChild(el('h2', 'compose-q', 'Reading…'));
+    file.arrayBuffer().then(function (buf) {
+      var entries;
+      try { entries = Z.readZip(new Uint8Array(buf)); }
+      catch (e) {
+        renderIntake('That file could not be read as a letter. (' + e.message + ')');
+        return;
+      }
+      return verifyLetter(entries).then(function (result) {
+        view = { result: result };
+        renderVerify();
+      });
+    }).catch(function (e) {
+      renderIntake('That file could not be read. (' + e.message + ')');
+    });
+  }
+
+  function factRow(dl, k, v) {
+    dl.appendChild(el('dt', '', k));
+    dl.appendChild(el('dd', '', v));
+  }
+
+  function renderVerify() {
+    var c = $('#open-root');
+    var r = view.result;
+    c.innerHTML = '';
+    c.appendChild(el('h2', 'compose-q', 'A letter, as it arrived.'));
+
+    var facts = el('dl', 'seal-facts');
+    factRow(facts, 'From', r.facts.from || 'not readable');
+    factRow(facts, 'For', r.facts.to || 'not readable');
+    factRow(facts, 'Sealed', r.facts.written ? M.dateInWords(r.facts.written) : 'not readable');
+    factRow(facts, 'Opens', r.facts.openWhenNeeded ? 'when it is needed'
+      : (r.facts.openOn ? M.dateInWords(r.facts.openOn) : 'not readable'));
+    if (r.facts.id) factRow(facts, 'Letter ID', r.facts.id);
+    c.appendChild(facts);
+
+    if (r.checks.length) {
+      var list = el('ul', 'verify-checks');
+      r.checks.forEach(function (ch) {
+        var li = el('li', ch.ok ? 'verify-ok' : 'verify-bad');
+        li.appendChild(el('span', '', ch.ok ? '✓' : '!'));
+        li.appendChild(el('span', '', ch.file + (ch.ok ? ' · matches its fingerprint' : ' · does not match')));
+        list.appendChild(li);
+      });
+      c.appendChild(list);
+    }
+    r.warnings.forEach(function (w) {
+      c.appendChild(el('p', 'verify-warn', w));
+    });
+
+    if (r.token) {
+      var cmp = el('div', 'token-compare');
+      var fig1 = el('figure', '');
+      var img = el('img', '');
+      img.alt = 'The token as enclosed in the folder';
+      img.src = URL.createObjectURL(new Blob([r.token.enclosed], { type: 'image/svg+xml' }));
+      fig1.appendChild(img);
+      fig1.appendChild(el('figcaption', '', 'As enclosed'));
+      cmp.appendChild(fig1);
+      var fig2 = el('figure', '');
+      var holder = el('div', '');
+      holder.innerHTML = r.token.redrawnSheet; /* our own deterministic SVG from the hex seed */
+      fig2.appendChild(holder);
+      fig2.appendChild(el('figcaption', '', 'Re-drawn from this letter'));
+      cmp.appendChild(fig2);
+      c.appendChild(cmp);
+      if (r.tokenOk === true) c.appendChild(el('p', 'hint', 'They match.'));
+
+      var largeWrap = el('div', 'token-large');
+      largeWrap.hidden = true;
+      largeWrap.innerHTML = r.token.redrawnFull; /* same deterministic SVG, larger */
+      var largeBtn = el('button', 'btn-quiet btn-small', 'Show the break line large');
+      largeBtn.type = 'button';
+      largeBtn.addEventListener('click', function () {
+        largeWrap.hidden = !largeWrap.hidden;
+        largeBtn.textContent = largeWrap.hidden ? 'Show the break line large' : 'Hide the large view';
+      });
+      c.appendChild(el('p', 'hint', 'If you hold a printed half, the broken edge is the signature. Compare it by eye.'));
+      c.appendChild(largeBtn);
+      c.appendChild(largeWrap);
+    }
+
+    var navRow = el('div', 'compose-nav');
+    var back = el('button', 'btn-quiet', 'Not now');
+    back.type = 'button';
+    back.addEventListener('click', function () { location.hash = '#home'; });
+    navRow.appendChild(back);
+    var openBtn = el('button', 'btn-primary', 'Open it');
+    openBtn.type = 'button';
+    openBtn.disabled = r.letterText === null;
+    openBtn.addEventListener('click', dateGate);
+    navRow.appendChild(openBtn);
+    c.appendChild(navRow);
+  }
+
+  function dateGate() {
+    var r = view.result;
+    var id = r.facts.id || 'unknown';
+    var waiting = r.facts.openOn && !r.facts.openWhenNeeded && r.facts.openOn > todayIso();
+    if (waiting && !askedThisSession[id]) {
+      askedThisSession[id] = true;
+      renderWait();
+    } else {
+      reveal();
+    }
+  }
+
+  function renderWait() {
+    var c = $('#open-root');
+    var r = view.result;
+    c.innerHTML = '';
+    c.appendChild(el('h2', 'compose-q', 'It asked to wait until ' + M.dateInWords(r.facts.openOn) + '. Open anyway?'));
+    var navRow = el('div', 'compose-nav');
+    var no = el('button', 'btn-quiet', 'Not yet');
+    no.type = 'button';
+    no.addEventListener('click', function () { location.hash = '#home'; });
+    navRow.appendChild(no);
+    var yes = el('button', 'btn-primary', 'Open it');
+    yes.type = 'button';
+    yes.addEventListener('click', reveal);
+    navRow.appendChild(yes);
+    c.appendChild(navRow);
+  }
+
+  function reveal() {
+    var c = $('#open-root');
+    var r = view.result;
+    c.innerHTML = '';
+    var wrap = el('div', 'opened-letter');
+    var body = el('div', 'letter-body');
+    body.textContent = r.letterText;
+    wrap.appendChild(body);
+    c.appendChild(wrap);
+  }
+
   var api = {
     verifyLetter: verifyLetter,
     readmeFacts: readmeFacts,
-    parseChecksums: parseChecksums
+    parseChecksums: parseChecksums,
+    start: start
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

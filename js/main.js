@@ -5,7 +5,7 @@
 
   var LOCAL_VERSION = '0.1.0';
 
-  var SCREENS = ['home', 'write', 'letters', 'about'];
+  var SCREENS = ['home', 'write', 'open', 'letters', 'about'];
 
   function route() {
     var hash = (location.hash || '#home').replace('#', '');
@@ -18,6 +18,7 @@
       a.classList.toggle('nav-on', a.getAttribute('href') === '#' + hash);
     });
     if (hash === 'write') TesseraCompose.start();
+    if (hash === 'open') TesseraOpen.start();
     if (hash === 'letters') TesseraRegistry.render();
     window.scrollTo(0, 0);
   }
