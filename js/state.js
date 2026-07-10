@@ -8,7 +8,7 @@
   var cache = null;
 
   function fresh() {
-    return { schema: 1, drafts: {}, registry: [], settings: {} };
+    return { schema: 2, drafts: {}, registry: [], settings: {} };
   }
 
   function migrate(data) {
@@ -17,6 +17,14 @@
     if (!data.drafts) data.drafts = {};
     if (!data.registry) data.registry = [];
     if (!data.settings) data.settings = {};
+    if (data.schema < 2) {
+      /* schema 2: registry entries may carry sealKey (the front door's wax
+         choice); older entries default to '' and renderers fall back */
+      for (var i = 0; i < data.registry.length; i++) {
+        if (data.registry[i].sealKey === undefined) data.registry[i].sealKey = '';
+      }
+      data.schema = 2;
+    }
     return data;
   }
 
@@ -64,7 +72,7 @@
   }
 
   var api = {
-    load: load, save: save,
+    load: load, save: save, migrate: migrate,
     getDraft: getDraft, setDraft: setDraft, clearDraft: clearDraft,
     addRegistryEntry: addRegistryEntry, getRegistry: getRegistry,
     updateRegistryEntry: updateRegistryEntry, removeRegistryEntry: removeRegistryEntry
