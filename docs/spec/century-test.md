@@ -33,13 +33,14 @@ The century test is the format's single design constraint (SPEC, preamble): ever
 - [ ] `README.txt` (and its printed twin) works cold: a stranger with no context knows what the object is and what to do, from the object itself.
 - [ ] The token authenticates by eye — pattern matching along the broken edge, no machine.
 - [ ] Checksums are an *offer* to future computers, never a requirement for future readers.
+- [ ] The kit teaches its own assembly: from the sheets alone, the sealer can tell what goes inside and what faces out.
 
 ## Walkthrough protocol (run per release; see engineering/testing.md)
 
 1. Compose a real letter; export folder + print kit.
-2. Print it. Cut the token. Seal the letter sheet + travel half + instructions page in an envelope.
+2. Print it. Cut the token. Seal the letter sheet + travel half + instructions page in an envelope; the cover sheet faces out — fold it around the envelope or paste it to the front.
 3. Open the exported folder with only a text editor; confirm nothing essential is missing or opaque.
-4. Hand the printed instructions page to someone who has never seen the project; watch — no coaching — whether they can say what the object is, who it's for, and what they should do with it.
+4. Hand the cover sheet to someone who has never seen the project — the moment a finder actually has, seal unbroken; watch — no coaching — whether they can say what the object is, who it's for, and what they should do with it. Then hand them the instructions page — the moment after a rightful opening — and watch for the same.
 5. Record results (and any ✗ with explanation) in the release notes.
 
 ## Known, accepted mortality
