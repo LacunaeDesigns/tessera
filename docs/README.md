@@ -37,6 +37,12 @@ These documents are the source of truth for Tessera. When code and docs disagree
 - [engineering/architecture.md](engineering/architecture.md) — module map, storage, no-build rules, versioning triple
 - [engineering/testing.md](engineering/testing.md) — QA gates and the century-test walkthrough protocol
 
+**Execution** (working documents; the canon above outranks them on conflict)
+- [PROGRESS.md](PROGRESS.md) — the execution tracker; twin of the Ariadne vault status
+- [plans/v0.1-completion.md](plans/v0.1-completion.md) — shell + prose gate + QA + ship prep
+- [plans/v0.2-opening.md](plans/v0.2-opening.md) · [plans/v0.2-reminders.md](plans/v0.2-reminders.md) · [plans/v0.2-encryption.md](plans/v0.2-encryption.md) — executable v0.2 plans
+- [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) · [plans/later-versions.md](plans/later-versions.md) — pre-plan briefs with definition-of-ready triggers
+
 ## Skills (project commands)
 
 `/qa` (full QA pass) · `/century-audit` (conformance review) · `/spec-sync` (format-drift detector) · `/occasion` (prompt/pack authoring) · `/token-lab` (token art iteration) · `/release` (version bump + ship). `/gallery-triage` arrives with the commons (v1.0).
