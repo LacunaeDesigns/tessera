@@ -416,7 +416,9 @@
       }
       setTimeout(function () {
         scrollToEl(refs.sceneWrap, -20);
-        focusTa();
+        /* phones: focus from a timer moves focus but iOS will not raise the
+           keypad, leaving a dead caret; the tap hint invites the tap instead */
+        if (!isMobile()) focusTa();
       }, 260);
       return;
     }
@@ -438,11 +440,11 @@
       if (reduced()) {
         refs.ta.value = greeting;
         handleValue(greeting, null, true);
-        focusTa();
       } else {
         autoType(greeting);
       }
-      setTimeout(focusTa, reduced() ? 100 : greeting.length * 60 + 900);
+      /* same phone caveat as above: only desktops get the delayed focus */
+      if (!isMobile()) setTimeout(focusTa, reduced() ? 100 : greeting.length * 60 + 900);
     }, 600);
   }
   function goSeal() {
@@ -929,8 +931,15 @@
       renderWriting();
     });
 
-    refs.sceneWrap.addEventListener('click', function () {
-      if (state.setupStep !== null) return;
+    refs.sceneWrap.addEventListener('click', function (e) {
+      /* the setup dialog lives inside scene-wrap, so its own button clicks
+         (which can flip setupStep to null before this bubbles up) must not
+         fall through to a focus grab */
+      if (state.setupStep !== null || refs.setupOverlay.contains(e.target)) return;
+      /* phones: if focus lingers from a non-gesture path the keypad may be
+         down even though the field is focused; a blur inside this real tap
+         lets the re-focus summon it again */
+      if (isMobile() && document.activeElement === refs.ta) refs.ta.blur();
       focusTa();
     });
     refs.lever.addEventListener('click', function () { doLeverVisual(); typeChar('\n'); });
