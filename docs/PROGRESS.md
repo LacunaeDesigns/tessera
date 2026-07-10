@@ -28,7 +28,7 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 |---|---|---|
 | Zip reader + verification core | done | [plans/v0.2-opening.md](plans/v0.2-opening.md) Tasks 1–2; `tools/test-open.js` green |
 | Receive · verify · ceremony (Tasks 3–4) | done, browser-verified | fourth door + date check + ceremony committed (`2dcc986`, `5f827d2`); QA log below |
-| Write-back + custody intake (Task 5) | planned | same plan |
+| Write-back + custody intake (Task 5) | done, browser-verified | reply lineage sealed end-to-end; schema 3 (`role`); QA log below |
 | ICS export + open-dates card | planned | [plans/v0.2-reminders.md](plans/v0.2-reminders.md) |
 | Passphrase privacy + escrow card + honesty page | planned | [plans/v0.2-encryption.md](plans/v0.2-encryption.md) |
 | Envelope generator + print themes | planned | [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) |
@@ -47,6 +47,24 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-10 (v0.2 write-back + custody intake)** — Task 5 of plans/v0.2-opening.md landed,
+  closing the plan's implementation tasks. Write-back: "Answer it forward." after the ceremony
+  hands `{inReplyTo, generation}` to compose (new `TesseraCompose.answerForward`; attach-never-
+  discard if a draft exists — decisions.md), the draft carries it through reload, and
+  `doSeal → export.seal → buildManifest` threads it into the sealed manifest. The README grows a
+  conditional lineage line ("In answer to: …") because the manifest may never say what the README
+  doesn't — an additive format event, recorded in decisions.md + readme-template.md; fixtures
+  byte-identical, manifest `tessera` stays 0.1. Custody intake: "I am keeping this for someone"
+  on the verify screen records facts-only `role: "custodian"` entries (schema 3 via
+  `state.migrate()`, everything older backfills `role: "writer"`); the shelf gains "In your
+  keeping". Browser QA at 375px with a synthetic letter: custody intake → confirmation → shelf
+  row → reload persists → dedupe ("It is already in your keeping."); full reply loop: open →
+  ceremony → Answer it forward → draft carries generation 1 → sealed as a real zip whose manifest
+  and README both speak the lineage — and which re-verifies clean through the opening door with
+  `facts.writeback` intact (generation 2 would follow). Zero console errors, no overflow. Gate 1
+  green (five suites; new writeback/schema-3/lineage tests), prose clean, /spec-sync clean after
+  the template fix.
 
 - **2026-07-10 (v0.2 ceremony)** — Task 4 of plans/v0.2-opening.md landed (`5f827d2`): the reveal
   offers paper first ("Read it on paper instead" → shared print-kit preview, always the re-drawn

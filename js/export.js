@@ -16,7 +16,7 @@
   }
 
   /* fields: { to, from, written, openOn, occasion, language, custody[],
-     letter, openWhenNeeded } → resolves to the sealed letter object */
+     letter, openWhenNeeded, writeback } → resolves to the sealed letter object */
   function seal(fields) {
     var M = root.TesseraManifest;
     var letterText = M.canonLetterText(fields.letter) + '\n';
@@ -34,7 +34,8 @@
         language: fields.language || 'en',
         custody: fields.custody || [],
         tokenSeed: seedHex,
-        openWhenNeeded: !!fields.openWhenNeeded
+        openWhenNeeded: !!fields.openWhenNeeded,
+        writeback: fields.writeback || null
       };
       var readme = M.renderReadme(f);
       var manifest = M.manifestJson(f);

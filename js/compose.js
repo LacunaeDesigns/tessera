@@ -28,9 +28,15 @@
   function newDraft() {
     return {
       occasion: null, to: '', from: '', openOn: '', openWhenNeeded: false,
-      letter: '', custodyHolder: '', custodyNote: '', keepCopy: false
+      letter: '', custodyHolder: '', custodyNote: '', keepCopy: false,
+      writeback: null
     };
   }
+
+  /* "Answer it forward." — the opening screen hands lineage to the next
+     compose session; the draft carries it so it survives a reload */
+  var pendingWriteback = null;
+  function answerForward(ctx) { pendingWriteback = ctx || null; }
 
   function saveDraft() {
     if (current) TesseraState.setDraft('current', { step: current.step, draft: current.draft });
@@ -45,6 +51,12 @@
   function start() {
     var stored = TesseraState.getDraft('current');
     current = stored ? { step: stored.step, draft: stored.draft } : { step: 0, draft: newDraft() };
+    if (pendingWriteback) {
+      /* attach, never discard: an in-progress draft becomes the answer */
+      current.draft.writeback = pendingWriteback;
+      pendingWriteback = null;
+      saveDraft();
+    }
     render();
   }
 
@@ -308,7 +320,8 @@
       language: 'en',
       custody: d.custodyHolder ? [{ holder: d.custodyHolder.trim(), instructions: (d.custodyNote || 'Keep it safe; pass it on with its story.').trim() }] : [],
       letter: d.letter,
-      openWhenNeeded: d.openWhenNeeded
+      openWhenNeeded: d.openWhenNeeded,
+      writeback: d.writeback || null
     };
     TesseraExport.seal(fields).then(function (sealed) {
       TesseraState.addRegistryEntry({
@@ -322,7 +335,8 @@
         custodyHolder: d.custodyHolder || '',
         custodyNote: d.custodyNote || '',
         keptText: d.keepCopy ? d.letter : null,
-        status: 'sealed'
+        status: 'sealed',
+        role: 'writer'
       });
       /* the letter is sealed: cancel any pending autosave and drop the live
          draft, or a debounced save can resurrect it after the clear */
@@ -398,5 +412,5 @@
     RENDERERS[current.step](c);
   }
 
-  root.TesseraCompose = { start: start };
+  root.TesseraCompose = { start: start, answerForward: answerForward };
 })(typeof self !== 'undefined' ? self : this);

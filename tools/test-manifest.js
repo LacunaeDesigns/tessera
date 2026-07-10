@@ -67,6 +67,23 @@ ok('readme no box-drawing chars', !/[─-╿]/.test(readme));
 ok('readme wrapped ≤ 66 cols', readme.split('\n').every(l => l.length <= 66),
   'long lines: ' + JSON.stringify(readme.split('\n').filter(l => l.length > 66)));
 
+/* writeback: reply lineage (v0.2 opening) */
+const reply = M.buildManifest({
+  id: 'TSR-1111-2222', written: '2026-07-10', openOn: '2036-07-10',
+  from: 'A', to: 'B', tokenSeed: 's',
+  writeback: { inReplyTo: 'TSR-9c11-85a5', generation: 2 }
+});
+ok('manifest carries writeback', reply.writeback && reply.writeback.inReplyTo === 'TSR-9c11-85a5' && reply.writeback.generation === 2);
+const rwb = M.renderReadme({
+  id: 'TSR-1111-2222', written: '2026-07-10', openOn: '2036-07-10',
+  from: 'A', to: 'B',
+  writeback: { inReplyTo: 'TSR-9c11-85a5', generation: 2 }
+});
+ok('readme speaks the lineage (manifest-in-prose rule)',
+  rwb.indexOf('In answer to:   TSR-9c11-85a5 (letter 2 in its exchange)') !== -1);
+ok('readme lineage wrapped ≤ 66 cols', rwb.split('\n').every(l => l.length <= 66));
+ok('originating readme has no lineage line', readme.indexOf('In answer to') === -1);
+
 /* open-when: no-date variant */
 const rn = M.renderReadme({
   id: 'TSR-aaaa-bbbb', written: '2026-07-10', openOn: '2026-07-10',

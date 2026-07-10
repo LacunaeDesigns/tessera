@@ -8,7 +8,7 @@
   var cache = null;
 
   function fresh() {
-    return { schema: 2, drafts: {}, registry: [], settings: {} };
+    return { schema: 3, drafts: {}, registry: [], settings: {} };
   }
 
   function migrate(data) {
@@ -24,6 +24,15 @@
         if (data.registry[i].sealKey === undefined) data.registry[i].sealKey = '';
       }
       data.schema = 2;
+    }
+    if (data.schema < 3) {
+      /* schema 3: registry entries carry a role — "writer" (sealed here),
+         "custodian" (kept for someone, never opened), "opened" (reserved);
+         everything before schema 3 was sealed by the writer */
+      for (var j = 0; j < data.registry.length; j++) {
+        if (data.registry[j].role === undefined) data.registry[j].role = 'writer';
+      }
+      data.schema = 3;
     }
     return data;
   }

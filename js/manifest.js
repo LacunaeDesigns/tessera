@@ -157,6 +157,11 @@
     s.push(labelLine('From:           ', f.from));
     s.push(labelLine('For:            ', f.to));
     s.push('Letter ID:      ' + f.id);
+    if (f.writeback && f.writeback.inReplyTo) {
+      /* the manifest never carries what the README does not say in prose */
+      s.push(labelLine('In answer to:   ',
+        f.writeback.inReplyTo + '  (letter ' + f.writeback.generation + ' in its exchange)'));
+    }
     s.push('');
     s.push(RULE_DASH);
     s.push('IF YOU ARE THE PERSON THIS IS FOR');

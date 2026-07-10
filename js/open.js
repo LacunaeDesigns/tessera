@@ -345,6 +345,48 @@
     openBtn.addEventListener('click', dateGate);
     navRow.appendChild(openBtn);
     c.appendChild(navRow);
+
+    if (r.facts.id) {
+      var keepRow = el('div', 'compose-nav');
+      var keep = el('button', 'btn-quiet btn-small', 'I am keeping this for someone');
+      keep.type = 'button';
+      keep.addEventListener('click', keepForSomeone);
+      keepRow.appendChild(keep);
+      c.appendChild(keepRow);
+    }
+  }
+
+  /* custody intake: record the letter on this device without opening it */
+  function keepForSomeone() {
+    var r = view.result;
+    var already = root.TesseraState.getRegistry().some(function (e) { return e.id === r.facts.id; });
+    if (!already) {
+      root.TesseraState.addRegistryEntry({
+        id: r.facts.id,
+        to: r.facts.to || '',
+        from: r.facts.from || '',
+        written: r.facts.written || '',
+        openOn: r.facts.openOn || '',
+        openWhenNeeded: !!r.facts.openWhenNeeded,
+        occasion: r.facts.occasion || 'custom',
+        custodyHolder: '',
+        custodyNote: '',
+        keptText: null,
+        status: 'kept',
+        sealKey: '',
+        role: 'custodian'
+      });
+    }
+    var c = $('#open-root');
+    c.innerHTML = '';
+    c.appendChild(el('h2', 'compose-q', already ? 'It is already in your keeping.' : 'It is in your keeping.'));
+    c.appendChild(el('p', 'hint', 'This device now remembers the letter and its date, unopened. You will find it under Your letters.'));
+    var navRow = el('div', 'compose-nav');
+    var done = el('button', 'btn-primary', 'Done');
+    done.type = 'button';
+    done.addEventListener('click', function () { location.hash = '#letters'; });
+    navRow.appendChild(done);
+    c.appendChild(navRow);
   }
 
   function dateGate() {
@@ -460,6 +502,19 @@
       location.hash = '#home';
     });
     navRow.appendChild(done);
+    if (r.facts.id && root.TesseraCompose) {
+      var answer = el('button', 'btn-primary', 'Answer it forward.');
+      answer.type = 'button';
+      answer.addEventListener('click', function () {
+        root.TesseraCompose.answerForward({
+          inReplyTo: r.facts.id,
+          generation: (r.facts.writeback && r.facts.writeback.generation ? r.facts.writeback.generation : 0) + 1
+        });
+        document.body.classList.remove('ceremony-quiet');
+        location.hash = '#write';
+      });
+      navRow.appendChild(answer);
+    }
     wrap.appendChild(navRow);
     c.appendChild(wrap);
   }

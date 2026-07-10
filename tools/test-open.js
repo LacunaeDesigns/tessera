@@ -36,7 +36,8 @@ function buildFolder(overrides) {
   const f = {
     id: id, written: fields.written, openOn: fields.openOn,
     from: fields.from, to: fields.to, occasion: fields.occasion,
-    language: fields.language, custody: fields.custody, tokenSeed: seedHex
+    language: fields.language, custody: fields.custody, tokenSeed: seedHex,
+    writeback: fields.writeback || null
   };
   const files = [
     { name: 'README.txt', data: M.renderReadme(f) },
@@ -82,6 +83,14 @@ function buildFolder(overrides) {
   ok('fallback: dates survive', v3.facts.written === '2026-07-10' && v3.facts.openOn === '2031-07-10');
   ok('fallback: parties survive', v3.facts.from === 'The v0.2 suite' && v3.facts.to === 'Whoever tests the opening');
   ok('fallback: warned about the manifest', v3.warnings.some(w => /manifest/i.test(w)));
+
+  /* 3b. a reply letter: writeback rides the manifest into the facts */
+  const replyF = buildFolder({ writeback: { inReplyTo: 'TSR-9c11-85a5', generation: 3 } });
+  const v3b = await O.verifyLetter(replyF.files);
+  ok('writeback: facts carry the lineage', v3b.facts.writeback && v3b.facts.writeback.inReplyTo === 'TSR-9c11-85a5' && v3b.facts.writeback.generation === 3);
+  ok('writeback: reply folder still verifies clean', v3b.checks.every(c => c.ok) && v3b.warnings.length === 0);
+  const orig = await O.verifyLetter(buildFolder().files);
+  ok('writeback: originating letter reads null', orig.facts.writeback === null);
 
   /* 4. zip round-trip with folder prefixes, as a real intake would see it */
   const rt = buildFolder();

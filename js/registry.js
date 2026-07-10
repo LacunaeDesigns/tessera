@@ -54,14 +54,17 @@
     var c = document.querySelector('#registry-root');
     if (!c) return;
     c.innerHTML = '';
-    var reg = TesseraState.getRegistry().filter(function (e) { return e.status === 'sealed'; });
+    var all = TesseraState.getRegistry();
+    var reg = all.filter(function (e) { return e.status === 'sealed'; });
     reg.sort(function (a, b) { return a.openOn < b.openOn ? -1 : a.openOn > b.openOn ? 1 : 0; });
+    var kept = all.filter(function (e) { return e.role === 'custodian'; });
+    kept.sort(function (a, b) { return a.openOn < b.openOn ? -1 : a.openOn > b.openOn ? 1 : 0; });
 
     var draft = TesseraState.getDraft('current');
 
     c.appendChild(el('h2', 'screen-title', 'Your letters'));
 
-    if (!reg.length && !draft) {
+    if (!reg.length && !draft && !kept.length) {
       c.appendChild(el('p', 'hint', 'Nothing waits yet. The first letter is the hardest and the best one to have written.'));
       var start = el('a', 'btn-primary btn-link', 'Write a letter');
       start.href = '#write';
@@ -109,6 +112,34 @@
       reg2.addEventListener('click', function () { TesseraPrint.printRegister(reg); });
       printRow.appendChild(reg2);
       c.appendChild(printRow);
+    }
+
+    if (kept.length) {
+      c.appendChild(el('h3', 'compose-sub', 'In your keeping'));
+      var keptList = el('div', 'ledger');
+      kept.forEach(function (e) {
+        var row = el('div', 'ledger-row');
+        var main = el('div', 'ledger-main');
+        main.appendChild(el('p', 'ledger-to', 'For ' + (e.to || 'someone') + ', from ' + (e.from || 'someone')));
+        main.appendChild(el('p', 'ledger-meta',
+          (e.openWhenNeeded ? 'opens when needed' : TesseraManifest.dateInWords(e.openOn) + ' · ' + timeUntil(e.openOn))
+          + ' · unopened, in your keeping'));
+        main.appendChild(el('p', 'ledger-id', e.id));
+        row.appendChild(main);
+        var actions = el('div', 'ledger-actions');
+        var rm = el('button', 'btn-quiet btn-small', 'Remove from this device');
+        rm.type = 'button';
+        rm.addEventListener('click', function () {
+          if (confirm('Remove this record from this device? The letter itself (the folder, the paper) is not touched.')) {
+            TesseraState.removeRegistryEntry(e.id);
+            render();
+          }
+        });
+        actions.appendChild(rm);
+        row.appendChild(actions);
+        keptList.appendChild(row);
+      });
+      c.appendChild(keptList);
     }
 
     if (draft) {

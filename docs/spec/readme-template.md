@@ -18,6 +18,8 @@ To be opened:   {open-date-in-words}  ({openOn-iso})
 From:           {from}
 For:            {to}
 Letter ID:      {id}
+[IF WRITEBACK: In answer to:   {inReplyTo} (letter
+                {generation} in its exchange)]
 
 ----------------------------------------------------------------
 IF YOU ARE THE PERSON THIS IS FOR
@@ -90,7 +92,8 @@ Everything essential is already in your hands.
 - Plain ASCII line art only (the `=`/`-` rules above); no box-drawing characters — they survive fewer encodings and fewer printers.
 - Hard-wrap at ~64 columns so the file prints legibly on anything.
 - Dates in words use the letter's `language`; the ISO form always appears beside them in parentheses.
-- The four sections (for the person · for the finder · the files · the format) are required; the bracketed passages appear only when the letter has a token, custody chain, or media.
+- The four sections (for the person · for the finder · the files · the format) are required; the bracketed passages appear only when the letter has a token, custody chain, media, or lineage.
+- The lineage line (added 2026-07-10, with v0.2 write-back) appears only when the manifest carries a non-null `writeback`; it keeps the rule that the manifest never says anything the README does not say in prose. Originating letters are unchanged.
 - Tone: calm, concrete, kind. The finder section is written for someone slightly rushed and slightly moved, standing over a box of a stranger's things.
 
 ## Translation guidance
