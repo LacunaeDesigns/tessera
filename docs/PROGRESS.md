@@ -64,7 +64,13 @@ Every roadmap item through v2.x now has a written plan — index with confidence
   and README both speak the lineage — and which re-verifies clean through the opening door with
   `facts.writeback` intact (generation 2 would follow). Zero console errors, no overflow. Gate 1
   green (five suites; new writeback/schema-3/lineage tests), prose clean, /spec-sync clean after
-  the template fix.
+  the template fix. Full /qa closed the task same day: Gate-3 walkthrough at 375px then desktop —
+  real wizard seal (TSR-1d81-9584, auto-download, registry row persists reload), print overlay
+  (cover + instructions sheets, footers), tamper flow (letter.txt "does not match" with the
+  cascade of warnings, reading still allowed, edited P.S. visible), early-open interstitial with
+  the exact canon copy and once-per-session gating, reduced-motion collapse, both themes
+  (lamplight rgb(28,24,19) / paper rgb(247,243,234)), no overflow either size, zero console
+  errors, SW re-registered with 26 precached entries, screenshots captured.
 
 - **2026-07-10 (v0.2 ceremony)** — Task 4 of plans/v0.2-opening.md landed (`5f827d2`): the reveal
   offers paper first ("Read it on paper instead" → shared print-kit preview, always the re-drawn
