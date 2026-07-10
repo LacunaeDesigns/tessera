@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Tessera · letters across time</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="%238a4b2d" stroke-width="2"/><path d="M8 1.5 A6.5 6.5 0 0 1 8 14.5" fill="%238a4b2d"/></svg>'>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="print.css">
+</head>
+<body>
+<header class="site-head">
+  <a class="wordmark" href="#home">Tessera</a>
+  <nav class="site-nav">
+    <a class="nav-link" href="#write">Write a letter</a>
+    <a class="nav-link" href="#letters">Your letters</a>
+    <a class="nav-link" href="#about">About</a>
+  </nav>
+</header>
+
+<main>
+  <section id="screen-home">
+    <h1 class="home-title">A letter, waiting for its day.</h1>
+    <p class="home-lede">Write to someone across the years. Seal it as a folder and a few printed pages. Keep it in a drawer. No account, no server, nothing to expire before it is opened.</p>
+    <div class="doors">
+      <a class="door" href="#write"><strong>Write a letter</strong><span>Twenty minutes, one recipient, one day it should wait for.</span></a>
+      <a class="door" href="#letters"><strong>Your letters</strong><span>The ledger of what this house is keeping.</span></a>
+      <a class="door" href="#about"><strong>About</strong><span>What Tessera promises, and what it honestly cannot.</span></a>
+    </div>
+  </section>
+
+  <section id="screen-write" hidden>
+    <div id="compose-root"></div>
+  </section>
+
+  <section id="screen-letters" hidden>
+    <div id="registry-root"></div>
+  </section>
+
+  <section id="screen-about" hidden>
+    <h2 class="screen-title">About Tessera</h2>
+    <p>Tessera is a writing room for letters that open years from now. Each sealed letter is an ordinary folder of plain files and a small print kit. The paper is the letter; the folder is its convenience copy.</p>
+    <p>The format is public domain and documented inside every letter, so a folder found in forty years explains itself. The tool is a single page that works offline, from a USB stick if it must.</p>
+    <h3 id="honesty">The honest part</h3>
+    <p>Tessera cannot stop anyone opening a letter early, and will not pretend it can. Sealing here is ritual and custody, not enforcement. There are no delivery promises, because there is no deliverer. What holds instead: a named keeper, a printed date, and the small ceremony of a token broken in two.</p>
+    <p class="hint">Your letters never leave this device. There is no account and no analytics of any kind.</p>
+    <p class="hint"><span id="version-note"></span> · spec CC0 · code MIT</p>
+  </section>
+</main>
+
+<div id="print-overlay" hidden>
+  <div class="print-toolbar">
+    <button id="print-close" class="btn-quiet">Back</button>
+    <button id="print-go" class="btn-primary">Print the kit</button>
+  </div>
+  <div id="print-root"></div>
+</div>
+
+<script src="data/occasions.js"></script>
+<script src="js/manifest.js"></script>
+<script src="js/token.js"></script>
+<script src="js/zip.js"></script>
+<script src="js/state.js"></script>
+<script src="js/export.js"></script>
+<script src="js/print.js"></script>
+<script src="js/registry.js"></script>
+<script src="js/compose.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

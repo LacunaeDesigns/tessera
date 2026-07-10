@@ -5,28 +5,28 @@
 
 @font-face {
   font-family: 'Young Serif';
-  src: url('fonts/YoungSerif-Regular.ttf') format('truetype');
+  src: url('../fonts/YoungSerif-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Courier Prime';
-  src: url('fonts/CourierPrime-Regular.ttf') format('truetype');
+  src: url('../fonts/CourierPrime-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Courier Prime';
-  src: url('fonts/CourierPrime-Bold.ttf') format('truetype');
+  src: url('../fonts/CourierPrime-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Courier Prime';
-  src: url('fonts/CourierPrime-Italic.ttf') format('truetype');
+  src: url('../fonts/CourierPrime-Italic.ttf') format('truetype');
   font-weight: 400;
   font-style: italic;
   font-display: swap;

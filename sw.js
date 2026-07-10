@@ -7,8 +7,11 @@ var CACHE_VERSION = 'tessera-v0.1.0';
 var CORE = [
   './',
   'index.html',
+  'app.html',
   'style.css',
   'print.css',
+  'landing/landing.css',
+  'landing/landing.js',
   'version.json',
   'js/main.js',
   'js/state.js',
