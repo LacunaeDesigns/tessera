@@ -8,6 +8,7 @@ var CORE = [
   './',
   'index.html',
   'style.css',
+  'print.css',
   'version.json',
   'js/main.js',
   'js/state.js',
