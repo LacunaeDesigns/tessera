@@ -2,7 +2,7 @@
 
 The living record of what is actually done, against [roadmap.md](roadmap.md). Update when a task lands; `/release` refuses if this file lies. The cross-machine twin is the Ariadne vault (`projects/tessera.md`) — status there, granularity here.
 
-**Snapshot (2026-07-10):** docs canon complete · pure modules fixture-tested (54 tests green) · all v0.1 app modules code-complete but unverified in a browser · **blocker: the shell (`index.html` + `style.css`) does not exist yet** · plans written for v0.1 completion and all of v0.2.
+**Snapshot (2026-07-10, evening):** the app runs. Shell shipped and browser-verified end-to-end (compose → seal → zip with independently verified checksums → print kit PDFs at A4 + Letter → registry → reload persistence → offline). All modules committed on `dev`. Remaining for v0.1: the author tasks (founding letters, physical century walkthrough, Netlify unlisted ship).
 
 ## v0.1 — Foundations
 
@@ -10,16 +10,16 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 |---|---|---|
 | Format spec + schema + README template + custody + century test | done | committed (SPEC.md, docs/spec/) |
 | Pure modules: manifest.js · token.js · zip.js | done | 24 + 21 + 9 tests green (2026-07-10 audit) |
-| Writing room (compose.js, state.js, export.js) | code-complete, unverified | audit 2026-07-10; verify via [plans/v0.1-completion.md](plans/v0.1-completion.md) Task 5 |
-| Print kit renderer (print.js) | code-complete, needs print CSS | plan Task 3 |
-| Registry (registry.js) | code-complete, unverified | plan Task 5 |
-| Open-when set (data/occasions.js) | done, pending prose gate | plan Task 4 |
-| Offline shell (sw.js, main.js, version.json) | code-complete | audit 2026-07-10 |
-| **index.html + style.css** | **not started — the blocker** | plan Tasks 1–3 |
-| tools/prose-check.js (Gate 2) | not started | plan Task 4 |
-| Commit the module files (currently untracked) | pending browser proof | plan Task 6 |
+| Writing room (compose.js, state.js, export.js) | done, browser-verified | full loop 2026-07-10: seal produced a spec-correct folder; SHA-256 checksums verified independently |
+| Print kit renderer (print.js) | done, browser-verified | A4 + Letter PDFs generated from the real print engine; sheets break per page, footers self-identify |
+| Registry (registry.js) | done, browser-verified | row after seal, reload persistence, reprint without kept text works |
+| Open-when set (data/occasions.js) | done, prose gate green | `node tools/prose-check.js` clean 2026-07-10 |
+| Offline shell (sw.js, main.js, version.json) | done, verified | 14 entries precached; offline reload + compose pass |
+| index.html + style.css | done | committed 2026-07-10; both themes, 375px-first screenshots |
+| tools/prose-check.js (Gate 2) | done | caught 2 real em-dash strings; both fixed |
+| Commit the module files | done | commits `7949922`, `136cbbc` on `dev` |
 | Founding letters (author) | not started | plan Task 7 — exit criterion |
-| Ship: Netlify unlisted, repo flips public | not started | plan Task 7 |
+| Ship: Netlify unlisted, repo flips public | not started | plan Task 7; needs the physical century walkthrough first |
 
 ## v0.2 — The Opening
 
@@ -46,4 +46,5 @@ Briefs with definition-of-ready triggers: [plans/later-versions.md](plans/later-
 
 ## Log (newest first)
 
+- **2026-07-10 (evening)** — Executed plans/v0.1-completion.md Tasks 1–6. Shell landed; full browser QA: compose→seal loop produced folder `TSR-17ee-5e98` with all five spec files, checksums re-verified with Get-FileHash, print engine proven via A4 + Letter PDFs, offline pass green (14 precached entries), lamplight + paper themes screenshotted, 375px first. prose-check caught and fixed two real em-dash UI strings. Known dev-only friction: the service worker's cache-first strategy serves stale files during development; unregister the SW (or bump CACHE_VERSION) after editing shell files. Remaining: Task 7 (author).
 - **2026-07-10** — Session: code audit (modules ~90%, all tests green, shell missing); wrote CLAUDE.md, six project skills, dev server, this tracker, and plans for v0.1 completion + full v0.2. Cost review: stack is $0 end-to-end on free tiers; only future watch-item is Netlify Forms at v1.0 (free-tier cap; zero-cost swap noted in plans/later-versions.md).
