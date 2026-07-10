@@ -51,13 +51,12 @@
 
   var DEMO_TEXT = 'Dear reader,\n\nSome letters are meant\nto wait years to be read.\n\nThis desk writes them.';
   var STORY_SEED = '7c1e99065d24fc8fb2c14e07a31b74fc8d24cee906d31bf471a1e9e906d47a2b';
-  var INERT_NOTE = 'In the working app this produces the print kit and the folder of plain files. Here, the ceremony is the point.';
 
   var state = {
     phase: 'idle', value: '', lines: [''], col: 0, focused: false, autotyping: false, demoActive: true,
     to: '', occasion: null, customOccasion: '', showPrompts: true, setupStep: null, machineColorU: null,
     openOn: '', openWhenNeeded: false, fromWho: '', custodyHolder: '', custodyNote: '', keepCopy: false,
-    sealed: null, sealedList: [], soundOnU: null, shelfStyleU: null, inertMsg: '',
+    sealed: null, freshId: '', sealing: false, soundOnU: null, shelfStyleU: null,
     sealChoice: 'blue', sealPickerOpen: false
   };
 
@@ -452,34 +451,60 @@
   }
   function sealNow() {
     var d = state;
-    if (!(d.openWhenNeeded || /^\d{4}-\d{2}-\d{2}$/.test(d.openOn)) || !d.fromWho.trim()) return;
-    var seed = '';
-    var bytes = new Uint8Array(32);
-    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(bytes);
-    else for (var i = 0; i < 32; i++) bytes[i] = Math.floor(Math.random() * 256);
-    for (var j = 0; j < bytes.length; j++) seed += (bytes[j] < 16 ? '0' : '') + bytes[j].toString(16);
-    var id = 'TSR-' + seed.slice(0, 4) + '-' + seed.slice(4, 8);
-    var token = window.TesseraToken ? TesseraToken.renderTokenSvg(seed, id) : { full: '' };
-    var entry = {
-      id: id, to: d.to.trim(), from: d.fromWho.trim(), occasion: d.occasion,
-      openOn: d.openWhenNeeded ? '' : d.openOn, openWhenNeeded: d.openWhenNeeded, fresh: true,
-      sealKey: d.sealChoice || 'blue'
-    };
-    state.sealed = { token: token, id: id };
-    state.sealedList = [entry].concat(d.sealedList);
-    ensureCtx(); sDing(); tone(1568, 1.1, 0.18, 'sine', 0.12);
+    var validDate = /^\d{4}-\d{2}-\d{2}$/.test(d.openOn);
+    if (d.sealing || !d.value.trim() || !d.fromWho.trim() || !(d.openWhenNeeded || validDate)) return;
+    d.sealing = true;
     renderSealSection();
-    renderShelf();
-    setTimeout(function () {
-      scrollToEl(document.getElementById('seal'), 40);
-    }, 80);
+    var fields = {
+      to: d.to.trim(),
+      from: d.fromWho.trim(),
+      written: todayIso(),
+      openOn: d.openWhenNeeded ? todayIso() : d.openOn,
+      occasion: d.occasion || 'custom',
+      language: 'en',
+      custody: d.custodyHolder.trim()
+        ? [{ holder: d.custodyHolder.trim(), instructions: (d.custodyNote.trim() || 'Keep it safe; pass it on with its story.') }]
+        : [],
+      letter: d.value,
+      openWhenNeeded: d.openWhenNeeded
+    };
+    TesseraExport.seal(fields).then(function (sealed) {
+      TesseraState.addRegistryEntry({
+        id: sealed.fields.id,
+        to: sealed.fields.to,
+        from: sealed.fields.from,
+        written: sealed.fields.written,
+        openOn: sealed.fields.openOn,
+        openWhenNeeded: sealed.fields.openWhenNeeded,
+        occasion: sealed.fields.occasion,
+        custodyHolder: d.custodyHolder.trim(),
+        custodyNote: d.custodyNote.trim(),
+        keptText: d.keepCopy ? d.value : null,
+        status: 'sealed',
+        sealKey: d.sealChoice || 'blue'
+      });
+      state.sealed = sealed;
+      state.freshId = sealed.fields.id;
+      state.sealing = false;
+      lastShelfKey = '';
+      TesseraExport.download(sealed);
+      ensureCtx(); sDing(); tone(1568, 1.1, 0.18, 'sine', 0.12);
+      renderSealSection();
+      renderShelf();
+      setTimeout(function () {
+        scrollToEl(document.getElementById('seal'), 40);
+      }, 80);
+    }).catch(function (err) {
+      state.sealing = false;
+      renderSealSection();
+      alert('Sealing failed: ' + err.message);
+    });
   }
   function writeAnother() {
     refs.ta.value = '';
     state.phase = 'idle'; state.value = ''; state.lines = ['']; state.col = 0;
     state.sealed = null; state.openOn = ''; state.openWhenNeeded = false;
     state.custodyHolder = ''; state.custodyNote = ''; state.keepCopy = false;
-    state.inertMsg = '';
     renderPaper(); renderCaret(); renderSealSection(); renderHero();
     setSetupStep(1);
     updateCarriage(false);
@@ -640,19 +665,19 @@
       refs.pvKept.textContent = state.custodyHolder.trim() || 'you';
       refs.pvText.textContent = state.value;
       refs.keepCopy.checked = state.keepCopy;
-      var canSeal = state.value.trim().length > 0 && state.fromWho.trim().length > 0 && (state.openWhenNeeded || validDate);
+      var canSeal = !state.sealing && state.value.trim().length > 0 && state.fromWho.trim().length > 0 && (state.openWhenNeeded || validDate);
       refs.sealLetterBtn.disabled = !canSeal;
       refs.sealLetterBtn.style.opacity = canSeal ? 1 : 0.45;
-      refs.sealHint.textContent = canSeal ? '' : 'A date (or “when it’s needed”) and a sender make it sealable.';
+      refs.sealLetterBtn.textContent = state.sealing ? 'Sealing…' : 'Seal the letter';
+      refs.sealHint.textContent = (canSeal || state.sealing) ? '' : 'A date (or “when it’s needed”) and a sender make it sealable.';
     }
 
     if (state.sealed) {
       refs.sealedToken.innerHTML = state.sealed.token.full; /* SVG from js/token.js */
-      refs.sealedId.textContent = state.sealed.id;
-      refs.sealedTo.textContent = state.to;
-      refs.sealedOpens.textContent = state.openWhenNeeded ? 'when it’s needed' : dateInWords(state.openOn);
+      refs.sealedId.textContent = state.sealed.fields.id;
+      refs.sealedTo.textContent = state.sealed.fields.to;
+      refs.sealedOpens.textContent = state.sealed.fields.openWhenNeeded ? 'when it’s needed' : dateInWords(state.sealed.fields.openOn);
     }
-    refs.inertMsg.textContent = state.inertMsg;
   }
   function buildDateChips() {
     var quick = [
@@ -912,7 +937,6 @@
     refs.sealedId = $('sealed-id');
     refs.sealedTo = $('sealed-to');
     refs.sealedOpens = $('sealed-opens');
-    refs.inertMsg = $('inert-msg');
     refs.storyToken = $('story-token');
     refs.shelfTabs = $('shelf-tabs');
     refs.shelfShelves = $('shelf-shelves');
@@ -989,8 +1013,14 @@
     });
     refs.keepCopy.addEventListener('change', function (e) { state.keepCopy = e.target.checked; });
     refs.sealLetterBtn.addEventListener('click', sealNow);
-    $('inert-print').addEventListener('click', function () { state.inertMsg = INERT_NOTE; renderSealSection(); });
-    $('inert-download').addEventListener('click', function () { state.inertMsg = INERT_NOTE; renderSealSection(); });
+    $('sealed-print').addEventListener('click', function () {
+      if (state.sealed) TesseraPrint.printKit(state.sealed);
+    });
+    $('sealed-download').addEventListener('click', function () {
+      if (state.sealed) TesseraExport.download(state.sealed);
+    });
+    $('print-close').addEventListener('click', TesseraPrint.hide);
+    $('print-go').addEventListener('click', function () { window.print(); });
     $('write-another').addEventListener('click', writeAnother);
 
     var tabs = refs.shelfTabs.children;
@@ -1068,6 +1098,11 @@
       else if (mobileQ.addListener) mobileQ.addListener(onMq);
     }
     armReveals();
+
+    /* service worker: only over http(s) — file:// stays a first-class home */
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* offline shell is a convenience, not a promise */ });
+    }
 
     startDemo();
   }

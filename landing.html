@@ -7,6 +7,7 @@
 <meta name="description" content="Write to someone across the years. Seal it as a folder and a few printed pages. Keep it in a drawer. No account, no server.">
 <link rel="icon" type="image/webp" href="landing/assets/wax-seal.webp">
 <link rel="stylesheet" href="landing/landing.css">
+<link rel="stylesheet" href="print.css">
 </head>
 <body>
 
@@ -242,14 +243,12 @@
       <h3 class="sealed-title">Sealed.</h3>
       <div class="sealed-token" id="sealed-token"></div>
       <p class="sealed-id" id="sealed-id"></p>
-      <p class="sealed-summary">For <span id="sealed-to"></span> · opens <span id="sealed-opens"></span>. In the finished app the folder downloads now: the letter, its manifest, a README for whoever finds it, and this token to cut in two.</p>
-      <p class="sealed-study">This page is a design study; sealing here is ceremonial.</p>
+      <p class="sealed-summary">For <span id="sealed-to"></span> · opens <span id="sealed-opens"></span>. The folder has downloaded: the letter, its manifest, a README for whoever finds it, and this token to cut in two.</p>
       <div class="sealed-actions">
-        <button class="btn-quiet" id="inert-print">Print the kit</button>
-        <button class="btn-quiet" id="inert-download">Download the folder</button>
+        <button class="btn-quiet" id="sealed-print">Print the kit</button>
+        <button class="btn-quiet" id="sealed-download">Download it again</button>
         <button class="btn-cta" id="write-another">Write another</button>
       </div>
-      <p class="sealed-inert" id="inert-msg"></p>
     </div>
   </div>
   <div class="sec-fade sec-fade--to-how" aria-hidden="true"></div>
@@ -367,13 +366,26 @@
       <div class="footer-tagline">Letters across time. Paper is the reference copy.</div>
     </div>
     <div class="footer-meta">
-      Code MIT · Format CC0, public domain forever<br>A Lacunae project · This page is a design study
+      Code MIT · Format CC0, public domain forever<br>A Lacunae project
     </div>
   </div>
 </footer>
 
+<div id="print-overlay" hidden>
+  <div class="print-toolbar">
+    <button id="print-close" class="btn-quiet">Back</button>
+    <button id="print-go" class="btn-cta">Print the kit</button>
+  </div>
+  <div id="print-root"></div>
+</div>
+
 <script src="data/occasions.js"></script>
+<script src="js/manifest.js"></script>
 <script src="js/token.js"></script>
+<script src="js/zip.js"></script>
+<script src="js/state.js"></script>
+<script src="js/export.js"></script>
+<script src="js/print.js"></script>
 <script src="landing/landing.js"></script>
 </body>
 </html>
