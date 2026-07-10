@@ -51,4 +51,31 @@ if (tar.error || tar.status !== 0) {
 }
 fs.unlinkSync(tmp);
 
+/* --- read-back round-trip (v0.2) --- */
+const rt = [
+  { name: 'README.txt', data: 'hello, future\n' },
+  { name: 'letter.txt', data: 'the letter body\n' }
+];
+const rtZip = Z.buildZip(rt, stamp);
+const back = Z.readZip(rtZip);
+ok('readZip entry count', back.length === 2);
+ok('readZip name order preserved', back[0].name === 'README.txt' && back[1].name === 'letter.txt');
+ok('readZip byte-exact payload', Buffer.from(back[1].data).toString('utf8') === 'the letter body\n');
+ok('readZip CRC verified', back.every(e => e.crcOk));
+
+let rtThrew = false;
+try { Z.readZip(new Uint8Array([1, 2, 3])); } catch (e) { rtThrew = true; }
+ok('readZip rejects non-zip bytes', rtThrew);
+
+/* store-only by spec: a deflate entry must refuse clearly, never attempt a decode */
+const one = Z.buildZip([{ name: 'a.txt', data: 'x' }], stamp);
+const patched = new Uint8Array(one);
+patched[8] = 8; // local header method → deflate
+const pdv = new DataView(patched.buffer);
+const pCd = pdv.getUint32(patched.length - 22 + 16, true);
+patched[pCd + 10] = 8; // central directory method → deflate
+let deflateMsg = '';
+try { Z.readZip(patched); } catch (e) { deflateMsg = String(e.message || e); }
+ok('readZip rejects deflate with store-only message', deflateMsg.indexOf('store-only') !== -1, deflateMsg);
+
 process.exit(fails ? 1 : 0);

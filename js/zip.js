@@ -1,7 +1,7 @@
-/* zip.js — pure store-method ZIP writer (no compression: bytes stay readable
-   even without zip tooling — SPEC §1, century test B). Dual browser/Node.
-   ~120 deliberate lines instead of a dependency (architecture.md vendoring
-   policy). Deterministic: caller supplies the {y,m,d} stamp. */
+/* zip.js — pure store-method ZIP writer and reader (no compression: bytes
+   stay readable even without zip tooling — SPEC §1, century test B). Dual
+   browser/Node. Deliberate small code instead of a dependency (architecture.md
+   vendoring policy). Deterministic: caller supplies the {y,m,d} stamp. */
 (function (root) {
   'use strict';
 
@@ -96,7 +96,47 @@
     return out;
   }
 
-  var api = { crc32: crc32, buildZip: buildZip, utf8: utf8 };
+  function utf8dec(bytes) {
+    if (typeof TextDecoder !== 'undefined') return new TextDecoder().decode(bytes);
+    // Node < 11 fallback
+    return Buffer.from(bytes).toString('utf8');
+  }
+
+  /* readZip(bytes: Uint8Array) -> [{ name, data: Uint8Array, crcOk: boolean }]
+     Store-method reader: EOCD -> central directory -> local headers. */
+  function readZip(bytes) {
+    var dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    var eocd = -1; // scan back for PK\x05\x06 (our own zips carry no comment, but scan anyway)
+    for (var i = bytes.length - 22; i >= 0; i--) {
+      if (dv.getUint32(i, true) === 0x06054B50) { eocd = i; break; }
+    }
+    if (eocd < 0) throw new Error('not a zip: end-of-central-directory signature missing');
+    var count = dv.getUint16(eocd + 10, true);
+    var cdOfs = dv.getUint32(eocd + 16, true);
+    var out = [];
+    var p = cdOfs;
+    for (var n = 0; n < count; n++) {
+      if (dv.getUint32(p, true) !== 0x02014B50) throw new Error('bad central directory entry');
+      var method = dv.getUint16(p + 10, true);
+      var crc = dv.getUint32(p + 16, true);
+      var csize = dv.getUint32(p + 20, true);
+      var nameLen = dv.getUint16(p + 28, true);
+      var extraLen = dv.getUint16(p + 30, true);
+      var cmtLen = dv.getUint16(p + 32, true);
+      var localOfs = dv.getUint32(p + 42, true);
+      var name = utf8dec(bytes.subarray(p + 46, p + 46 + nameLen));
+      if (method !== 0) throw new Error('unsupported compression in ' + name + ' (Tessera zips are store-only)');
+      var lNameLen = dv.getUint16(localOfs + 26, true);
+      var lExtraLen = dv.getUint16(localOfs + 28, true);
+      var dataStart = localOfs + 30 + lNameLen + lExtraLen;
+      var data = bytes.subarray(dataStart, dataStart + csize);
+      out.push({ name: name, data: data, crcOk: crc32(data) === crc });
+      p += 46 + nameLen + extraLen + cmtLen;
+    }
+    return out;
+  }
+
+  var api = { crc32: crc32, buildZip: buildZip, readZip: readZip, utf8: utf8, utf8dec: utf8dec };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TesseraZip = api;
 })(typeof self !== 'undefined' ? self : this);
