@@ -4,7 +4,7 @@ Green ≠ done (house rule). The gates below are the definition of done for any 
 
 ## Gate 1 — syntax & units (every change)
 - `node --check` on every touched JS file.
-- Pure-module tests: `node tools/test-manifest.js` (ID derivation, seed canonicalisation, README rendering vs fixtures, dates-in-words), `node tools/test-zip.js` (write → `tar -tf` listing → CRC self-check; read-back round-trip from v0.2), `node tools/test-token.js` (fixture seeds ⇒ byte-identical SVG, cross-run determinism, forbidden-token source scan: `Math.random`, `Date`, `toLocale`).
+- Pure-module tests: `node tools/test-manifest.js` (ID derivation, seed canonicalisation, README rendering vs fixtures, dates-in-words), `node tools/test-zip.js` (write → `tar -tf` listing → CRC self-check; read-back round-trip from v0.2), `node tools/test-token.js` (fixture seeds ⇒ byte-identical SVG, cross-run determinism, forbidden-token source scan: `Math.random`, `Date`, `toLocale`), `node tools/test-state.js` (storage shape, `migrate()` seam: v1 blob → schema 2 with sealKey backfill, registry CRUD).
 - Fixtures are committed. **A fixture diff is a format event**: it requires a spec-version note and a decisions.md entry, never a silent regeneration.
 
 ## Gate 2 — prose (any change touching letter-facing copy)

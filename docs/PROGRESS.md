@@ -15,10 +15,10 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 | Registry (registry.js) | done, browser-verified | row after seal, reload persistence, reprint without kept text works |
 | Open-when set (data/occasions.js) | done, prose gate green | `node tools/prose-check.js` clean 2026-07-10 |
 | Offline shell (sw.js, main.js, version.json) | done, verified | 14 entries precached; offline reload + compose pass |
-| index.html + style.css | done | committed 2026-07-10; both themes, 375px-first screenshots |
+| App shell (app.html + style.css; was index.html pre-swap) | done | committed 2026-07-10; both themes, 375px-first screenshots; print engine now in shared print.css |
 | tools/prose-check.js (Gate 2) | done | caught 2 real em-dash strings; both fixed |
 | Commit the module files | done | commits `7949922`, `136cbbc` on `dev` |
-| Landing page (design study: landing.html + landing/) | done, browser-verified | implemented 2026-07-10 from the Claude Design handoff; gates green, 375px + desktop pass; see decisions.md entries |
+| Landing page → the real front door (index.html + landing/) | done, browser-verified | implemented 2026-07-10 from the Claude Design handoff; promoted same day: ceremony seals through export.js, shelf reads tessera_v1, front-door swap; see decisions.md entries |
 | Founding letters (author) | not started | plan Task 7 — exit criterion |
 | Ship: Netlify unlisted, repo flips public | not started | plan Task 7; needs the physical century walkthrough first |
 
@@ -46,6 +46,16 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-10 (landing goes real)** — The front door is the landing and the ceremony is real:
+  sealNow() ends in TesseraExport.seal() → registry → download (random-seed souvenir deleted),
+  shelf reads tessera_v1 (demo letters retired — their IDs collided with the founding letters'),
+  print engine shared via print.css so the kit prints at the ceremony, index.html→app.html +
+  landing.html→index.html, fonts consolidated to fonts/, storage schema 2 (sealKey) via migrate()
+  with tools/test-state.js as the fourth Gate-1 suite. Browser-verified end-to-end on both doors
+  (front-door seal → entry visible in app.html#letters → reload persists; 22-entry precache;
+  zero console errors; 375px clean). Author cleared the image licensing gate the same day, so
+  this ships with v0.1 via /release. Spec: superpowers/specs/2026-07-10-landing-goes-real-design.md.
 
 - **2026-07-10 (print base look)** — Print kit typography aligned with the landing:
   `fonts/` vendors Young Serif + Courier Prime (OFL), style.css maps display/typewriter
