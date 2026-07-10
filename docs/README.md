@@ -45,7 +45,7 @@ These documents are the source of truth for Tessera. When code and docs disagree
 - v0.3: [occasions & series](plans/v0.3-occasions-and-series.md) · [booklet & webfont](plans/v0.3-booklet.md)
 - v1.0: [spec freeze & conformance](plans/v1.0-spec-freeze.md) · [commons](plans/v1.0-commons.md)
 - v2.x: [century layer](plans/v2.x-century-layer.md) (protocols; three items remain author-gated by design)
-- [superpowers/](superpowers/) — per-change working artifacts from the agent workflow, one approved spec (`specs/`) and one executable plan (`plans/`) per landed change; 2026-07-10: print-kit-assembly, print-base-look, landing-goes-real
+- [superpowers/](superpowers/) — per-change working artifacts from the agent workflow, one approved spec (`specs/`) and one executable plan (`plans/`) per landed change; 2026-07-10: print-kit-assembly, print-base-look, landing-goes-real; 2026-07-11: unify-front-end
 
 ## Skills (project commands)
 

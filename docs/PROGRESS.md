@@ -30,6 +30,7 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 | Receive · verify · ceremony (Tasks 3–4) | shipped v0.2.0 | fourth door + date check + ceremony (`2dcc986`, `5f827d2`) |
 | Write-back + custody intake (Task 5) | shipped v0.2.0 | reply lineage end-to-end; schema 3 (`role`); `31a8bb5` |
 | ICS export + open-dates card | done, browser-verified (unreleased) | [plans/v0.2-reminders.md](plans/v0.2-reminders.md) all 3 tasks; `test-ics.js` + fixture; QA log below |
+| Unify the front end (landing = the app) | done, browser-verified (unreleased) | [superpowers/plans/2026-07-11-unify-front-end.md](superpowers/plans/2026-07-11-unify-front-end.md); opening + reminders now live in the landing; app.html retired; QA log below |
 | Passphrase privacy + escrow card + honesty page | planned | [plans/v0.2-encryption.md](plans/v0.2-encryption.md) |
 | Envelope generator + print themes | planned | [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) |
 
@@ -47,6 +48,25 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-11 (front end unified — on dev, unreleased)** — The two-front-end split is gone: the
+  redesigned landing is now the whole app, and `app.html` is a redirect to `/`. Executed
+  superpowers/plans/2026-07-11-unify-front-end.md in four phases, each committed. Phase 0: relocated
+  `LOCAL_VERSION` to `js/version.js`, pruned `open.js` to its pure verification core (test-open green
+  unchanged, −338 lines), deleted `compose.js`/`registry.js`/`main.js`/`style.css` (−894 lines),
+  redirected `app.html`, updated the SW CORE. Phase 1: `landing/opening.js`, the opening ritual as a
+  focused overlay in the landing's skin (intake → verify → date gate → ceremony → reveal), reusing
+  the pure `verifyLetter`; the enclosed token shown only as a `blob:` image. Phase 2: "Answer it
+  forward." (`TesseraLanding.answerForward` → the desk carries `writeback` into the seal → manifest +
+  README lineage) and custody intake ("I am keeping this for someone" → an "in your keeping" shelf
+  card, deduped, shelf refreshed via `TesseraLanding.refreshShelf`). Phase 3: `landing/reminders.js`
+  — "Add to calendar" on the sealed receipt and a shelf-level "Calendar file (all dates)" + "Print a
+  wallet card" (the decorative shelf stays uncluttered; decisions.md). Gates: six suites green,
+  fixtures byte-identical, prose clean; browser-verified per phase (opening loop, write-back reply
+  re-verifies clean, custody, reminders, reduced motion, no console errors, no external requests).
+  No format change (`tessera` stays 0.1). Decisions + architecture + opening docs updated. Awaits
+  `/release` as **v0.3.0** (reminders + the unified front end shipping together); the versioning
+  triple and SW CORE move at release.
 
 - **2026-07-10 (v0.2 reminders — on dev, unreleased)** — plans/v0.2-reminders.md landed, all three
   tasks. Task 1: `js/ics.js`, a pure/deterministic RFC 5545 builder (dual-env, no Date.now — the
