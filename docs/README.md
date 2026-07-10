@@ -39,9 +39,12 @@ These documents are the source of truth for Tessera. When code and docs disagree
 
 **Execution** (working documents; the canon above outranks them on conflict)
 - [PROGRESS.md](PROGRESS.md) — the execution tracker; twin of the Ariadne vault status
-- [plans/v0.1-completion.md](plans/v0.1-completion.md) — shell + prose gate + QA + ship prep
-- [plans/v0.2-opening.md](plans/v0.2-opening.md) · [plans/v0.2-reminders.md](plans/v0.2-reminders.md) · [plans/v0.2-encryption.md](plans/v0.2-encryption.md) — executable v0.2 plans
-- [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) · [plans/later-versions.md](plans/later-versions.md) — pre-plan briefs with definition-of-ready triggers
+- [plans/later-versions.md](plans/later-versions.md) — **the plan index**: every roadmap item has a plan, confidence-graded
+- v0.1: [plans/v0.1-completion.md](plans/v0.1-completion.md) (executed 2026-07-10; Task 7 author steps remain)
+- v0.2: [opening](plans/v0.2-opening.md) · [reminders](plans/v0.2-reminders.md) · [encryption](plans/v0.2-encryption.md) · [envelope & themes](plans/v0.2-envelope-themes.md)
+- v0.3: [occasions & series](plans/v0.3-occasions-and-series.md) · [booklet & webfont](plans/v0.3-booklet.md)
+- v1.0: [spec freeze & conformance](plans/v1.0-spec-freeze.md) · [commons](plans/v1.0-commons.md)
+- v2.x: [century layer](plans/v2.x-century-layer.md) (protocols; three items remain author-gated by design)
 
 ## Skills (project commands)
 

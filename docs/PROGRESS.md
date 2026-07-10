@@ -29,11 +29,11 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 | Receive · verify · ceremony · write-back · custody intake | planned | same |
 | ICS export + open-dates card | planned | [plans/v0.2-reminders.md](plans/v0.2-reminders.md) |
 | Passphrase privacy + escrow card + honesty page | planned | [plans/v0.2-encryption.md](plans/v0.2-encryption.md) |
-| Envelope generator + print themes | brief only | [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) |
+| Envelope generator + print themes | planned | [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) |
 
-## v0.3+ 
+## v0.3+
 
-Briefs with definition-of-ready triggers: [plans/later-versions.md](plans/later-versions.md).
+Every roadmap item through v2.x now has a written plan — index with confidence grades: [plans/later-versions.md](plans/later-versions.md). Three v2.x items (exchange, estate pack, physical kit) are deliberately gated definitions, not step plans, per their own canon.
 
 ## Infrastructure
 
