@@ -1494,3 +1494,7 @@ body.open-mode { overflow: hidden; }
   .open-card { padding: 24px 20px; }
   .token-compare { grid-template-columns: 1fr; }
 }
+
+/* a letter kept for someone else — present on the shelf, visibly unopened */
+.env-card--kept { filter: saturate(0.7); }
+.env-card--kept .env-foot span:first-child { font-style: italic; }

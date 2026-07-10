@@ -49,7 +49,7 @@
     to: '', occasion: null, customOccasion: '', showPrompts: true, setupStep: null, machineColorU: null,
     openOn: '', openWhenNeeded: false, fromWho: '', custodyHolder: '', custodyNote: '', keepCopy: false,
     sealed: null, freshId: '', sealing: false, soundOnU: null, shelfStyleU: null,
-    sealChoice: 'blue', sealPickerOpen: false
+    sealChoice: 'blue', sealPickerOpen: false, writeback: null
   };
 
   var refs = {};
@@ -377,6 +377,12 @@
     setSetupStep(1);
     setTimeout(function () { scrollToEl(refs.heroWrap, 90); }, 30);
   }
+  /* "Answer it forward." — the opening overlay hands lineage to the desk;
+     sealNow carries it into the manifest + the README's "In answer to" line */
+  function answerForward(ctx) {
+    state.writeback = ctx || null;
+    startWriting();
+  }
   function setSetupStep(step) {
     state.setupStep = step;
     renderSetup();
@@ -458,7 +464,8 @@
         ? [{ holder: d.custodyHolder.trim(), instructions: (d.custodyNote.trim() || 'Keep it safe; pass it on with its story.') }]
         : [],
       letter: d.value,
-      openWhenNeeded: d.openWhenNeeded
+      openWhenNeeded: d.openWhenNeeded,
+      writeback: d.writeback || null
     };
     TesseraExport.seal(fields).then(function (sealed) {
       TesseraState.addRegistryEntry({
@@ -473,10 +480,12 @@
         custodyNote: d.custodyNote.trim(),
         keptText: d.keepCopy ? d.value : null,
         status: 'sealed',
-        sealKey: d.sealChoice || 'blue'
+        sealKey: d.sealChoice || 'blue',
+        role: 'writer'
       });
       state.sealed = sealed;
       state.freshId = sealed.fields.id;
+      state.writeback = null;
       state.sealing = false;
       lastShelfKey = '';
       TesseraExport.download(sealed);
@@ -740,21 +749,25 @@
       var l = all[i];
       var g = bySlug(l.occasion || 'custom').group || 'custom';
       var sealKey = l.sealKey || SEAL_LIB[i % SEAL_LIB.length].key;
+      var kept = l.role === 'custodian';
+      var opensText = l.openWhenNeeded ? 'opens when needed' : 'opens ' + shortDate(l.openOn);
       out.push({
         to: l.to,
-        opens: l.openWhenNeeded ? 'opens when needed' : 'opens ' + shortDate(l.openOn),
+        opens: kept ? 'in your keeping · ' + opensText : opensText,
         id: l.id,
+        kept: kept,
         rot: SHELF_ROTS[i % SHELF_ROTS.length],
         tint: GROUP_TINT[g] || GROUP_TINT.custom,
         tintDeep: GROUP_DEEP[g] || GROUP_DEEP.custom,
         sealSrc: sealMeta(sealKey).src,
-        title: 'For ' + l.to + ' · ' + (l.openWhenNeeded ? 'opens when it’s needed' : 'opens ' + dateInWords(l.openOn)) + ' · ' + l.id + (l.id === state.freshId ? ' · sealed today' : '')
+        title: (kept ? 'In your keeping (unopened) · for ' : 'For ') + l.to + ' · ' + (l.openWhenNeeded ? 'opens when it’s needed' : 'opens ' + dateInWords(l.openOn)) + ' · ' + l.id + (l.id === state.freshId ? ' · sealed today' : '')
       });
     }
     return out;
   }
   function envCard(lt, compact) {
     var card = el('div', compact ? 'pigeon-card' : 'env-card');
+    if (lt.kept) card.className += ' env-card--kept';
     card.title = lt.title;
     if (!compact) card.style.transform = 'rotate(' + lt.rot + 'deg)';
     var flap = el('div', 'env-flap');
@@ -1100,6 +1113,8 @@
 
     startDemo();
   }
+
+  window.TesseraLanding = { answerForward: answerForward, refreshShelf: renderShelf };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

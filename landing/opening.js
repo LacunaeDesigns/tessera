@@ -315,6 +315,7 @@
         custodyHolder: '', custodyNote: '', keptText: null,
         status: 'kept', sealKey: '', role: 'custodian'
       });
+      if (root.TesseraLanding && root.TesseraLanding.refreshShelf) root.TesseraLanding.refreshShelf();
     }
     body.innerHTML = '';
     body.appendChild(el('h2', 'open-q', already ? 'It is already in your keeping.' : 'It is in your keeping.'));
