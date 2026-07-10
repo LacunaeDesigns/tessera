@@ -39,14 +39,6 @@
     { key: 'rosegold', label: 'Rose Gold', src: 'landing/assets/seal-rose-gold.webp' }
   ];
 
-  /* Five baked-in letters so a first visit still reads as a kept house. */
-  var DEMO = [
-    { to: 'My daughter, on her eighteenth birthday', occasion: 'milestone-18', openOn: '2043-06-12', id: 'TSR-1e9e-906d' },
-    { to: 'Myself, at sixty', occasion: 'future-self', openOn: '2054-03-03', id: 'TSR-471a-31bf' },
-    { to: 'My brother', occasion: 'open-when-sad', openWhenNeeded: true, id: 'TSR-74fc-cee9' },
-    { to: 'A stranger, a century on', occasion: 'stranger-2126', openOn: '2126-01-01', id: 'TSR-8d24-fc8f' },
-    { to: 'The two of us, on our paper anniversary', occasion: 'anniversary', openOn: '2027-09-14', id: 'TSR-b2c1-4e07' }
-  ];
   var SHELF_ROTS = [-1.6, 0.8, 1.9, -0.9, 1.2, -1.8, 0.5];
 
   var DEMO_TEXT = 'Dear reader,\n\nSome letters are meant\nto wait years to be read.\n\nThis desk writes them.';
@@ -742,7 +734,7 @@
 
   /* ---------- render: the shelf ---------- */
   function shelfLetters() {
-    var all = state.sealedList.concat(DEMO);
+    var all = window.TesseraState ? TesseraState.getRegistry().slice().reverse() : [];
     var out = [];
     for (var i = 0; i < all.length; i++) {
       var l = all[i];
@@ -756,7 +748,7 @@
         tint: GROUP_TINT[g] || GROUP_TINT.custom,
         tintDeep: GROUP_DEEP[g] || GROUP_DEEP.custom,
         sealSrc: sealMeta(sealKey).src,
-        title: 'For ' + l.to + ' · ' + (l.openWhenNeeded ? 'opens when it’s needed' : 'opens ' + dateInWords(l.openOn)) + ' · ' + l.id + (l.fresh ? ' · sealed today' : '')
+        title: 'For ' + l.to + ' · ' + (l.openWhenNeeded ? 'opens when it’s needed' : 'opens ' + dateInWords(l.openOn)) + ' · ' + l.id + (l.id === state.freshId ? ' · sealed today' : '')
       });
     }
     return out;
@@ -791,7 +783,7 @@
     var style = shelfStyle();
     var letters = shelfLetters();
     var rail = isMobile(); /* one swipeable shelf row on phones, rows of 3 above */
-    var key = style + '|' + state.sealedList.length + '|' + (rail ? 'rail' : 'rows');
+    var key = style + '|' + letters.length + '|' + (state.freshId || '') + '|' + (rail ? 'rail' : 'rows');
     var tabs = refs.shelfTabs.children;
     for (var t = 0; t < tabs.length; t++) {
       var active = tabs[t].getAttribute('data-style') === style;
@@ -801,6 +793,7 @@
     refs.shelfShelves.hidden = style !== 'shelves';
     refs.shelfPigeon.hidden = style !== 'pigeonholes';
     refs.shelfCatalog.hidden = style !== 'card catalogue';
+    refs.shelfEmpty.hidden = letters.length !== 0;
     if (key === lastShelfKey) return;
     lastShelfKey = key;
 
@@ -939,6 +932,7 @@
     refs.sealedOpens = $('sealed-opens');
     refs.storyToken = $('story-token');
     refs.shelfTabs = $('shelf-tabs');
+    refs.shelfEmpty = $('shelf-empty');
     refs.shelfShelves = $('shelf-shelves');
     refs.shelfPigeon = $('shelf-pigeon');
     refs.shelfCatalog = $('shelf-catalog');
