@@ -13,7 +13,7 @@ Each sheet is a page-break-isolated section, self-identifying via a small footer
 5. **Register page** — printed from the registry, not the compose flow (see [registry.md](registry.md)).
 
 ## Print rules (from design-language.md)
-A4 with US Letter tolerance (`@page` margins ≥ 15mm, no content in the outer 6mm); ink-light (hairline rules, no solid fields); dashed hairlines for cuts; every sheet self-identifying; serif stack, sizes in `pt`.
+A4 with US Letter tolerance (`@page` margins ≥ 15mm, no content in the outer 6mm); ink-light (hairline rules, no solid fields); dashed hairlines for cuts; every sheet self-identifying; app-owned faces with system-stack fallbacks (design-language.md §Typography), sizes in `pt`.
 
 ## Implementation
 - `js/print.js` — renders the kit into `#screen-print` from the same data object `export.js` builds; `window.print()` on user action. On screen, the sheets render as stacked paper cards (a faithful preview); `@media print` strips chrome and sets page breaks (`break-after: page` per `.sheet`).

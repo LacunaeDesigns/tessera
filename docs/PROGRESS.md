@@ -47,6 +47,14 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 
 ## Log (newest first)
 
+- **2026-07-10 (print base look)** — Print kit typography aligned with the landing:
+  `fonts/` vendors Young Serif + Courier Prime (OFL), style.css maps display/typewriter
+  faces onto the existing sheet classes with system-stack fallbacks, sw.js precaches the
+  TTFs (CACHE_VERSION untouched). Letter body awaits the specimen print (author, paper;
+  `specimen.html`, temporary). Gates green (module suites, prose clean, browser pass at
+  375px + desktop, fonts in SW cache, no external requests); /spec-sync clean. Spec:
+  superpowers/specs/2026-07-10-print-base-look-design.md.
+
 - **2026-07-10 (physical walkthrough)** — First physical century walkthrough (author, real printer). Finding: the kit never said the cover sheet faces out — following the protocol sealed the instructions page inside and left the envelope blank. Fixed same day: assembly line on the cover sheet (print.js), century-test.md steps 2/4 amended + new assembly D-check, print-kit.md and testing.md aligned, decisions.md entry. Author reports the remaining walkthrough steps passed (text-editor reopen, cold read of the instructions page).
 
 - **2026-07-10 (late night, second pass)** — Author-requested mobile/UX polish on the landing plus responsive background overhaul: all three floral sections now select author-generated art compositions per screen shape (media queries, JPEG q88, assets 7.9→4.4 MB); on phones the wizard is a centered dialog over a scrim, the letters shelf is a swipeable snap rail, and touch targets / focus-visible rings / 16px mobile inputs / reduced-motion-gated reveals landed page-wide. Found and fixed en route: a `justify-content` axis flip that pushed the scene over the hero copy in column layout, and a genuine 77px horizontal overflow at 375px (gone with the rail). Desktop unchanged; gates green.

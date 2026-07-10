@@ -14,7 +14,7 @@ Tessera should feel like good stationery, not like software. Every screen is a d
 
 ## Typography
 
-- **System serif stack, deliberately:** `Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif`. No webfonts in v0.1 — a font dependency is a century-test liability and a network request. (Revisit at v0.3: vendoring a single OFL face like EB Garamond is permissible because vendored ≠ dependent; decide by print-output quality.)
+- **Faces (since 2026-07-10):** the app owns two OFL faces in `fonts/` — **Young Serif** (display: cover sheet, sheet headings) and **Courier Prime** (typewriter voice: instructions page, sheet footers) — vendored from the landing so screen and paper share one identity. Vendored ≠ dependent: `@font-face` uses local file URLs only (still no webfonts, ever), and every use keeps the system stack as fallback, so a copy with `fonts/` stripped still prints sanely. The **letter body** stays on the system serif stack `Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif` until the specimen print decides it on paper (candidates: Young Serif 11.5pt vs the system stack; recorded fallback if both disappoint: EB Garamond). Decision by print-output quality, recorded in decisions.md.
 - UI chrome (buttons, labels) may use the system UI stack; anything that is or touches *the letter* is serif.
 - Generous measure (~65ch), 1.6 line-height on screen; print sizes set in `pt` (11.5pt body on the letter sheet).
 
