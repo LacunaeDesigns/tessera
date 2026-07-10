@@ -25,6 +25,8 @@ Format: date · decision · reasoning · who.
 
 - **2026-07-10 · Landing typewriter zooms in on phones (author-requested).** At ≤700px the scene scales to width/585 instead of width/985, so the sheet nearly fills the screen and the shell crops at the edges; the paper renders at 22px type with a 38-column wrap and 13.2px char width (landing.js keys the wrap, bell, and carriage math off the same breakpoint; the letter re-wraps live when a window crosses it). Effective letter text on a 375px phone goes from ~6px to ~12px. Since the system keypad is the real input on touch devices, a "Tap the paper to type" pill appears whenever the writing desk is open but unfocused. The carriage still slides under the fixed print point, so long lines crop at the screen edge mid-line the way a real carriage window would — accepted as authentic rather than fought.
 
+- **2026-07-10 · The kit teaches its own assembly (walkthrough finding).** The first physical century walkthrough produced a blank envelope: the protocol said to seal the letter sheet, travel half, and instructions page, and never said the cover sheet faces out — so the "do not open yet" page was sealed inside the thing it protects. Fix: a sealer-facing line printed on the cover sheet ("This page goes on the outside. Fold it around the sealed envelope, or paste it to the front."), the walkthrough protocol now seals cover-out and cold-reads the cover before the instructions page, and a new D-check pins it. Spec clarification, not a format change; the v0.2 envelope template remains the structural answer.
+
 ## Standing author gates
 1. Real USPTO/EUIPO trademark clearance before anything commercial (classes 9 + 16).
 2. v1.0 public announcement timing + copy.

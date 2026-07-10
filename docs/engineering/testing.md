@@ -20,7 +20,7 @@ Preview server (`.claude/launch.json`, "tessera"), then:
 - Both themes (paper / lamplight), `prefers-reduced-motion` on the sealing flourish.
 
 ## Gate 4 — the century walkthrough (per release)
-The five-step protocol in [../spec/century-test.md](../spec/century-test.md): compose real, print real (a physical printer), cut, seal, reopen the folder with only a text editor, cold-reader test on the instructions page. Results recorded in the release notes; an unexplained ✗ blocks the release.
+The five-step protocol in [../spec/century-test.md](../spec/century-test.md): compose real, print real (a physical printer), cut, seal (cover sheet out), reopen the folder with only a text editor, cold-reader test on the cover sheet first, then the instructions page. Results recorded in the release notes; an unexplained ✗ blocks the release.
 
 ## Gate 5 — docs (per release)
 - `docs/README.md` indexes every doc; no TBDs anywhere in docs/ (grep is the check).

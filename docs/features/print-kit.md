@@ -6,7 +6,7 @@ The print kit is the reference copy of the letter (century test D: paper alone i
 ## The sheets (v0.1)
 Each sheet is a page-break-isolated section, self-identifying via a small footer (letter ID + open date) in case sheets are separated:
 
-1. **Cover sheet** — for the outside of an envelope or the top of a box: *A letter, sealed {written-in-words}. To be opened by {to} on {open-date-in-words}. Not before, if you can bear it.* Plus the custodian's four promises, distilled (from [../spec/custody.md](../spec/custody.md)).
+1. **Cover sheet** — for the outside of an envelope or the top of a box: *A letter, sealed {written-in-words}. To be opened by {to} on {open-date-in-words}. Not before, if you can bear it.* Plus the custodian's four promises, distilled (from [../spec/custody.md](../spec/custody.md)). The sheet carries its own assembly line — "This page goes on the outside. Fold it around the sealed envelope, or paste it to the front." — so the kit teaches what faces out (2026-07-10 walkthrough finding).
 2. **Letter sheet(s)** — the letter typeset in serif, 11.5pt, ~65ch, generous margins; dates and ID in the footer only. The page a granddaughter actually reads.
 3. **Instructions page** — the printed twin of `README.txt` (same sections, same words, hard-wrapped prose): for the person it's for, for the finder, what the files are (if the digital folder survives), about the format.
 4. **Token sheet** — both halves with a dashed cut line and scissors-free instructions in words; the ID under each half; the assembled preview for reference. Cardstock note ("print this page on the stiffest paper you have").
