@@ -14,6 +14,10 @@ Format: date · decision · reasoning · who.
 - **2026-07-10 · Zip method: store (no compression).** Bytes stay readable even without decompression tooling; a vendored ~120-line writer beats a dependency.
 - **2026-07-10 · Token authenticates by eye, not by cryptography.** A handshake, not a lock — matchable across forty years of fading, no machine required.
 - **2026-07-10 · Repo: LacunaeDesigns/tessera** (author's personal account, named by email), private until v0.1 ships, `dev` default branch, `main` release-only (house workflow).
+- **2026-07-10 · Landing page: implemented from the author's Claude Design handoff as its own surface.** `landing.html` + `landing/` recreate the "Tessera landing implementation" design project (typewriter hero, seal step, letters shelf) in the house stack: no build, no framework, no CDNs. It reuses `js/token.js` and `data/occasions.js` unchanged. Sealing on the landing is ceremonial by design ("this page is a design study"); the one real seal path stays in `js/export.js`. The app at `index.html` and the versioning triple are untouched — the landing is runtime-cached by the existing sw.js fetch handler, not precached. Promoting the landing to the front door (and wiring its inert "Download the folder" to the real app) is a later product decision.
+- **2026-07-10 · Fonts on the landing: vendored OFL files, not webfonts.** The design specifies Young Serif + Courier Prime. The no-webfonts rule stands (no network font requests anywhere); vendored ≠ dependent per the v0.3 note in design-language.md, so both faces ship as local OFL-licensed TTFs in `landing/fonts/` (licenses alongside). The app itself keeps the system serif stack.
+- **2026-07-10 · Landing copy: house prose rules over design literals.** Two em-dash strings from the design were recast ("Done writing. Seal it →", "Not every letter needs one. Leave it blank…"). The em-dash kept in `landing.js` as the empty-field glyph in the "Read it back" card is a placeholder character, not prose — the two prose-check WARNs on it are justified, not ignored.
+- **2026-07-10 · Landing 375px deviations.** The design scales the whole typewriter scene uniformly, including its setup wizard; at phone widths that made the wizard illegible. The wizard and the sound toggle render in an unscaled overlay anchored to the scene wrap instead — visually identical at desktop, readable at 375px (house rule: the browser pass starts there).
 
 ## Standing author gates
 1. Real USPTO/EUIPO trademark clearance before anything commercial (classes 9 + 16).
@@ -21,3 +25,4 @@ Format: date · decision · reasoning · who.
 3. Anything physical/commercial (kits, bound books).
 4. Estate-pack legal review.
 5. Gallery moderation policy before the commons opens.
+6. Landing image licensing before the landing ships publicly: the four watercolor section backgrounds were placeholder-sourced (the design handoff flags their licensing as unconfirmed) and the twelve wax-seal images are third-party product photography.

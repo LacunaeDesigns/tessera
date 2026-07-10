@@ -1,0 +1,1012 @@
+/* landing.js — the landing page's working desk. A faithful vanilla port of
+   the "Tessera landing implementation" Claude Design prototype (handoff
+   README lives in that project; docs/decisions.md records the deviations).
+   Sealing here is ceremonial: the one real seal path stays in js/export.js. */
+(function () {
+  'use strict';
+
+  /* Tweakable knobs, carried over from the design's props panel. */
+  var CONFIG = {
+    machineColor: '#BFD3DE',       /* one of MACHINE_COLORS */
+    heroLayout: 'centered',        /* 'centered' | 'desk at right' */
+    shelfStyle: 'shelves',         /* 'shelves' | 'pigeonholes' | 'card catalogue' */
+    soundOn: true
+  };
+  var MACHINE_COLORS = ['#C7DFCE', '#F1C4B2', '#EBD592', '#BFD3DE', '#D8C8E8', '#F0C6CE', '#B9DDD3', '#E4D3B4'];
+
+  var COLS = 52, BELL_AT = 45, CHARW = 9.6;
+
+  var GROUP_TINT = { 'open-when': '#DFEDE3', 'milestone': '#F3E9D0', 'far': '#F5E0D5', 'custom': '#E4E9EA' };
+  var GROUP_DEEP = { 'open-when': '#9DBBA6', 'milestone': '#CDB878', 'far': '#D9A088', 'custom': '#A8B4B8' };
+
+  var SEAL_LIB = [
+    { key: 'blue', label: 'Pale Blue', src: 'landing/assets/wax-seal.webp' },
+    { key: 'red', label: 'Red', src: 'landing/assets/seal-red.webp' },
+    { key: 'gold', label: 'Gold', src: 'landing/assets/seal-gold.webp' },
+    { key: 'silver', label: 'Silver', src: 'landing/assets/seal-silver.webp' },
+    { key: 'black', label: 'Black', src: 'landing/assets/seal-black.webp' },
+    { key: 'ivory', label: 'Ivory', src: 'landing/assets/seal-ivory.webp' },
+    { key: 'navy', label: 'Navy', src: 'landing/assets/seal-navy.webp' },
+    { key: 'forest', label: 'Forest Green', src: 'landing/assets/seal-forest-green.webp' },
+    { key: 'sage', label: 'Sage Green', src: 'landing/assets/seal-sage-green.webp' },
+    { key: 'pink', label: 'Pale Pink', src: 'landing/assets/seal-pale-pink.webp' },
+    { key: 'bronze', label: 'Bronze', src: 'landing/assets/seal-bronze.webp' },
+    { key: 'rosegold', label: 'Rose Gold', src: 'landing/assets/seal-rose-gold.webp' }
+  ];
+
+  /* Five baked-in letters so a first visit still reads as a kept house. */
+  var DEMO = [
+    { to: 'My daughter, on her eighteenth birthday', occasion: 'milestone-18', openOn: '2043-06-12', id: 'TSR-1e9e-906d' },
+    { to: 'Myself, at sixty', occasion: 'future-self', openOn: '2054-03-03', id: 'TSR-471a-31bf' },
+    { to: 'My brother', occasion: 'open-when-sad', openWhenNeeded: true, id: 'TSR-74fc-cee9' },
+    { to: 'A stranger, a century on', occasion: 'stranger-2126', openOn: '2126-01-01', id: 'TSR-8d24-fc8f' },
+    { to: 'The two of us, on our paper anniversary', occasion: 'anniversary', openOn: '2027-09-14', id: 'TSR-b2c1-4e07' }
+  ];
+  var SHELF_ROTS = [-1.6, 0.8, 1.9, -0.9, 1.2, -1.8, 0.5];
+
+  var DEMO_TEXT = 'Dear reader,\n\nSome letters are meant\nto wait years to be read.\n\nThis desk writes them.';
+  var STORY_SEED = '7c1e99065d24fc8fb2c14e07a31b74fc8d24cee906d31bf471a1e9e906d47a2b';
+  var INERT_NOTE = 'In the working app this produces the print kit and the folder of plain files. Here, the ceremony is the point.';
+
+  var state = {
+    phase: 'idle', value: '', lines: [''], col: 0, focused: false, autotyping: false, demoActive: true,
+    to: '', occasion: null, customOccasion: '', showPrompts: true, setupStep: null, machineColorU: null,
+    openOn: '', openWhenNeeded: false, fromWho: '', custodyHolder: '', custodyNote: '', keepCopy: false,
+    sealed: null, sealedList: [], soundOnU: null, shelfStyleU: null, inertMsg: '',
+    sealChoice: 'blue', sealPickerOpen: false
+  };
+
+  var refs = {};
+  var introDone = false, belled = false, lastKeydown = 0;
+  var typerI = null, autoT = null, waitData = null;
+  var keyEls = {};
+  var lastShelfKey = '';
+  var storyPainted = false;
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function reduced() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  function soundOn() { return state.soundOnU !== null ? state.soundOnU : CONFIG.soundOn; }
+  function shelfStyle() { return state.shelfStyleU || CONFIG.shelfStyle; }
+  function machineColor() { return state.machineColorU || CONFIG.machineColor; }
+
+  function occs() {
+    return (window.TesseraOccasions && TesseraOccasions.OCCASIONS) ? TesseraOccasions.OCCASIONS : [];
+  }
+  function bySlug(slug) {
+    var list = occs();
+    for (var i = 0; i < list.length; i++) if (list[i].slug === slug) return list[i];
+    return { title: 'Something else', prompts: [], group: 'custom', canBeUndated: false };
+  }
+  function currentOcc() { return state.occasion ? bySlug(state.occasion) : null; }
+  function sealMeta(key) {
+    for (var i = 0; i < SEAL_LIB.length; i++) if (SEAL_LIB[i].key === key) return SEAL_LIB[i];
+    return SEAL_LIB[0];
+  }
+
+  /* ---------- dates ---------- */
+  function todayIso() {
+    var d = new Date(), mo = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + '-' + (mo < 10 ? '0' : '') + mo + '-' + (day < 10 ? '0' : '') + day;
+  }
+  function plusYears(iso, n) {
+    var p = iso.split('-');
+    return (parseInt(p[0], 10) + n) + '-' + p[1] + '-' + p[2];
+  }
+  function shortDate(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+    if (!m) return '';
+    var MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return parseInt(m[3], 10) + ' ' + MO[parseInt(m[2], 10) - 1] + ' ' + m[1];
+  }
+  function dateInWords(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+    if (!m) return '';
+    var ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    var TEENS = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    var TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    var ORD = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
+      'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth',
+      'nineteenth', 'twentieth', 'twenty-first', 'twenty-second', 'twenty-third', 'twenty-fourth', 'twenty-fifth',
+      'twenty-sixth', 'twenty-seventh', 'twenty-eighth', 'twenty-ninth', 'thirtieth', 'thirty-first'];
+    var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    function tens(n) {
+      return n < 10 ? ONES[n] : n < 20 ? TEENS[n - 10] : TENS[Math.floor(n / 10)] + (n % 10 ? '-' + ONES[n % 10] : '');
+    }
+    var y = parseInt(m[1], 10), mo = parseInt(m[2], 10), d = parseInt(m[3], 10);
+    if (mo < 1 || mo > 12 || d < 1 || d > 31) return '';
+    var rest = y - 2000, yw;
+    if (rest === 0) yw = 'two thousand';
+    else if (rest > 0 && rest < 100) yw = 'two thousand and ' + tens(rest);
+    else if (rest >= 100) yw = 'two thousand ' + ONES[Math.floor(rest / 100)] + ' hundred' + (rest % 100 ? ' and ' + tens(rest % 100) : '');
+    else yw = m[1];
+    return 'the ' + ORD[d] + ' of ' + MONTHS[mo - 1] + ', ' + yw;
+  }
+
+  /* ---------- sound (Web Audio, synthesized; no audio files) ---------- */
+  var ctx = null, master = null, noise = null;
+  function ensureCtx() {
+    if (ctx) return ctx;
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      master = ctx.createGain();
+      master.gain.value = 0.5;
+      master.connect(ctx.destination);
+      var len = ctx.sampleRate * 0.5;
+      noise = ctx.createBuffer(1, len, ctx.sampleRate);
+      var d = noise.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    } catch (e) { /* no audio */ }
+    return ctx;
+  }
+  function burst(freq, q, dur, gain, when) {
+    if (!ctx || !soundOn()) return;
+    var t = ctx.currentTime + (when || 0);
+    var src = ctx.createBufferSource(); src.buffer = noise;
+    var f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start(t); src.stop(t + dur + 0.02);
+  }
+  function tone(freq, dur, gain, type, when) {
+    if (!ctx || !soundOn()) return;
+    var t = ctx.currentTime + (when || 0);
+    var o = ctx.createOscillator(); o.type = type || 'sine'; o.frequency.value = freq;
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  function sClack() { burst(2300 + Math.random() * 700, 1.1, 0.055, 0.85); burst(420, 2.5, 0.05, 0.5, 0.004); }
+  function sSpace() { burst(300, 1.6, 0.09, 0.7); }
+  function sBack() { burst(1500, 1.4, 0.05, 0.45); }
+  function sDing() { tone(2093, 0.9, 0.32, 'sine'); tone(2637, 0.55, 0.14, 'sine'); }
+  function sZip() {
+    if (!ctx || !soundOn()) return;
+    for (var i = 0; i < 7; i++) burst(900 + i * 160, 3.5, 0.028, 0.28, i * 0.022);
+    burst(240, 1.8, 0.1, 0.8, 0.18);
+  }
+  function sFeed() { for (var i = 0; i < 5; i++) burst(1100, 4, 0.03, 0.4, i * 0.05); }
+
+  /* ---------- layout ---------- */
+  function fitScene() {
+    var wrap = refs.sceneWrap, scene = refs.scene;
+    if (!wrap || !scene) return;
+    var w = wrap.clientWidth || 960;
+    var s = Math.min(1, w / 985);
+    scene.style.transform = 'scale(' + s + ')';
+    wrap.style.height = Math.round(700 * s) + 'px';
+    /* overlay chrome sits outside the scaled scene so it stays readable */
+    refs.setupOverlay.style.paddingTop = Math.round(300 * s) + 'px';
+    refs.soundToggle.style.right = Math.max(0, Math.round((w - 960 * s) / 2)) + 'px';
+  }
+  function applyMachineColor() {
+    var c = machineColor();
+    var shells = document.querySelectorAll('[data-mc="shell"]');
+    for (var i = 0; i < shells.length; i++) {
+      shells[i].style.background = 'linear-gradient(180deg, color-mix(in oklab, ' + c + ', white 22%), ' + c + ' 42%, color-mix(in oklab, ' + c + ', #4A3A28 20%))';
+    }
+    var decks = document.querySelectorAll('[data-mc="deck"]');
+    for (var j = 0; j < decks.length; j++) {
+      decks[j].style.background = 'color-mix(in oklab, ' + c + ', #33281B 24%)';
+    }
+  }
+  function applyHeroLayout() {
+    refs.heroWrap.classList.toggle('hero-wrap--side', CONFIG.heroLayout === 'desk at right');
+  }
+  function scrollToEl(node, offset) {
+    if (!node) return;
+    var top = node.getBoundingClientRect().top + window.scrollY - (offset || 70);
+    window.scrollTo({ top: top, behavior: reduced() ? 'auto' : 'smooth' });
+  }
+
+  /* ---------- text engine ---------- */
+  function wrapText(v) {
+    var out = [];
+    var paras = String(v).split('\n');
+    for (var i = 0; i < paras.length; i++) {
+      var p = paras[i];
+      if (p === '') { out.push(''); continue; }
+      var words = p.split(' ');
+      var cur = '';
+      for (var j = 0; j < words.length; j++) {
+        var w = words[j];
+        var cand = cur ? cur + ' ' + w : w;
+        if (cand.length <= COLS) { cur = cand; continue; }
+        if (cur) out.push(cur);
+        while (w.length > COLS) { out.push(w.slice(0, COLS)); w = w.slice(COLS); }
+        cur = w;
+      }
+      out.push(cur);
+    }
+    return out.length ? out : [''];
+  }
+
+  function handleValue(v, insertedChar, silent) {
+    var lines = wrapText(v);
+    var col = lines[lines.length - 1].length;
+    var added = v.length - state.value.length;
+    var lineJump = lines.length !== state.lines.length;
+    if (!silent) {
+      ensureCtx();
+      if (added > 0) {
+        var ch = insertedChar != null ? insertedChar : v[v.length - 1];
+        if (lineJump) doReturnFx();
+        if (ch === ' ') sSpace(); else if (ch !== '\n') sClack();
+        if (ch && ch !== '\n' && Date.now() - lastKeydown > 80) animateKey(ch);
+        if (ch && ch !== '\n') strikeBar();
+        if (col >= BELL_AT && state.col < BELL_AT && !belled) { sDing(); belled = true; }
+        if (lineJump) belled = false;
+      } else if (added < 0) {
+        sBack();
+        if (lineJump) belled = false;
+      }
+    }
+    state.value = v; state.lines = lines; state.col = col;
+    renderPaper();
+    updateCarriage(lineJump);
+    scrollPaperToBottom();
+    renderWriting();
+    renderSealSection();
+  }
+
+  function renderPaper() {
+    var holder = refs.paperLines;
+    while (holder.firstChild) holder.removeChild(holder.firstChild);
+    for (var i = 0; i < state.lines.length; i++) holder.appendChild(el('div', null, state.lines[i]));
+  }
+  function scrollPaperToBottom() {
+    refs.paperScroll.scrollTop = refs.paperScroll.scrollHeight;
+  }
+  function updateCarriage(smooth) {
+    var x = Math.round(480 - 228.8 - state.col * CHARW);
+    refs.carriage.style.transition = reduced() ? 'none' : (smooth ? 'transform 0.26s cubic-bezier(0.22, 0.9, 0.3, 1)' : 'transform 0.05s linear');
+    refs.carriage.style.transform = 'translateX(' + x + 'px)';
+  }
+  function doReturnFx() {
+    sZip();
+    doLeverVisual();
+  }
+  function doLeverVisual() {
+    var lv = refs.lever;
+    if (lv && !reduced()) {
+      lv.style.animation = 'none';
+      void lv.offsetWidth;
+      lv.style.animation = 'tw-lever 0.42s ease-in-out';
+    }
+  }
+  function strikeBar() {
+    var tb = refs.typebar;
+    if (!tb || reduced()) return;
+    tb.style.animation = 'none';
+    void tb.offsetWidth;
+    tb.style.animation = 'tw-strike 0.15s ease-out';
+  }
+  function animateKey(ch) {
+    if (reduced()) return;
+    var key = String(ch).toLowerCase();
+    if (!/^[a-z0-9 .,\-'"!?]$/.test(key)) return;
+    var CHAR_TOKEN = { "'": 'apos', '"': 'quote' };
+    var token = CHAR_TOKEN[key] || key;
+    var sel = token === ' ' ? '[data-tkey=" "]' : '[data-tkey="' + token + '"]';
+    var node = keyEls[token] || refs.scene.querySelector(sel);
+    if (!node) return;
+    keyEls[token] = node;
+    node.style.transform = 'translateY(4px)';
+    node.style.boxShadow = '0 1px 0 #241C10, 0 2px 3px rgba(40,30,15,0.3)';
+    clearTimeout(node._t);
+    node._t = setTimeout(function () { node.style.transform = ''; node.style.boxShadow = ''; }, 95);
+  }
+  function autoType(text, onDone) {
+    clearInterval(typerI);
+    state.autotyping = true;
+    renderCaret();
+    var i = 0;
+    function step() {
+      if (i >= text.length) {
+        clearInterval(typerI);
+        state.autotyping = false;
+        renderCaret();
+        if (onDone) onDone();
+        return;
+      }
+      var ch = text[i++];
+      var nv = state.value + ch;
+      refs.ta.value = nv;
+      handleValue(nv, ch);
+      if (ch === '\n') {
+        clearInterval(typerI);
+        setTimeout(function () { typerI = setInterval(step, 46 + Math.random() * 40); }, 300);
+      }
+    }
+    typerI = setInterval(step, 46 + Math.random() * 40);
+  }
+
+  /* ---------- input plumbing ---------- */
+  function onTaInput(e) {
+    if (state.demoActive) state.demoActive = false;
+    handleValue(e.target.value, e.data != null ? e.data : null);
+  }
+  function onTaKeyDown(e) {
+    lastKeydown = Date.now();
+    ensureCtx();
+    if (e.key && e.key.length === 1) animateKey(e.key);
+    if (e.key === 'Enter') doLeverVisual();
+  }
+  function focusTa() {
+    if (state.phase === 'writing' || state.phase === 'idle') refs.ta.focus({ preventScroll: true });
+  }
+  function typeChar(ch) {
+    clearInterval(typerI);
+    if (state.autotyping || state.demoActive) {
+      state.autotyping = false;
+      state.demoActive = false;
+      renderCaret();
+    }
+    var nv = state.value + ch;
+    refs.ta.value = nv;
+    handleValue(nv, ch);
+    focusTa();
+  }
+
+  /* ---------- flow ---------- */
+  function startWriting(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    introDone = true;
+    setSetupStep(1);
+    setTimeout(function () { scrollToEl(refs.heroWrap, 90); }, 30);
+  }
+  function setSetupStep(step) {
+    state.setupStep = step;
+    renderSetup();
+    renderHero();
+    if (step === 1) {
+      setTimeout(function () { refs.setupTo.focus({ preventScroll: true }); }, 50);
+    }
+  }
+  function skipSetup() {
+    introDone = true;
+    setSetupStep(null);
+  }
+  function confirmSetup() {
+    if (!state.to.trim()) { setSetupStep(1); return; }
+    setSetupStep(null);
+    clearInterval(typerI);
+    var keepText = !state.demoActive && state.value.trim().length > 0;
+    var sheet = refs.sheet;
+    ensureCtx(); sFeed();
+    if (keepText) {
+      state.phase = 'writing'; state.autotyping = false;
+      renderHero(); renderSealSection(); renderCaret();
+      if (sheet && !reduced()) {
+        sheet.style.transition = 'none'; sheet.style.transform = 'translateY(40px)';
+        void sheet.offsetWidth;
+        sheet.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.3, 1)';
+        sheet.style.transform = 'translateY(0)';
+      }
+      setTimeout(function () {
+        scrollToEl(refs.sceneWrap, -20);
+        focusTa();
+      }, 260);
+      return;
+    }
+    state.phase = 'writing'; state.value = ''; state.lines = ['']; state.col = 0;
+    state.autotyping = false; state.demoActive = false;
+    refs.ta.value = '';
+    belled = false;
+    renderPaper(); renderHero(); renderSealSection(); renderCaret();
+    if (sheet && !reduced()) {
+      sheet.style.transition = 'none'; sheet.style.transform = 'translateY(150px)';
+      void sheet.offsetWidth;
+      sheet.style.transition = 'transform 0.55s cubic-bezier(0.2, 0.8, 0.3, 1)';
+      sheet.style.transform = 'translateY(0)';
+    }
+    updateCarriage(true);
+    setTimeout(function () {
+      scrollToEl(refs.sceneWrap, -20);
+      var greeting = shortDate(todayIso()) + '\n\nFor ' + state.to.trim() + ',\n\n';
+      if (reduced()) {
+        refs.ta.value = greeting;
+        handleValue(greeting, null, true);
+        focusTa();
+      } else {
+        autoType(greeting);
+      }
+      setTimeout(focusTa, reduced() ? 100 : greeting.length * 60 + 900);
+    }, 600);
+  }
+  function goSeal() {
+    scrollToEl(document.getElementById('seal'), 30);
+  }
+  function sealNow() {
+    var d = state;
+    if (!(d.openWhenNeeded || /^\d{4}-\d{2}-\d{2}$/.test(d.openOn)) || !d.fromWho.trim()) return;
+    var seed = '';
+    var bytes = new Uint8Array(32);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(bytes);
+    else for (var i = 0; i < 32; i++) bytes[i] = Math.floor(Math.random() * 256);
+    for (var j = 0; j < bytes.length; j++) seed += (bytes[j] < 16 ? '0' : '') + bytes[j].toString(16);
+    var id = 'TSR-' + seed.slice(0, 4) + '-' + seed.slice(4, 8);
+    var token = window.TesseraToken ? TesseraToken.renderTokenSvg(seed, id) : { full: '' };
+    var entry = {
+      id: id, to: d.to.trim(), from: d.fromWho.trim(), occasion: d.occasion,
+      openOn: d.openWhenNeeded ? '' : d.openOn, openWhenNeeded: d.openWhenNeeded, fresh: true,
+      sealKey: d.sealChoice || 'blue'
+    };
+    state.sealed = { token: token, id: id };
+    state.sealedList = [entry].concat(d.sealedList);
+    ensureCtx(); sDing(); tone(1568, 1.1, 0.18, 'sine', 0.12);
+    renderSealSection();
+    renderShelf();
+    setTimeout(function () {
+      scrollToEl(document.getElementById('seal'), 40);
+    }, 80);
+  }
+  function writeAnother() {
+    refs.ta.value = '';
+    state.phase = 'idle'; state.value = ''; state.lines = ['']; state.col = 0;
+    state.sealed = null; state.openOn = ''; state.openWhenNeeded = false;
+    state.custodyHolder = ''; state.custodyNote = ''; state.keepCopy = false;
+    state.inertMsg = '';
+    renderPaper(); renderCaret(); renderSealSection(); renderHero();
+    setSetupStep(1);
+    updateCarriage(false);
+    setTimeout(function () { scrollToEl(refs.heroWrap, 90); }, 60);
+  }
+
+  /* ---------- render: hero + writing bar ---------- */
+  function hasLetter() { return state.phase === 'writing' && state.value.trim().length > 0; }
+
+  function renderHero() {
+    var writing = state.phase === 'writing';
+    refs.heroIdle.hidden = writing;
+    refs.heroWriting.hidden = !writing;
+    refs.reopenRow.hidden = !(state.phase === 'idle' && state.setupStep === null);
+    renderWriting();
+  }
+  function renderWriting() {
+    var occ = currentOcc();
+    var customLabel = (state.customOccasion || '').trim();
+    var letter = hasLetter();
+    refs.finishRow.hidden = !letter;
+    if (state.phase !== 'writing') return;
+    refs.hwTo.textContent = state.to;
+    var hasOcc = !!occ && (occ.group !== 'custom' || !!customLabel);
+    refs.hwOccasion.hidden = !hasOcc;
+    if (hasOcc) {
+      refs.hwOccasion.textContent = (occ.group === 'custom') ? (customLabel || occ.title) : occ.title;
+      refs.hwOccasion.style.background = GROUP_TINT[occ.group] || '#E4E9EA';
+    }
+    var words = state.value.trim() ? state.value.trim().split(/\s+/).length : 0;
+    refs.hwWordline.textContent = words
+      ? words + (words === 1 ? ' word' : ' words') + ', taking their time'
+      : 'the page is listening';
+    var prompts = occ ? occ.prompts : [];
+    refs.hwPromptsToggle.hidden = !(occ && prompts.length);
+    if (occ && prompts.length) refs.hwPromptsToggle.textContent = state.showPrompts ? 'hide prompts' : 'show prompts';
+    var showPrompts = state.showPrompts && !!occ && prompts.length > 0;
+    refs.hwPrompts.hidden = !showPrompts;
+    if (showPrompts) {
+      while (refs.hwPrompts.firstChild) refs.hwPrompts.removeChild(refs.hwPrompts.firstChild);
+      for (var i = 0; i < prompts.length; i++) refs.hwPrompts.appendChild(el('p', null, prompts[i]));
+    }
+    refs.hwSeal.disabled = !letter;
+    refs.hwSeal.style.opacity = letter ? 1 : 0.45;
+  }
+  function renderCaret() {
+    refs.caret.hidden = !(state.focused || state.autotyping);
+  }
+  function renderSound() {
+    refs.soundToggle.textContent = soundOn() ? 'Bell & keys: on' : 'Bell & keys: off';
+  }
+  function renderSwatches() {
+    var holder = refs.mcSwatches;
+    while (holder.firstChild) holder.removeChild(holder.firstChild);
+    for (var i = 0; i < MACHINE_COLORS.length; i++) {
+      (function (hex) {
+        var b = el('button', 'mc-dot' + (machineColor() === hex ? ' mc-dot--active' : ''));
+        b.title = hex;
+        b.style.background = hex;
+        if (machineColor() === hex) b.appendChild(el('span', null, '✓'));
+        b.addEventListener('click', function () {
+          state.machineColorU = hex;
+          applyMachineColor();
+          renderSwatches();
+        });
+        holder.appendChild(b);
+      })(MACHINE_COLORS[i]);
+    }
+  }
+
+  /* ---------- render: setup wizard ---------- */
+  function renderSetup() {
+    var step = state.setupStep;
+    refs.setupOverlay.hidden = step === null;
+    refs.setup0.hidden = step !== 0;
+    refs.setup1.hidden = step !== 1;
+    refs.setup2.hidden = step !== 2;
+    if (refs.setupTo.value !== state.to) refs.setupTo.value = state.to;
+    refs.setupNext.disabled = !state.to.trim();
+    refs.setupNext.style.opacity = state.to.trim() ? 1 : 0.45;
+    refs.setupOcc.value = state.occasion || '';
+    refs.setupCustom.hidden = state.occasion !== 'custom';
+    if (refs.setupCustom.value !== state.customOccasion) refs.setupCustom.value = state.customOccasion;
+  }
+  function buildOccasionSelect() {
+    var groupsDef = [['For a hard day', 'open-when'], ['For a milestone', 'milestone'], ['For the far future', 'far'], ['Or something else', 'custom']];
+    var list = occs();
+    for (var g = 0; g < groupsDef.length; g++) {
+      var items = [];
+      for (var i = 0; i < list.length; i++) if (list[i].group === groupsDef[g][1]) items.push(list[i]);
+      if (!items.length) continue;
+      var og = document.createElement('optgroup');
+      og.label = groupsDef[g][0];
+      for (var j = 0; j < items.length; j++) {
+        var opt = document.createElement('option');
+        opt.value = items[j].slug;
+        opt.textContent = items[j].title || 'Something else';
+        og.appendChild(opt);
+      }
+      refs.setupOcc.appendChild(og);
+    }
+  }
+
+  /* ---------- render: seal section ---------- */
+  function renderSealSection() {
+    var letter = hasLetter();
+    refs.sealEmpty.hidden = !(!letter && !state.sealed);
+    refs.sealSteps.hidden = !(letter && !state.sealed);
+    refs.sealDone.hidden = !state.sealed;
+
+    if (letter && !state.sealed) {
+      if (refs.openDate.value !== state.openOn) refs.openDate.value = state.openOn;
+      var occ = currentOcc();
+      refs.undatedRow.hidden = !(occ && occ.canBeUndated);
+      refs.undated.checked = state.openWhenNeeded;
+      var validDate = /^\d{4}-\d{2}-\d{2}$/.test(state.openOn);
+      refs.dateWords.textContent = state.openWhenNeeded
+        ? 'It opens when it’s needed. The title on the envelope decides.'
+        : (validDate ? 'It opens ' + dateInWords(state.openOn) + '.' : '');
+      if (refs.fromWho.value !== state.fromWho) refs.fromWho.value = state.fromWho;
+      if (refs.custodyHolder.value !== state.custodyHolder) refs.custodyHolder.value = state.custodyHolder;
+      if (refs.custodyNote.value !== state.custodyNote) refs.custodyNote.value = state.custodyNote;
+
+      var meta = sealMeta(state.sealChoice);
+      refs.sealPickImg.src = meta.src;
+      refs.sealPickLabel.textContent = meta.label;
+      refs.sealPickCaret.textContent = state.sealPickerOpen ? '▴' : '▾';
+      refs.sealGridSwatches.hidden = !state.sealPickerOpen;
+      var swatches = refs.sealGridSwatches.children;
+      for (var i = 0; i < swatches.length; i++) {
+        swatches[i].classList.toggle('seal-swatch--active', swatches[i].getAttribute('data-seal') === state.sealChoice);
+      }
+
+      refs.pvTo.textContent = state.to;
+      refs.pvFrom.textContent = state.fromWho.trim() || '—';
+      refs.pvOpens.textContent = state.openWhenNeeded ? 'when it’s needed' : (validDate ? dateInWords(state.openOn) : '—');
+      refs.pvKept.textContent = state.custodyHolder.trim() || 'you';
+      refs.pvText.textContent = state.value;
+      refs.keepCopy.checked = state.keepCopy;
+      var canSeal = state.value.trim().length > 0 && state.fromWho.trim().length > 0 && (state.openWhenNeeded || validDate);
+      refs.sealLetterBtn.disabled = !canSeal;
+      refs.sealLetterBtn.style.opacity = canSeal ? 1 : 0.45;
+      refs.sealHint.textContent = canSeal ? '' : 'A date (or “when it’s needed”) and a sender make it sealable.';
+    }
+
+    if (state.sealed) {
+      refs.sealedToken.innerHTML = state.sealed.token.full; /* SVG from js/token.js */
+      refs.sealedId.textContent = state.sealed.id;
+      refs.sealedTo.textContent = state.to;
+      refs.sealedOpens.textContent = state.openWhenNeeded ? 'when it’s needed' : dateInWords(state.openOn);
+    }
+    refs.inertMsg.textContent = state.inertMsg;
+  }
+  function buildDateChips() {
+    var quick = [
+      { label: 'in one year', y: 1 }, { label: 'in five years', y: 5 },
+      { label: 'in ten years', y: 10 }, { label: 'in twenty-five years', y: 25 }
+    ];
+    for (var i = 0; i < quick.length; i++) {
+      (function (q) {
+        var b = el('button', 'date-chip', q.label);
+        b.addEventListener('click', function () {
+          state.openWhenNeeded = false;
+          state.openOn = plusYears(todayIso(), q.y);
+          renderSealSection();
+        });
+        refs.dateChips.appendChild(b);
+      })(quick[i]);
+    }
+    var sol = el('button', 'date-chip', 'on the winter solstice');
+    sol.addEventListener('click', function () {
+      var t = todayIso(), y = parseInt(t.slice(0, 4), 10);
+      var d = y + '-12-21';
+      state.openWhenNeeded = false;
+      state.openOn = t < d ? d : (y + 1) + '-12-21';
+      renderSealSection();
+    });
+    refs.dateChips.appendChild(sol);
+  }
+  function buildSealSwatches() {
+    for (var i = 0; i < SEAL_LIB.length; i++) {
+      (function (opt) {
+        var b = el('button', 'seal-swatch');
+        b.title = opt.label;
+        b.setAttribute('data-seal', opt.key);
+        var img = document.createElement('img');
+        img.src = opt.src;
+        img.alt = opt.label;
+        b.appendChild(img);
+        b.addEventListener('click', function () {
+          state.sealChoice = opt.key;
+          state.sealPickerOpen = false;
+          renderSealSection();
+        });
+        refs.sealGridSwatches.appendChild(b);
+      })(SEAL_LIB[i]);
+    }
+  }
+
+  /* ---------- render: token story ---------- */
+  function paintStoryToken() {
+    if (storyPainted || !window.TesseraToken) return;
+    storyPainted = true;
+    var t = TesseraToken.renderTokenSvg(STORY_SEED, 'TSR-7c1e-9906');
+    var left = el('div', 'token-half token-half--l');
+    left.innerHTML = t.left;
+    var cut = el('div', 'token-cut');
+    var right = el('div', 'token-half token-half--r');
+    right.innerHTML = t.right;
+    refs.storyToken.appendChild(left);
+    refs.storyToken.appendChild(cut);
+    refs.storyToken.appendChild(right);
+  }
+
+  /* ---------- render: the shelf ---------- */
+  function shelfLetters() {
+    var all = state.sealedList.concat(DEMO);
+    var out = [];
+    for (var i = 0; i < all.length; i++) {
+      var l = all[i];
+      var g = bySlug(l.occasion || 'custom').group || 'custom';
+      var sealKey = l.sealKey || SEAL_LIB[i % SEAL_LIB.length].key;
+      out.push({
+        to: l.to,
+        opens: l.openWhenNeeded ? 'opens when needed' : 'opens ' + shortDate(l.openOn),
+        id: l.id,
+        rot: SHELF_ROTS[i % SHELF_ROTS.length],
+        tint: GROUP_TINT[g] || GROUP_TINT.custom,
+        tintDeep: GROUP_DEEP[g] || GROUP_DEEP.custom,
+        sealSrc: sealMeta(sealKey).src,
+        title: 'For ' + l.to + ' · ' + (l.openWhenNeeded ? 'opens when it’s needed' : 'opens ' + dateInWords(l.openOn)) + ' · ' + l.id + (l.fresh ? ' · sealed today' : '')
+      });
+    }
+    return out;
+  }
+  function envCard(lt, compact) {
+    var card = el('div', compact ? 'pigeon-card' : 'env-card');
+    card.title = lt.title;
+    if (!compact) card.style.transform = 'rotate(' + lt.rot + 'deg)';
+    var flap = el('div', 'env-flap');
+    flap.style.background = lt.tint;
+    card.appendChild(flap);
+    var seal = document.createElement('img');
+    seal.className = 'env-seal';
+    seal.src = lt.sealSrc;
+    seal.alt = '';
+    card.appendChild(seal);
+    if (!compact) {
+      var stamp = el('div', 'env-stamp');
+      var dot = el('span');
+      dot.style.background = lt.tintDeep;
+      stamp.appendChild(dot);
+      card.appendChild(stamp);
+    }
+    card.appendChild(el('div', 'env-to', lt.to));
+    var foot = el('div', 'env-foot');
+    foot.appendChild(el('span', null, lt.opens));
+    foot.appendChild(el('span', 'env-id', lt.id));
+    card.appendChild(foot);
+    return card;
+  }
+  function renderShelf() {
+    var style = shelfStyle();
+    var letters = shelfLetters();
+    var key = style + '|' + state.sealedList.length;
+    var tabs = refs.shelfTabs.children;
+    for (var t = 0; t < tabs.length; t++) {
+      tabs[t].classList.toggle('active', tabs[t].getAttribute('data-style') === style);
+    }
+    refs.shelfShelves.hidden = style !== 'shelves';
+    refs.shelfPigeon.hidden = style !== 'pigeonholes';
+    refs.shelfCatalog.hidden = style !== 'card catalogue';
+    if (key === lastShelfKey) return;
+    lastShelfKey = key;
+
+    var i;
+    while (refs.shelfShelves.firstChild) refs.shelfShelves.removeChild(refs.shelfShelves.firstChild);
+    for (i = 0; i < letters.length; i += 3) {
+      var row = el('div', 'shelf-row');
+      var cards = el('div', 'shelf-row-cards');
+      for (var j = i; j < Math.min(i + 3, letters.length); j++) cards.appendChild(envCard(letters[j], false));
+      row.appendChild(cards);
+      row.appendChild(el('div', 'shelf-lip'));
+      refs.shelfShelves.appendChild(row);
+    }
+
+    while (refs.shelfPigeon.firstChild) refs.shelfPigeon.removeChild(refs.shelfPigeon.firstChild);
+    for (i = 0; i < letters.length; i++) {
+      var slot = el('div', 'pigeon-slot');
+      slot.appendChild(envCard(letters[i], true));
+      refs.shelfPigeon.appendChild(slot);
+    }
+
+    while (refs.shelfCatalog.firstChild) refs.shelfCatalog.removeChild(refs.shelfCatalog.firstChild);
+    for (i = 0; i < letters.length; i++) {
+      var lt = letters[i];
+      var cr = el('div', 'catalog-row');
+      cr.title = lt.title;
+      var plate = el('div', 'catalog-plate');
+      plate.appendChild(el('span', 'catalog-to', lt.to));
+      plate.appendChild(el('span', 'catalog-opens', lt.opens));
+      cr.appendChild(plate);
+      cr.appendChild(el('div', 'catalog-pull'));
+      var hole = el('div', 'catalog-hole');
+      hole.style.background = lt.tintDeep;
+      cr.appendChild(hole);
+      refs.shelfCatalog.appendChild(cr);
+    }
+  }
+
+  /* ---------- keyboard ---------- */
+  function buildKeyboard() {
+    var CHAR_TOKEN = { "'": 'apos', '"': 'quote' };
+    function key(ch, label, wide) {
+      var b = el('button', 'tw-key' + (wide ? ' tw-key--wide' : ''), label);
+      b.setAttribute('data-tkey', CHAR_TOKEN[ch] || ch);
+      b.tabIndex = -1;
+      b.addEventListener('click', function () { typeChar(ch === 'shift' ? '' : ch); });
+      return b;
+    }
+    var rows = [];
+    var r1 = [], r2 = [], r3 = [], r4 = [];
+    var i, s;
+    s = '1234567890'; for (i = 0; i < s.length; i++) r1.push(key(s[i], s[i]));
+    s = 'qwertyuiop'; for (i = 0; i < s.length; i++) r2.push(key(s[i], s[i].toUpperCase()));
+    s = 'asdfghjkl'; for (i = 0; i < s.length; i++) r3.push(key(s[i], s[i].toUpperCase()));
+    r3.push(key('-', '-')); r3.push(key("'", "'")); r3.push(key('"', '"'));
+    r4.push(key('shift', 'SHIFT', true));
+    s = 'zxcvbnm'; for (i = 0; i < s.length; i++) r4.push(key(s[i], s[i].toUpperCase()));
+    r4.push(key(',', ',')); r4.push(key('.', '.')); r4.push(key('?', '?')); r4.push(key('!', '!'));
+    rows.push(r1, r2, r3, r4);
+    for (i = 0; i < rows.length; i++) {
+      var holder = el('div', 'tw-krow');
+      for (var j = 0; j < rows[i].length; j++) holder.appendChild(rows[i][j]);
+      refs.keyboard.appendChild(holder);
+    }
+    var space = el('button', 'tw-space', 'SPACE');
+    space.setAttribute('data-tkey', ' ');
+    space.setAttribute('aria-label', 'space');
+    space.tabIndex = -1;
+    space.addEventListener('click', function () { typeChar(' '); });
+    refs.keyboard.appendChild(space);
+  }
+
+  /* ---------- init ---------- */
+  function cacheRefs() {
+    refs.heroWrap = $('hero-wrap');
+    refs.heroIdle = $('hero-idle');
+    refs.heroWriting = $('hero-writing');
+    refs.hwTo = $('hw-to');
+    refs.hwOccasion = $('hw-occasion');
+    refs.hwWordline = $('hw-wordline');
+    refs.hwPromptsToggle = $('hw-prompts-toggle');
+    refs.hwPrompts = $('hw-prompts');
+    refs.hwSeal = $('hw-seal');
+    refs.sceneWrap = $('scene-wrap');
+    refs.scene = $('scene');
+    refs.carriage = $('carriage');
+    refs.sheet = $('sheet');
+    refs.paperScroll = $('paper-scroll');
+    refs.paperLines = $('paper-lines');
+    refs.lever = $('lever');
+    refs.typebar = $('typebar');
+    refs.caret = $('caret');
+    refs.keyboard = $('keyboard');
+    refs.ta = $('ta');
+    refs.soundToggle = $('sound-toggle');
+    refs.setupOverlay = $('setup-overlay');
+    refs.setup0 = $('setup-0');
+    refs.setup1 = $('setup-1');
+    refs.setup2 = $('setup-2');
+    refs.setupTo = $('setup-to');
+    refs.setupOcc = $('setup-occ');
+    refs.setupCustom = $('setup-custom');
+    refs.setupNext = $('setup-next');
+    refs.reopenRow = $('reopen-row');
+    refs.finishRow = $('finish-row');
+    refs.mcSwatches = $('mc-swatches');
+    refs.sealEmpty = $('seal-empty');
+    refs.sealSteps = $('seal-steps');
+    refs.sealDone = $('seal-done');
+    refs.dateChips = $('date-chips');
+    refs.openDate = $('open-date');
+    refs.undatedRow = $('undated-row');
+    refs.undated = $('undated');
+    refs.dateWords = $('date-words');
+    refs.fromWho = $('from-who');
+    refs.custodyHolder = $('custody-holder');
+    refs.custodyNote = $('custody-note');
+    refs.sealPickBtn = $('seal-pick-btn');
+    refs.sealPickImg = $('seal-pick-img');
+    refs.sealPickLabel = $('seal-pick-label');
+    refs.sealPickCaret = $('seal-pick-caret');
+    refs.sealGridSwatches = $('seal-grid-swatches');
+    refs.pvTo = $('pv-to');
+    refs.pvFrom = $('pv-from');
+    refs.pvOpens = $('pv-opens');
+    refs.pvKept = $('pv-kept');
+    refs.pvText = $('pv-text');
+    refs.keepCopy = $('keep-copy');
+    refs.sealLetterBtn = $('seal-letter-btn');
+    refs.sealHint = $('seal-hint');
+    refs.sealedToken = $('sealed-token');
+    refs.sealedId = $('sealed-id');
+    refs.sealedTo = $('sealed-to');
+    refs.sealedOpens = $('sealed-opens');
+    refs.inertMsg = $('inert-msg');
+    refs.storyToken = $('story-token');
+    refs.shelfTabs = $('shelf-tabs');
+    refs.shelfShelves = $('shelf-shelves');
+    refs.shelfPigeon = $('shelf-pigeon');
+    refs.shelfCatalog = $('shelf-catalog');
+  }
+
+  function wireEvents() {
+    $('nav-write').addEventListener('click', startWriting);
+    $('reopen-btn').addEventListener('click', startWriting);
+    $('finish-btn').addEventListener('click', goSeal);
+    refs.hwSeal.addEventListener('click', goSeal);
+    $('hw-change').addEventListener('click', function () { setSetupStep(1); });
+    refs.hwPromptsToggle.addEventListener('click', function () {
+      state.showPrompts = !state.showPrompts;
+      renderWriting();
+    });
+
+    refs.sceneWrap.addEventListener('click', function () {
+      if (state.setupStep !== null) return;
+      focusTa();
+    });
+    refs.lever.addEventListener('click', function () { doLeverVisual(); typeChar('\n'); });
+    refs.ta.addEventListener('input', onTaInput);
+    refs.ta.addEventListener('keydown', onTaKeyDown);
+    refs.ta.addEventListener('focus', function () { state.focused = true; renderCaret(); });
+    refs.ta.addEventListener('blur', function () { state.focused = false; renderCaret(); });
+    refs.soundToggle.addEventListener('click', function () {
+      ensureCtx();
+      state.soundOnU = !soundOn();
+      renderSound();
+    });
+
+    $('setup-x').addEventListener('click', skipSetup);
+    $('setup-explore').addEventListener('click', skipSetup);
+    $('setup-skip').addEventListener('click', skipSetup);
+    $('setup-begin').addEventListener('click', function () { introDone = true; setSetupStep(1); });
+    $('setup-next').addEventListener('click', function () { if (state.to.trim()) setSetupStep(2); });
+    $('setup-back').addEventListener('click', function () { setSetupStep(1); });
+    $('setup-done').addEventListener('click', confirmSetup);
+    refs.setupTo.addEventListener('input', function (e) {
+      state.to = e.target.value;
+      refs.setupNext.disabled = !state.to.trim();
+      refs.setupNext.style.opacity = state.to.trim() ? 1 : 0.45;
+    });
+    refs.setupOcc.addEventListener('change', function (e) {
+      state.occasion = e.target.value || null;
+      renderSetup();
+    });
+    refs.setupCustom.addEventListener('input', function (e) { state.customOccasion = e.target.value; });
+
+    refs.openDate.addEventListener('input', function (e) {
+      state.openOn = e.target.value;
+      state.openWhenNeeded = false;
+      renderSealSection();
+    });
+    refs.undated.addEventListener('change', function (e) {
+      state.openWhenNeeded = e.target.checked;
+      renderSealSection();
+    });
+    refs.fromWho.addEventListener('input', function (e) { state.fromWho = e.target.value; renderSealSection(); });
+    refs.custodyHolder.addEventListener('input', function (e) { state.custodyHolder = e.target.value; renderSealSection(); });
+    refs.custodyNote.addEventListener('input', function (e) { state.custodyNote = e.target.value; renderSealSection(); });
+    refs.sealPickBtn.addEventListener('click', function () {
+      state.sealPickerOpen = !state.sealPickerOpen;
+      renderSealSection();
+    });
+    refs.keepCopy.addEventListener('change', function (e) { state.keepCopy = e.target.checked; });
+    refs.sealLetterBtn.addEventListener('click', sealNow);
+    $('inert-print').addEventListener('click', function () { state.inertMsg = INERT_NOTE; renderSealSection(); });
+    $('inert-download').addEventListener('click', function () { state.inertMsg = INERT_NOTE; renderSealSection(); });
+    $('write-another').addEventListener('click', writeAnother);
+
+    var tabs = refs.shelfTabs.children;
+    for (var t = 0; t < tabs.length; t++) {
+      (function (btn) {
+        btn.addEventListener('click', function () {
+          state.shelfStyleU = btn.getAttribute('data-style');
+          renderShelf();
+        });
+      })(tabs[t]);
+    }
+
+    window.addEventListener('pointerdown', ensureCtx);
+    window.addEventListener('keydown', ensureCtx);
+  }
+
+  function startDemo() {
+    if (!reduced()) {
+      autoT = setTimeout(function () {
+        if (state.phase === 'idle' && !state.value) {
+          autoType(DEMO_TEXT, function () {
+            if (!introDone && state.phase === 'idle' && state.setupStep === null) setSetupStep(0);
+          });
+        }
+      }, 900);
+    } else {
+      handleValue(DEMO_TEXT, null, true);
+      setSetupStep(0);
+    }
+  }
+
+  function init() {
+    cacheRefs();
+    buildKeyboard();
+    buildDateChips();
+    buildSealSwatches();
+    wireEvents();
+
+    function whenData() {
+      buildOccasionSelect();
+      paintStoryToken();
+      renderShelf();
+    }
+    if (window.TesseraOccasions && window.TesseraToken) whenData();
+    else {
+      waitData = setInterval(function () {
+        if (window.TesseraOccasions && window.TesseraToken) {
+          clearInterval(waitData);
+          whenData();
+        }
+      }, 60);
+    }
+
+    applyMachineColor();
+    applyHeroLayout();
+    renderHero();
+    renderPaper();
+    renderCaret();
+    renderSound();
+    renderSwatches();
+    renderSetup();
+    renderSealSection();
+    updateCarriage(false);
+    fitScene();
+    if (window.ResizeObserver) new ResizeObserver(fitScene).observe(refs.sceneWrap);
+    else window.addEventListener('resize', fitScene);
+
+    startDemo();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();

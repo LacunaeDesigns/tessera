@@ -18,6 +18,7 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 | index.html + style.css | done | committed 2026-07-10; both themes, 375px-first screenshots |
 | tools/prose-check.js (Gate 2) | done | caught 2 real em-dash strings; both fixed |
 | Commit the module files | done | commits `7949922`, `136cbbc` on `dev` |
+| Landing page (design study: landing.html + landing/) | done, browser-verified | implemented 2026-07-10 from the Claude Design handoff; gates green, 375px + desktop pass; see decisions.md entries |
 | Founding letters (author) | not started | plan Task 7 — exit criterion |
 | Ship: Netlify unlisted, repo flips public | not started | plan Task 7; needs the physical century walkthrough first |
 
@@ -45,6 +46,8 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-10 (late night)** — Landing page implemented from the author's Claude Design project ("Tessera landing implementation", handoff bundle verified byte-identical to the live design). New surface: `landing.html` + `landing/` (css, js, 17 images, vendored OFL fonts for Young Serif + Courier Prime). Vanilla port of the full prototype: CSS-drawn typewriter with working carriage/caret/type-bar, synthesized Web Audio (clack/bell/zip, toggleable), auto-typing intro demo, setup wizard, seal step with 12-seal picker, receipt preview, ceremonial sealing that mints a real `token.js` token, three-presentation letters shelf. Reuses `data/occasions.js` and `js/token.js` unchanged; app shell and versioning triple untouched. Gates: syntax + all module tests green, prose-check clean apart from two justified placeholder-glyph WARNs (decisions.md), browser QA at desktop + 375px with zero console errors. Author gate added: confirm background/wax-seal image licensing before the landing ships publicly.
 
 - **2026-07-10 (night)** — First real use of the writing room (two letters sealed through the app: TSR-471a-31bf, TSR-1e9e-906d) immediately surfaced a bug: the autosave debounce could re-persist a just-sealed draft after `clearDraft`, so re-entering `#write` resumed an already-sealed letter at the review step. Fixed in `doSeal` (cancel timer, drop live draft) and verified in-browser: post-seal `#write` starts at "1 of 6". `letters/` added to .gitignore so personal sealed folders never ship with a public repo. Bonus finding: `datesInWords` renders 2126 correctly.
 
