@@ -14,7 +14,12 @@
   };
   var MACHINE_COLORS = ['#C7DFCE', '#F1C4B2', '#EBD592', '#BFD3DE', '#D8C8E8', '#F0C6CE', '#B9DDD3', '#E4D3B4'];
 
-  var COLS = 52, BELL_AT = 45, CHARW = 9.6;
+  /* Sheet metrics. Phones zoom the scene (fitScene) and set larger type on
+     the paper, so the wrap width, bell point, and char width follow suit;
+     the CSS mobile block sets the matching 20px/30px paper type. */
+  function cols() { return isMobile() ? 38 : 52; }
+  function bellAt() { return isMobile() ? 32 : 45; }
+  function charw() { return isMobile() ? 13.2 : 9.6; }
 
   var GROUP_TINT = { 'open-when': '#DFEDE3', 'milestone': '#F3E9D0', 'far': '#F5E0D5', 'custom': '#E4E9EA' };
   var GROUP_DEEP = { 'open-when': '#9DBBA6', 'milestone': '#CDB878', 'far': '#D9A088', 'custom': '#A8B4B8' };
@@ -186,7 +191,9 @@
     var wrap = refs.sceneWrap, scene = refs.scene;
     if (!wrap || !scene) return;
     var w = wrap.clientWidth || 960;
-    var s = Math.min(1, w / 985);
+    /* phones zoom into the machine: the sheet nearly fills the width and
+       the shell crops at the edges; the print point stays center-screen */
+    var s = Math.min(1, w / (isMobile() ? 585 : 985));
     scene.style.transform = 'scale(' + s + ')';
     /* overlay chrome sits outside the scaled scene so it stays readable;
        on phones the CSS turns the wizard into a fixed dialog and puts the
@@ -231,12 +238,13 @@
       if (p === '') { out.push(''); continue; }
       var words = p.split(' ');
       var cur = '';
+      var C = cols();
       for (var j = 0; j < words.length; j++) {
         var w = words[j];
         var cand = cur ? cur + ' ' + w : w;
-        if (cand.length <= COLS) { cur = cand; continue; }
+        if (cand.length <= C) { cur = cand; continue; }
         if (cur) out.push(cur);
-        while (w.length > COLS) { out.push(w.slice(0, COLS)); w = w.slice(COLS); }
+        while (w.length > C) { out.push(w.slice(0, C)); w = w.slice(C); }
         cur = w;
       }
       out.push(cur);
@@ -257,7 +265,7 @@
         if (ch === ' ') sSpace(); else if (ch !== '\n') sClack();
         if (ch && ch !== '\n' && Date.now() - lastKeydown > 80) animateKey(ch);
         if (ch && ch !== '\n') strikeBar();
-        if (col >= BELL_AT && state.col < BELL_AT && !belled) { sDing(); belled = true; }
+        if (col >= bellAt() && state.col < bellAt() && !belled) { sDing(); belled = true; }
         if (lineJump) belled = false;
       } else if (added < 0) {
         sBack();
@@ -281,7 +289,7 @@
     refs.paperScroll.scrollTop = refs.paperScroll.scrollHeight;
   }
   function updateCarriage(smooth) {
-    var x = Math.round(480 - 228.8 - state.col * CHARW);
+    var x = Math.round(480 - 228.8 - state.col * charw());
     refs.carriage.style.transition = reduced() ? 'none' : (smooth ? 'transform 0.26s cubic-bezier(0.22, 0.9, 0.3, 1)' : 'transform 0.05s linear');
     refs.carriage.style.transform = 'translateX(' + x + 'px)';
   }
@@ -517,6 +525,7 @@
   }
   function renderCaret() {
     refs.caret.hidden = !(state.focused || state.autotyping);
+    refs.tapHint.hidden = !(isMobile() && state.phase === 'writing' && !state.focused && !state.autotyping);
   }
   function renderSound() {
     refs.soundToggle.textContent = soundOn() ? 'Bell & keys: on' : 'Bell & keys: off';
@@ -861,6 +870,7 @@
     refs.keyboard = $('keyboard');
     refs.ta = $('ta');
     refs.soundToggle = $('sound-toggle');
+    refs.tapHint = $('tap-hint');
     refs.setupOverlay = $('setup-overlay');
     refs.setup0 = $('setup-0');
     refs.setup1 = $('setup-1');
@@ -1039,7 +1049,12 @@
     if (window.ResizeObserver) new ResizeObserver(fitScene).observe(refs.sceneWrap);
     else window.addEventListener('resize', fitScene);
     if (mobileQ) {
-      var onMq = function () { renderShelf(); fitScene(); };
+      var onMq = function () {
+        fitScene();
+        handleValue(state.value, null, true); /* re-wrap at the new column width */
+        renderShelf();
+        renderCaret();
+      };
       if (mobileQ.addEventListener) mobileQ.addEventListener('change', onMq);
       else if (mobileQ.addListener) mobileQ.addListener(onMq);
     }
