@@ -2,7 +2,7 @@
 
 The living record of what is actually done, against [roadmap.md](roadmap.md). Update when a task lands; `/release` refuses if this file lies. The cross-machine twin is the Ariadne vault (`projects/tessera.md`) — status there, granularity here.
 
-**Snapshot (2026-07-10, evening):** the app runs. Shell shipped and browser-verified end-to-end (compose → seal → zip with independently verified checksums → print kit PDFs at A4 + Letter → registry → reload persistence → offline). All modules committed on `dev`. Remaining for v0.1: the author tasks (founding letters, physical century walkthrough, Netlify unlisted ship).
+**Snapshot (2026-07-10, night):** **v0.1.0 shipped.** The front door is live at tessera-letters.netlify.app (unlisted — no announcement), `main` minted and deployed, all gates re-run green the same evening. v0.2 (the opening) is next; plans are written.
 
 ## v0.1 — Foundations
 
@@ -20,7 +20,7 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 | Commit the module files | done | commits `7949922`, `136cbbc` on `dev` |
 | Landing page → the real front door (index.html + landing/) | done, browser-verified | implemented 2026-07-10 from the Claude Design handoff; promoted same day: ceremony seals through export.js, shelf reads tessera_v1, front-door swap; see decisions.md entries |
 | Founding letters (author) | done | five sealed in `letters/` (gitignored): four by Claude, one by the author; more may follow post-ship (decisions.md 2026-07-10) |
-| Ship: Netlify unlisted, repo flips public | not started | all author paper tasks cleared 2026-07-10; remaining: Netlify site setup (author account), then `/release` |
+| Ship: Netlify unlisted, repo flips public | shipped 2026-07-10 | v0.1.0 via `/release`: `main` minted from `dev`, Netlify deploys it at tessera-letters.netlify.app; repo public flip is the author's call (decisions.md gate) |
 
 ## v0.2 — The Opening
 
@@ -46,6 +46,49 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-10 (v0.1.0 — first ship)** — Released via `/release`. Version: the triple already
+  read `0.1.0` / `'0.1.0'` / `'tessera-v0.1.0'` consistently and nothing had ever shipped, so
+  0.1.0 ships as-is (a bump would misstate the first release). What shipped: the whole of v0.1 —
+  the landing as the real front door (ceremony sealing through the one `export.js` path), the
+  quiet app at `app.html`, print kit with the landing faces, schema-2 storage, offline shell,
+  five founding letters sealed in the author's keeping. Ship: `main` minted from `dev`
+  (fast-forward), pushed; Netlify serves it unlisted at tessera-letters.netlify.app.
+  Gates re-run this session, all green: syntax sweep over every tracked JS silent; four module
+  suites green with fixtures byte-identical; prose clean; browser pass 375px-first then desktop
+  (front-door seal `TSR-2641-af4b` end-to-end: wizard → typed letter → real zip download with
+  independently re-verified SHA-256 checksums → registry row (schema 2, sealKey) → reload
+  persists → both-door visibility → ceremony print kit as real A4 + Letter PDFs, 4 sheets,
+  footers, assembly line on the cover, faces per canon with the letter body on the system stack
+  per the same-day specimen verdict); offline via SW cache (43 entries) with both doors and the
+  writing room working; lamplight palette exact under emulated dark; reduced-motion gate present.
+  Known-and-accepted: repeated AudioContext autoplay warnings under automation (sound starts on
+  first real user gesture; zero console errors otherwise).
+
+  Century audit (all rows evidenced this session; walkthrough by the author 2026-07-10 with the
+  cover-sheet finding fixed same day and the amended line re-read on paper):
+
+  | Row | Verdict | Evidence |
+  |---|---|---|
+  | A: no required URL in export | ✓ | folder grep: only the SVG xmlns namespace identifier; README says "Web addresses die, so none is required" |
+  | A: file:// + no external requests | ✓ | both doors load from `file://`, wizard opens; request log during compose→seal→print: 1 request, all same-origin, 0 external |
+  | A: fork = identical tool, no keys | ✓ | no package.json, no node_modules, no build; static files only |
+  | A: data only on device + exports | ✓ | single localStorage key `tessera_v1`; downloads; 0 external requests |
+  | B: UTF-8, no BOM | ✓ | first-bytes hex of all five files: no EF BB BF |
+  | B: zip store method | ✓ | letter text found by grep in raw zip bytes; suite green |
+  | B: manifest ⊂ README prose | ✓ | live seal compared field-by-field; suite asserts the sections |
+  | B: dates ISO + words | ✓ | live README: "the tenth of July, two thousand and thirty-six (2036-07-10)" |
+  | B: media guidance | n-a | no media in v0.1 |
+  | B: token.svg plain, no scripts/refs/fonts | ✓ | suite rows + live grep: 0 scripts; generic families only |
+  | C: spec CC0 | ✓ | SPEC.md header; century-test.md header |
+  | C: tool MIT, self-contained | ✓ | LICENSE (MIT, 2026 Rika Lim); no dependency registry |
+  | C: format outlives project | ✓ | SPEC.md pencil clause; README "Everything essential is already in your hands" |
+  | C: decisions recorded | ✓ | decisions.md append-only, updated same day |
+  | D: paper is a complete letter | ✓ | 5-page kit PDF: cover, letter, instructions ×2, token |
+  | D: README works cold | ✓ | author's cold-read 2026-07-10 (walkthrough step 4) |
+  | D: token by eye | ✓ | token sheet: halves, dashed cut line, "works by eye; no machine is needed" |
+  | D: checksums an offer | ✓ | README: "Any computer of your era can do this check; none needs to" |
+  | D: kit teaches assembly | ✓ | cover line "This page goes on the outside…" in today's PDF; walkthrough finding closed |
 
 - **2026-07-10 (author paper tasks clear)** — The three remaining author tasks landed in one
   sitting: specimen verdict is B (letter body stays on the system serif stack; no CSS change,
