@@ -1023,10 +1023,10 @@ a:hover { color: #8A4B2D; }
 .sec-letters {
   position: relative;
   background-color: #F1F0E6;
-  background-image: url('assets/bg-letters.png');
+  background-image: url('assets/bg-letters-9x16.jpg');
   background-repeat: no-repeat;
-  background-position: top center;
-  background-size: 100% auto;
+  background-position: center center;
+  background-size: cover;
   border-top: 1px solid rgba(57,46,31,0.08);
   padding: 86px 24px 96px;
 }
@@ -1271,15 +1271,27 @@ a:hover { color: #8A4B2D; }
   .sec-hero { background-image: url('assets/bg-hero-16x9.jpg'); }
 }
 
-/* Token + letters (single-shape art, authored ~1550-1700px wide): past
-   ~1480px the flowers would blow up with the viewport, so draw the art as
-   a centered band at its designed scale and fade its edges into the
-   section colour. Replace with art-directed variants like the hero once
-   they exist. */
-.sec-token, .sec-letters { isolation: isolate; }
+/* Letters: art-directed variants like the hero. The letters box is wider
+   and shallower (~viewport x 1000px on desktop), so the breakpoints sit
+   lower than the hero's. */
+@media (min-width: 700px) {
+  .sec-letters { background-image: url('assets/bg-letters-3x4.jpg'); }
+}
+@media (min-width: 1200px) {
+  .sec-letters { background-image: url('assets/bg-letters-4x3.jpg'); }
+}
+@media (min-width: 1700px) {
+  .sec-letters { background-image: url('assets/bg-letters-wide.jpg'); }
+}
+
+/* Token (single-shape art, authored 1535px wide): past ~1480px the flowers
+   would blow up with the viewport, so draw the art as a centered band at
+   its designed scale and fade its edges into the section colour. Replace
+   with art-directed variants like the hero once they exist. */
+.sec-token { isolation: isolate; }
 @media (min-width: 1480px) {
-  .sec-token, .sec-letters { background-image: none; }
-  .sec-token::before, .sec-letters::before {
+  .sec-token { background-image: none; }
+  .sec-token::before {
     content: '';
     position: absolute;
     top: 0; bottom: 0; left: 50%;
@@ -1289,9 +1301,8 @@ a:hover { color: #8A4B2D; }
     background-repeat: no-repeat;
     background-position: top center;
     background-size: 100% auto;
+    background-image: url('assets/bg-token.png');
     mask-image: linear-gradient(to right, transparent, black 240px, black calc(100% - 240px), transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, black 240px, black calc(100% - 240px), transparent);
   }
-  .sec-token::before { background-image: url('assets/bg-token.png'); }
-  .sec-letters::before { background-image: url('assets/bg-letters.png'); }
 }
