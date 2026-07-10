@@ -19,8 +19,8 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 | tools/prose-check.js (Gate 2) | done | caught 2 real em-dash strings; both fixed |
 | Commit the module files | done | commits `7949922`, `136cbbc` on `dev` |
 | Landing page → the real front door (index.html + landing/) | done, browser-verified | implemented 2026-07-10 from the Claude Design handoff; promoted same day: ceremony seals through export.js, shelf reads tessera_v1, front-door swap; see decisions.md entries |
-| Founding letters (author) | not started | plan Task 7 — exit criterion |
-| Ship: Netlify unlisted, repo flips public | not started | plan Task 7; needs the physical century walkthrough first |
+| Founding letters (author) | done | five sealed in `letters/` (gitignored): four by Claude, one by the author; more may follow post-ship (decisions.md 2026-07-10) |
+| Ship: Netlify unlisted, repo flips public | not started | all author paper tasks cleared 2026-07-10; remaining: Netlify site setup (author account), then `/release` |
 
 ## v0.2 — The Opening
 
@@ -46,6 +46,14 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-10 (author paper tasks clear)** — The three remaining author tasks landed in one
+  sitting: specimen verdict is B (letter body stays on the system serif stack; no CSS change,
+  `specimen.html` deleted, canon updated in design-language.md §Typography); founding letters
+  settled (v0.1 ships with the five already sealed in `letters/` — four by Claude, one by the
+  author; see decisions.md); the amended cover-sheet line re-read on paper against the
+  century-test protocol and passed. v0.1 now waits only on the Netlify site setup (author
+  account) and `/release`.
 
 - **2026-07-10 (landing goes real)** — The front door is the landing and the ceremony is real:
   sealNow() ends in TesseraExport.seal() → registry → download (random-seed souvenir deleted),
