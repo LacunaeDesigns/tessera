@@ -324,6 +324,10 @@
         keptText: d.keepCopy ? d.letter : null,
         status: 'sealed'
       });
+      /* the letter is sealed: cancel any pending autosave and drop the live
+         draft, or a debounced save can resurrect it after the clear */
+      clearTimeout(saveTimer);
+      current = null;
       TesseraState.clearDraft('current');
       showSealed(sealed);
     }).catch(function (err) {
