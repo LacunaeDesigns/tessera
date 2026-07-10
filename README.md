@@ -29,7 +29,7 @@ No accounts. No cloud storage of your letters. No delivery service that emails y
 
 ## Start here
 
-- Open the front door: `index.html` over any local server (or the hosted page, once public). The plain-paper writing room is `app.html`; both seal through the same path.
+- Open the front door: **[tessera-letters.netlify.app](https://tessera-letters.netlify.app/)** — or `index.html` over any local server; it's the same page. The plain-paper writing room is [`app.html`](https://tessera-letters.netlify.app/app.html); both seal through the same path.
 - Read the format: [SPEC.md](SPEC.md) — public domain, ~10 minutes.
 - Read the docs: [docs/README.md](docs/README.md) — the project canon and roadmap.
 
