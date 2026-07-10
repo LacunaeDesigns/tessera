@@ -4,7 +4,7 @@
 A letter needs its date remembered for decades. Tessera refuses server-side scheduling (the FutureMe failure mode), so it exports remembering into things that already survive: calendars people migrate for life, and paper.
 
 ## What ships
-- **ICS export** — per letter or whole registry: a standards-compliant `.ics` (all-day event on `openOn`, summary *"A letter is ready: {to} — {id}"*, description with cover-sheet text; UID = letter ID; no alarms forced, one optional same-day `VALARM`). Calendar files are the one digital artifact people reliably carry across providers for decades.
+- **ICS export** — per letter or whole registry: a standards-compliant `.ics` (all-day event on `openOn`, summary *"A letter is ready: {to} ({id})"*, description with cover-sheet text; UID = letter ID; no alarms forced, one optional same-day `VALARM`). Calendar files are the one digital artifact people reliably carry across providers for decades. Open-when letters carry no fixed date, so they are never offered a calendar file — the reminder is the life event, not a day.
 - **The open-dates card** — a printed wallet/drawer card listing waiting letters (ID · opens · for), a companion to the register sheet; and per-letter, the open date already lives on the cover sheet — the envelope is its own reminder.
 - **Registry nudge-free display** — the ladder shows time-until quietly ("opens in eleven years"). No notifications, no countdown urgency (design-language rule).
 

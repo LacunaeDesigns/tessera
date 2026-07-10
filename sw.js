@@ -19,6 +19,7 @@ var CORE = [
   'js/zip.js',
   'js/token.js',
   'js/export.js',
+  'js/ics.js',
   'js/compose.js',
   'js/open.js',
   'js/print.js',

@@ -372,6 +372,18 @@
     pr.type = 'button';
     pr.addEventListener('click', function () { TesseraPrint.printKit(sealed); });
     row.appendChild(pr);
+    if (!sealed.fields.openWhenNeeded) {
+      var cal = el('button', 'btn-quiet', 'Add to calendar');
+      cal.type = 'button';
+      cal.addEventListener('click', function () {
+        var f = sealed.fields;
+        TesseraExport.downloadText(TesseraIcs.buildIcs([{
+          id: f.id, to: f.to, written: f.written, openOn: f.openOn,
+          coverText: 'A letter for ' + f.to + ', sealed ' + TesseraManifest.dateInWords(f.written) + '.'
+        }]), 'tessera-' + f.id + '.ics', 'text/calendar');
+      });
+      row.appendChild(cal);
+    }
     wrap.appendChild(row);
 
     var again = el('div', 'compose-nav');

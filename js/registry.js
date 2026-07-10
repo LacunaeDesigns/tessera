@@ -21,6 +21,31 @@
     return 'opens in ' + Math.round(days / 365) + ' years';
   }
 
+  /* a registry entry as the pure ICS builder wants it. Open-when letters have
+     no date to remember (their trigger is a life event), so they are never
+     offered a calendar file — the caller guards on e.openWhenNeeded. */
+  function icsLetter(e) {
+    return {
+      id: e.id,
+      to: e.to || 'someone',
+      written: e.written,
+      openOn: e.openOn,
+      coverText: 'A letter for ' + (e.to || 'someone') + ', sealed '
+        + (e.written ? TesseraManifest.dateInWords(e.written) : 'long ago') + '.'
+    };
+  }
+
+  function downloadIcs(letters, filename) {
+    TesseraExport.downloadText(TesseraIcs.buildIcs(letters), filename, 'text/calendar');
+  }
+
+  function calendarButton(e) {
+    var b = el('button', 'btn-quiet btn-small', 'Add to calendar');
+    b.type = 'button';
+    b.addEventListener('click', function () { downloadIcs([icsLetter(e)], 'tessera-' + e.id + '.ics'); });
+    return b;
+  }
+
   function rebuildSealed(e) {
     /* re-derive what we can for reprinting: without kept text the kit offers
        cover + instructions + token sheets (the README carries no letter text) */
@@ -92,6 +117,7 @@
           rebuildSealed(e).then(function (sealed) { TesseraPrint.printKit(sealed); });
         });
         actions.appendChild(pr);
+        if (!e.openWhenNeeded) actions.appendChild(calendarButton(e));
         var rm = el('button', 'btn-quiet btn-small', 'Remove from this device');
         rm.type = 'button';
         rm.addEventListener('click', function () {
@@ -111,6 +137,15 @@
       reg2.type = 'button';
       reg2.addEventListener('click', function () { TesseraPrint.printRegister(reg); });
       printRow.appendChild(reg2);
+      var datedReg = reg.filter(function (e) { return !e.openWhenNeeded; });
+      if (datedReg.length) {
+        var cal = el('button', 'btn-quiet', 'Calendar file (all dates)');
+        cal.type = 'button';
+        cal.addEventListener('click', function () {
+          downloadIcs(datedReg.map(icsLetter), 'tessera-letters.ics');
+        });
+        printRow.appendChild(cal);
+      }
       c.appendChild(printRow);
     }
 
@@ -127,6 +162,7 @@
         main.appendChild(el('p', 'ledger-id', e.id));
         row.appendChild(main);
         var actions = el('div', 'ledger-actions');
+        if (!e.openWhenNeeded) actions.appendChild(calendarButton(e));
         var rm = el('button', 'btn-quiet btn-small', 'Remove from this device');
         rm.type = 'button';
         rm.addEventListener('click', function () {

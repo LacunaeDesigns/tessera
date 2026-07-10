@@ -75,18 +75,26 @@
     });
   }
 
-  function download(sealed) {
-    var blob = new Blob([sealed.zip], { type: 'application/zip' });
+  function downloadBlob(blob, filename) {
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = sealed.zipName;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
   }
 
-  var api = { seal: seal, download: download, sha256Hex: sha256Hex };
+  function download(sealed) {
+    downloadBlob(new Blob([sealed.zip], { type: 'application/zip' }), sealed.zipName);
+  }
+
+  /* generic text download — the calendar files (text/calendar) reuse this */
+  function downloadText(text, filename, mime) {
+    downloadBlob(new Blob([text], { type: mime || 'text/plain' }), filename);
+  }
+
+  var api = { seal: seal, download: download, downloadText: downloadText, sha256Hex: sha256Hex };
   root.TesseraExport = api;
 })(typeof self !== 'undefined' ? self : this);
