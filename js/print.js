@@ -116,6 +116,34 @@
     return sheet;
   }
 
+  /* the open-dates card: one A4 sheet holding the same card twice, split by a
+     dashed cut line — one for a wallet, one for a drawer (features/reminders.md) */
+  function oneCard(entries) {
+    var M = root.TesseraManifest;
+    var card = el('section', 'wallet-card');
+    card.appendChild(el('h3', 'card-heading', 'Letters, waiting.'));
+    var list = el('div', 'card-rows');
+    entries.forEach(function (e) {
+      var row = el('p', 'card-row');
+      row.appendChild(el('span', 'mono card-id', e.id));
+      row.appendChild(el('span', 'card-when',
+        e.openWhenNeeded ? 'when needed' : M.dateInWords(e.openOn)));
+      row.appendChild(el('span', 'card-for', 'for ' + (e.to || 'someone')));
+      list.appendChild(row);
+    });
+    card.appendChild(list);
+    card.appendChild(el('p', 'card-mark', 'Tessera · a letter keeps its own date. Keep this where you look.'));
+    return card;
+  }
+
+  function cardSheet(entries) {
+    var sheet = el('section', 'sheet sheet-card');
+    sheet.appendChild(oneCard(entries));
+    sheet.appendChild(el('div', 'card-cut'));
+    sheet.appendChild(oneCard(entries));
+    return sheet;
+  }
+
   /* show sheets in the print preview overlay; printing prints only #print-root */
   function show(sheets) {
     var overlay = document.getElementById('print-overlay');
@@ -134,7 +162,8 @@
 
   function printKit(sealed) { show(kitSheets(sealed)); }
   function printRegister(entries) { show([registerSheet(entries)]); }
+  function printCard(entries) { show([cardSheet(entries)]); }
 
-  var api = { printKit: printKit, printRegister: printRegister, hide: hide, kitSheets: kitSheets };
+  var api = { printKit: printKit, printRegister: printRegister, printCard: printCard, hide: hide, kitSheets: kitSheets };
   root.TesseraPrint = api;
 })(typeof self !== 'undefined' ? self : this);

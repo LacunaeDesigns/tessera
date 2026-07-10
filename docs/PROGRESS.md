@@ -29,7 +29,7 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 | Zip reader + verification core | shipped v0.2.0 | [plans/v0.2-opening.md](plans/v0.2-opening.md) Tasks 1–2; `tools/test-open.js` green |
 | Receive · verify · ceremony (Tasks 3–4) | shipped v0.2.0 | fourth door + date check + ceremony (`2dcc986`, `5f827d2`) |
 | Write-back + custody intake (Task 5) | shipped v0.2.0 | reply lineage end-to-end; schema 3 (`role`); `31a8bb5` |
-| ICS export + open-dates card | planned | [plans/v0.2-reminders.md](plans/v0.2-reminders.md) |
+| ICS export + open-dates card | done, browser-verified (unreleased) | [plans/v0.2-reminders.md](plans/v0.2-reminders.md) all 3 tasks; `test-ics.js` + fixture; QA log below |
 | Passphrase privacy + escrow card + honesty page | planned | [plans/v0.2-encryption.md](plans/v0.2-encryption.md) |
 | Envelope generator + print themes | planned | [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) |
 
@@ -47,6 +47,26 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-10 (v0.2 reminders — on dev, unreleased)** — plans/v0.2-reminders.md landed, all three
+  tasks. Task 1: `js/ics.js`, a pure/deterministic RFC 5545 builder (dual-env, no Date.now — the
+  DTSTAMP is the letter's `written` date) with `tools/test-ics.js` (13 asserts: envelope, all-day
+  DTSTART, DTSTAMP, 75-octet folding by code point, §3.3.11 escaping, multi-letter calendars,
+  optional VALARM, determinism) and a born fixture `reminder-fix1.ics` asserted byte-identical.
+  Gate-1 suite list in CLAUDE.md + testing.md corrected to name all six suites (`test-open` had
+  drifted off). Task 2: wired into the sealed screen, every registry row (waiting + in-keeping),
+  and a whole-registry "Calendar file (all dates)" — open-when letters are never offered a
+  calendar file (no date to remember); `export.js` grew a generic `downloadText`. Task 3: the
+  open-dates card, a `print.js` register variant (`sheet-card`) — the same wallet/drawer card
+  twice on one A4 split by a dashed cut line, listing ID · opens · for, self-identifying; reached
+  by "Print a wallet card" in the ledger. Browser-verified: ICS builder output correct, button
+  gating right across all surfaces, card renders two copies with the dashed cut and is ink-light
+  (paper cream sheet, transparent cards, zero dark solid fills), zero console errors, no external
+  requests. Six suites green; prose WARNs are all code-comment em-dashes (house convention).
+  Commits `c9871fd` (builder), `2fb9d2e` (wiring), Task 3 following. Not yet released — waits for
+  the next `/release` (the triple stays at 0.2.0; `js/ics.js` is in the SW CORE but CACHE_VERSION
+  moves only via /release). Remaining manual check deferred to the author: import an exported
+  `.ics` into two calendar apps (Google + Outlook) to confirm the all-day event lands on the day.
 
 - **2026-07-10 (v0.2.0 — the opening ships)** — Released via `/release`. Version: minor bump to
   0.2.0 (a whole new capability, the opening, with no format-breaking change — the manifest

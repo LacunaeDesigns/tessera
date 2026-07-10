@@ -137,6 +137,10 @@
       reg2.type = 'button';
       reg2.addEventListener('click', function () { TesseraPrint.printRegister(reg); });
       printRow.appendChild(reg2);
+      var card = el('button', 'btn-quiet', 'Print a wallet card');
+      card.type = 'button';
+      card.addEventListener('click', function () { TesseraPrint.printCard(reg); });
+      printRow.appendChild(card);
       var datedReg = reg.filter(function (e) { return !e.openWhenNeeded; });
       if (datedReg.length) {
         var cal = el('button', 'btn-quiet', 'Calendar file (all dates)');

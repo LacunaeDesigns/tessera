@@ -31,6 +31,19 @@
 .register-table td, .register-table th { border-bottom: 1px solid rgba(33,29,22,0.25);
                   padding: 0.35rem 0.5rem; text-align: left; }
 
+/* the open-dates card — two per sheet, cut apart along the dashed line */
+.sheet-card .wallet-card { padding: 0.6rem 0.2rem; }
+.card-heading { font-family: var(--display); font-weight: normal; font-size: 1.15rem; margin-bottom: 0.5rem; }
+.card-rows { display: grid; gap: 0.3rem; }
+.card-row { display: grid; grid-template-columns: auto 1fr auto; gap: 0.6rem;
+            font-size: 9.5pt; align-items: baseline; }
+.card-id { font-family: var(--typewriter); }
+.card-when { font-family: var(--display); }
+.card-for { color: rgba(33,29,22,0.6); }
+.card-mark { margin-top: 0.6rem; font-family: var(--typewriter); font-size: 8pt;
+             color: rgba(33,29,22,0.55); }
+.card-cut { border-top: 1px dashed rgba(33,29,22,0.5); margin: 1.4rem 0; }
+
 /* ---- the print engine itself ---- */
 @page { margin: 15mm; }
 @media print {
