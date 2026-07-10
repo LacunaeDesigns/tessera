@@ -1295,3 +1295,98 @@ a:hover { color: #8A4B2D; }
 @media (min-width: 950px) {
   .sec-token { background-image: url('assets/bg-token-wide.jpg'); }
 }
+
+/* ---------------- interaction polish ----------------
+   Focus, touch, and quiet motion refinements (mobile pass, decisions.md). */
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+a, button, input, select, textarea { touch-action: manipulation; }
+button { -webkit-tap-highlight-color: transparent; }
+
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #B65432;
+  outline-offset: 2px;
+}
+.btn-cta:active { transform: translateY(1px); }
+.date-chip:active, .shelf-tabs button:active, .seal-swatch:active { transform: translateY(1px); }
+
+/* once-per-visit section reveals; landing.js only arms these when motion is
+   allowed, so without JS or with reduced motion everything is just visible */
+.reveal { opacity: 0; transform: translateY(10px); transition: opacity 0.55s ease-out, transform 0.55s ease-out; }
+.reveal.is-in { opacity: 1; transform: none; }
+
+/* machine-colour dots: same 26px look, a 42px touch target on touch screens */
+@media (pointer: coarse) {
+  .mc-dot {
+    width: 42px; height: 42px;
+    border: 8px solid transparent;
+    background-clip: padding-box;
+    box-shadow: inset 0 0 0 2px rgba(57,46,31,0.25);
+  }
+  .mc-dot--active { box-shadow: inset 0 0 0 2px var(--ink); }
+  .mc-swatches { gap: 2px; }
+}
+
+/* ---------------- mobile ergonomics (<=700px) ---------------- */
+@media (max-width: 700px) {
+  .sec-hero { padding: 32px 20px 64px; }
+  .hero-eyebrow { font-size: 11.5px; letter-spacing: 0.18em; }
+  .hero-lede { font-size: 16.5px; }
+  .hero-how { display: inline-block; padding: 10px 14px; }
+  .hero-helper { max-width: 36ch; margin-left: auto; margin-right: auto; }
+
+  /* the wizard becomes a centered dialog over a soft scrim */
+  .setup-overlay {
+    position: fixed;
+    z-index: 60;
+    align-items: center;
+    padding: 24px;
+    background: rgba(57,46,31,0.32);
+  }
+  .setup-card {
+    width: min(420px, 100%);
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    padding: 24px 24px 26px;
+    padding-bottom: calc(26px + env(safe-area-inset-bottom));
+  }
+  .setup-footer { gap: 12px; }
+  .setup-skip, .setup-go { white-space: nowrap; min-height: 44px; }
+  .setup-x { padding: 10px; top: 4px; right: 6px; }
+  .setup-select, .setup-custom { font-size: 16px; }
+
+  /* the sound pill sits above the machine instead of colliding with it;
+     justify-content must reset because it acts on the vertical axis once
+     the wrap is a column (the scene's unscaled 700px layout box would be
+     vertically centered and overflow upward over the hero copy) */
+  .scene-wrap { flex-direction: column; align-items: center; justify-content: flex-start; }
+  .tw-sound { position: static; order: -1; align-self: flex-end; margin: 0 2px 8px 0; min-height: 34px; }
+
+  /* comfortable touch sizes */
+  .date-chip { padding: 10px 15px; }
+  .shelf-tabs button { padding: 11px 14px; }
+  .hw-link { padding: 8px 6px; }
+  .hw-seal { padding: 11px 18px; }
+
+  /* the shelf becomes a swipeable rail; the next card peeks at the edge */
+  .shelf-row-cards {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    gap: 22px;
+    padding: 10px 44px 16px 24px;
+    scrollbar-width: none;
+  }
+  .shelf-row-cards::-webkit-scrollbar { display: none; }
+  .env-card { flex: none; scroll-snap-align: center; }
+
+  /* seal + footer rhythm */
+  .seal-grid { gap: 30px; }
+  .seal-preview { padding: 22px 20px; }
+  .footer-meta { text-align: left; }
+}

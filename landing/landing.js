@@ -74,6 +74,8 @@
   function reduced() {
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
+  var mobileQ = window.matchMedia ? window.matchMedia('(max-width: 700px)') : null;
+  function isMobile() { return mobileQ ? mobileQ.matches : window.innerWidth <= 700; }
   function soundOn() { return state.soundOnU !== null ? state.soundOnU : CONFIG.soundOn; }
   function shelfStyle() { return state.shelfStyleU || CONFIG.shelfStyle; }
   function machineColor() { return state.machineColorU || CONFIG.machineColor; }
@@ -186,10 +188,19 @@
     var w = wrap.clientWidth || 960;
     var s = Math.min(1, w / 985);
     scene.style.transform = 'scale(' + s + ')';
-    wrap.style.height = Math.round(700 * s) + 'px';
-    /* overlay chrome sits outside the scaled scene so it stays readable */
-    refs.setupOverlay.style.paddingTop = Math.round(300 * s) + 'px';
-    refs.soundToggle.style.right = Math.max(0, Math.round((w - 960 * s) / 2)) + 'px';
+    /* overlay chrome sits outside the scaled scene so it stays readable;
+       on phones the CSS turns the wizard into a fixed dialog and puts the
+       sound pill in flow above the machine, so the inline offsets (and the
+       pill's height) must be accounted for differently there */
+    if (isMobile()) {
+      refs.setupOverlay.style.paddingTop = '';
+      refs.soundToggle.style.right = '';
+      wrap.style.height = Math.round(700 * s + refs.soundToggle.offsetHeight + 8) + 'px';
+    } else {
+      refs.setupOverlay.style.paddingTop = Math.round(300 * s) + 'px';
+      refs.soundToggle.style.right = Math.max(0, Math.round((w - 960 * s) / 2)) + 'px';
+      wrap.style.height = Math.round(700 * s) + 'px';
+    }
   }
   function applyMachineColor() {
     var c = machineColor();
@@ -509,6 +520,26 @@
   }
   function renderSound() {
     refs.soundToggle.textContent = soundOn() ? 'Bell & keys: on' : 'Bell & keys: off';
+    refs.soundToggle.setAttribute('aria-pressed', String(soundOn()));
+  }
+
+  /* ---------- quiet reveals (skipped entirely under reduced motion) ---------- */
+  function armReveals() {
+    if (reduced() || !window.IntersectionObserver) return;
+    var els = document.querySelectorAll('.how-card, .about-card, .token-inner > div');
+    var io = new IntersectionObserver(function (entries) {
+      for (var k = 0; k < entries.length; k++) {
+        if (entries[k].isIntersecting) {
+          entries[k].target.classList.add('is-in');
+          io.unobserve(entries[k].target);
+        }
+      }
+    }, { threshold: 0.15 });
+    for (var i = 0; i < els.length; i++) {
+      els[i].classList.add('reveal');
+      if (els[i].classList.contains('how-card')) els[i].style.transitionDelay = (i % 3) * 70 + 'ms';
+      io.observe(els[i]);
+    }
   }
   function renderSwatches() {
     var holder = refs.mcSwatches;
@@ -723,10 +754,13 @@
   function renderShelf() {
     var style = shelfStyle();
     var letters = shelfLetters();
-    var key = style + '|' + state.sealedList.length;
+    var rail = isMobile(); /* one swipeable shelf row on phones, rows of 3 above */
+    var key = style + '|' + state.sealedList.length + '|' + (rail ? 'rail' : 'rows');
     var tabs = refs.shelfTabs.children;
     for (var t = 0; t < tabs.length; t++) {
-      tabs[t].classList.toggle('active', tabs[t].getAttribute('data-style') === style);
+      var active = tabs[t].getAttribute('data-style') === style;
+      tabs[t].classList.toggle('active', active);
+      tabs[t].setAttribute('aria-pressed', String(active));
     }
     refs.shelfShelves.hidden = style !== 'shelves';
     refs.shelfPigeon.hidden = style !== 'pigeonholes';
@@ -735,11 +769,12 @@
     lastShelfKey = key;
 
     var i;
+    var chunk = rail ? Math.max(letters.length, 1) : 3;
     while (refs.shelfShelves.firstChild) refs.shelfShelves.removeChild(refs.shelfShelves.firstChild);
-    for (i = 0; i < letters.length; i += 3) {
+    for (i = 0; i < letters.length; i += chunk) {
       var row = el('div', 'shelf-row');
       var cards = el('div', 'shelf-row-cards');
-      for (var j = i; j < Math.min(i + 3, letters.length); j++) cards.appendChild(envCard(letters[j], false));
+      for (var j = i; j < Math.min(i + chunk, letters.length); j++) cards.appendChild(envCard(letters[j], false));
       row.appendChild(cards);
       row.appendChild(el('div', 'shelf-lip'));
       refs.shelfShelves.appendChild(row);
@@ -1003,6 +1038,12 @@
     fitScene();
     if (window.ResizeObserver) new ResizeObserver(fitScene).observe(refs.sceneWrap);
     else window.addEventListener('resize', fitScene);
+    if (mobileQ) {
+      var onMq = function () { renderShelf(); fitScene(); };
+      if (mobileQ.addEventListener) mobileQ.addEventListener('change', onMq);
+      else if (mobileQ.addListener) mobileQ.addListener(onMq);
+    }
+    armReveals();
 
     startDemo();
   }
