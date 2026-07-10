@@ -678,6 +678,8 @@
       refs.sealedId.textContent = state.sealed.fields.id;
       refs.sealedTo.textContent = state.sealed.fields.to;
       refs.sealedOpens.textContent = state.sealed.fields.openWhenNeeded ? 'when it’s needed' : dateInWords(state.sealed.fields.openOn);
+      var cal = document.getElementById('sealed-calendar');
+      if (cal) cal.hidden = !!state.sealed.fields.openWhenNeeded; /* no date, no calendar */
     }
   }
   function buildDateChips() {
@@ -807,6 +809,8 @@
     refs.shelfPigeon.hidden = style !== 'pigeonholes';
     refs.shelfCatalog.hidden = style !== 'card catalogue';
     refs.shelfEmpty.hidden = letters.length !== 0;
+    var la = document.getElementById('letters-actions');
+    if (la) la.hidden = letters.length === 0;
     if (key === lastShelfKey) return;
     lastShelfKey = key;
 
@@ -1025,6 +1029,15 @@
     });
     $('sealed-download').addEventListener('click', function () {
       if (state.sealed) TesseraExport.download(state.sealed);
+    });
+    $('sealed-calendar').addEventListener('click', function () {
+      if (state.sealed) TesseraReminders.downloadOne(state.sealed.fields);
+    });
+    $('cal-all').addEventListener('click', function () {
+      TesseraReminders.downloadAll(TesseraState.getRegistry());
+    });
+    $('wallet-card').addEventListener('click', function () {
+      TesseraReminders.printCard(TesseraState.getRegistry());
     });
     $('print-close').addEventListener('click', TesseraPrint.hide);
     $('print-go').addEventListener('click', function () { window.print(); });

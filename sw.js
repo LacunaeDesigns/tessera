@@ -12,6 +12,7 @@ var CORE = [
   'landing/landing.css',
   'landing/landing.js',
   'landing/opening.js',
+  'landing/reminders.js',
   'version.json',
   'js/version.js',
   'js/state.js',

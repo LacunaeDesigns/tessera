@@ -1498,3 +1498,6 @@ body.open-mode { overflow: hidden; }
 /* a letter kept for someone else — present on the shelf, visibly unopened */
 .env-card--kept { filter: saturate(0.7); }
 .env-card--kept .env-foot span:first-child { font-style: italic; }
+
+/* whole-shelf reminder actions */
+.letters-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 18px 0 6px; }
