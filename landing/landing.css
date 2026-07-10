@@ -151,7 +151,7 @@ a:hover { color: #8A4B2D; }
   overflow: clip;
   padding: 44px 20px 90px;
   background-color: #FBF3EC;
-  background-image: url('assets/bg-hero.png');
+  background-image: url('assets/bg-hero-9x16.jpg');
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
@@ -1253,18 +1253,33 @@ a:hover { color: #8A4B2D; }
   line-height: 1.9;
 }
 
-/* ---------------- wide-screen backgrounds ----------------
-   The floral art was authored around a 1100-1700px canvas (bg-hero.png is
-   portrait, so cover scales it by width). Past ~1480px the flowers blow up
-   with the viewport; instead, draw the art as a centered band at its
-   designed scale and fade its edges into the section colour.
-   Last in the file on purpose: it must override the sections' own
-   background-image at equal specificity. */
+/* ---------------- responsive backgrounds ----------------
+   Last in the file on purpose: these override the sections' own
+   background-image at equal specificity.
 
-.sec-hero, .sec-token, .sec-letters { isolation: isolate; }
+   Hero: art-directed variants of the same composition, one per screen
+   shape, so cover never has to blow the flowers up. The hero box is
+   roughly viewport-width x 1500px on desktop, so the width breakpoints
+   approximate the box's aspect ratio (16:9 / 4:3 / 3:4 / 9:16). */
+@media (min-width: 900px) {
+  .sec-hero { background-image: url('assets/bg-hero-3x4.jpg'); }
+}
+@media (min-width: 1500px) {
+  .sec-hero { background-image: url('assets/bg-hero-4x3.jpg'); }
+}
+@media (min-width: 2350px) {
+  .sec-hero { background-image: url('assets/bg-hero-16x9.jpg'); }
+}
+
+/* Token + letters (single-shape art, authored ~1550-1700px wide): past
+   ~1480px the flowers would blow up with the viewport, so draw the art as
+   a centered band at its designed scale and fade its edges into the
+   section colour. Replace with art-directed variants like the hero once
+   they exist. */
+.sec-token, .sec-letters { isolation: isolate; }
 @media (min-width: 1480px) {
-  .sec-hero, .sec-token, .sec-letters { background-image: none; }
-  .sec-hero::before, .sec-token::before, .sec-letters::before {
+  .sec-token, .sec-letters { background-image: none; }
+  .sec-token::before, .sec-letters::before {
     content: '';
     position: absolute;
     top: 0; bottom: 0; left: 50%;
@@ -1272,10 +1287,11 @@ a:hover { color: #8A4B2D; }
     transform: translateX(-50%);
     z-index: -1;
     background-repeat: no-repeat;
+    background-position: top center;
+    background-size: 100% auto;
     mask-image: linear-gradient(to right, transparent, black 240px, black calc(100% - 240px), transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, black 240px, black calc(100% - 240px), transparent);
   }
-  .sec-hero::before { background-image: url('assets/bg-hero.png'); background-position: center center; background-size: cover; }
-  .sec-token::before { background-image: url('assets/bg-token.png'); background-position: top center; background-size: 100% auto; }
-  .sec-letters::before { background-image: url('assets/bg-letters.png'); background-position: top center; background-size: 100% auto; }
+  .sec-token::before { background-image: url('assets/bg-token.png'); }
+  .sec-letters::before { background-image: url('assets/bg-letters.png'); }
 }
