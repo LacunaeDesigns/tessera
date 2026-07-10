@@ -1,5 +1,7 @@
 # Tessera — letters across time
 
+[![The Tessera writing desk: a watercolor page that says "A letter, waiting for its day", with a typewriter beginning "Dear reader, some letters are meant to wait years to be read."](.github/social-card.png)](https://tessera-letters.netlify.app/)
+
 **Tessera is an open format, a free tool, and a gentle ritual for writing letters that arrive years or decades from now** — to your child at eighteen, to yourself at sixty, to a stranger in 2126.
 
 > A place where people can store the things we send beyond time — for those who could use a hand and are in need of guidance, and also something to look forward to.
