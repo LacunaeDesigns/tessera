@@ -15,7 +15,7 @@ Letters across time: write, seal, print, keep. The docs are canon; when code and
 - **Pure modules** (`manifest.js`, `token.js`, `zip.js`, later `ics.js`, `crypt.js`) are dual-environment (browser global + `module.exports` guard) and contain no DOM, `Date.now`, `Math.random`, or locale calls.
 - **One seal path**: everything that seals a letter ends in the same `export.js` sequence.
 - **Storage**: single localStorage key `tessera_v1`; shape changes only via `state.migrate()`.
-- **Versioning triple**: `version.json` + `LOCAL_VERSION` (`js/main.js`) + `CACHE_VERSION` (`sw.js`) move together, only via `/release`, never by hand.
+- **Versioning triple**: `version.json` + `LOCAL_VERSION` (`js/version.js`) + `CACHE_VERSION` (`sw.js`) move together, only via `/release`, never by hand.
 - **Fixtures are law**: a fixture diff is a format event → spec version note + `decisions.md` entry, never a silent regeneration.
 - **Letter-facing copy** follows the prose rules in `docs/design-language.md`; prompt sets calibrate against `docs/features/open-when.md`. Run `node tools/prose-check.js` on any copy change.
 

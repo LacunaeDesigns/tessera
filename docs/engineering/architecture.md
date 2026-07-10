@@ -46,7 +46,7 @@ tools/
 - **One seal path**: compose, the front-door ceremony, series wizard (v0.3), and write-back (v0.2) all end in the same `export.js` sequence. Format bugs get exactly one place to live.
 - **Vendoring policy**: no CDNs, no package.json dependencies. Third-party code enters only by being copied in whole, licence header intact, into `js/vendor/` — and needs a decisions.md entry justifying it against "write the 120 lines instead."
 - **Storage**: everything under the single `tessera_v1` key; shape changes go through `state.migrate()`; the registry stores metadata only (privacy stance in features/registry.md).
-- **Versioning triple** (Perpetūra rule, kept): `version.json` + `LOCAL_VERSION` (main.js) + `CACHE_VERSION` (sw.js) bump together, via `/release`, never by hand.
+- **Versioning triple** (Perpetūra rule, kept): `version.json` + `LOCAL_VERSION` (`js/version.js`) + `CACHE_VERSION` (sw.js) bump together, via `/release`, never by hand.
 - **Screens**: hash-routed (`#write`, `#letters`, `#about`, `#print` is modal-like), each a `<section>` toggled by `main.js`; no history surprises; back button always works.
 - **No analytics.** Not off-by-default — absent. (A century-test A checkbox, and a values statement.)
 
