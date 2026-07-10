@@ -189,6 +189,7 @@
         tokenOk: results[1] ? results[1].ok : results[1],
         token: results[1] ? { redrawnFull: results[1].redrawnFull, redrawnSheet: results[1].redrawnSheet, enclosed: results[1].enclosed } : null,
         letterText: letterText,
+        readmeText: readmeEntry ? asText(readmeEntry.data) : null,
         warnings: warnings
       };
     });
@@ -375,15 +376,99 @@
     c.appendChild(navRow);
   }
 
+  /* ---- the ceremony: facts, a breath, then the letter ---- */
+
+  function reducedMotion() {
+    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   function reveal() {
     var c = $('#open-root');
     var r = view.result;
     c.innerHTML = '';
-    var wrap = el('div', 'opened-letter');
+    c.appendChild(el('h2', 'compose-q', 'It is yours to read.'));
+    c.appendChild(el('p', 'hint', 'Paper is the reference copy. You can print the letter and read it in your hands, or read it here.'));
+    var navRow = el('div', 'compose-nav');
+    var paper = el('button', 'btn-quiet', 'Read it on paper instead');
+    paper.type = 'button';
+    paper.addEventListener('click', readOnPaper);
+    navRow.appendChild(paper);
+    var here = el('button', 'btn-primary', 'Read it');
+    here.type = 'button';
+    here.addEventListener('click', ceremony);
+    navRow.appendChild(here);
+    c.appendChild(navRow);
+  }
+
+  function readOnPaper() {
+    var r = view.result;
+    root.TesseraPrint.printKit({
+      fields: {
+        id: r.facts.id || '',
+        to: r.facts.to || '',
+        from: r.facts.from || '',
+        written: r.facts.written || '',
+        openOn: r.facts.openOn || '',
+        openWhenNeeded: !!r.facts.openWhenNeeded,
+        occasion: r.facts.occasion || 'custom'
+      },
+      letterText: r.letterText || '',
+      readme: r.readmeText || '',
+      /* always the re-drawn token: foreign SVG never reaches innerHTML */
+      token: view.result.token ? { sheet: view.result.token.redrawnSheet } : null
+    });
+  }
+
+  function ceremony() {
+    var c = $('#open-root');
+    var r = view.result;
+    document.body.classList.add('ceremony-quiet');
+    c.innerHTML = '';
+
+    if (reducedMotion()) { renderLetter(); return; }
+
+    var intro = el('div', 'ceremony-intro ceremony-veil ceremony-in');
+    var facts = el('dl', 'seal-facts');
+    factRow(facts, 'From', r.facts.from || 'unknown');
+    factRow(facts, 'Sealed', r.facts.written ? M.dateInWords(r.facts.written) : 'long ago');
+    intro.appendChild(facts);
+    c.appendChild(intro);
+
+    setTimeout(function () {
+      if (location.hash !== '#open') return;
+      intro.classList.add('ceremony-fading');
+      setTimeout(function () {
+        if (location.hash !== '#open') return;
+        renderLetter();
+      }, 1000);
+    }, 2000);
+  }
+
+  function renderLetter() {
+    var c = $('#open-root');
+    var r = view.result;
+    c.innerHTML = '';
+    var wrap = el('div', 'opened-letter' + (reducedMotion() ? '' : ' ceremony-in'));
     var body = el('div', 'letter-body');
     body.textContent = r.letterText;
     wrap.appendChild(body);
+    var navRow = el('div', 'compose-nav');
+    var done = el('button', 'btn-quiet', 'Done');
+    done.type = 'button';
+    done.addEventListener('click', function () {
+      document.body.classList.remove('ceremony-quiet');
+      location.hash = '#home';
+    });
+    navRow.appendChild(done);
+    wrap.appendChild(navRow);
     c.appendChild(wrap);
+  }
+
+  /* leaving the screen by any road restores the chrome */
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    window.addEventListener('hashchange', function () {
+      document.body.classList.remove('ceremony-quiet');
+    });
   }
 
   var api = {
