@@ -18,7 +18,11 @@ var CORE = [
   'js/compose.js',
   'js/print.js',
   'js/registry.js',
-  'data/occasions.js'
+  'data/occasions.js',
+  'fonts/YoungSerif-Regular.ttf',
+  'fonts/CourierPrime-Regular.ttf',
+  'fonts/CourierPrime-Bold.ttf',
+  'fonts/CourierPrime-Italic.ttf'
 ];
 
 self.addEventListener('install', function (e) {
