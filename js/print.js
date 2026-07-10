@@ -41,6 +41,7 @@
       });
     promises.appendChild(ul);
     sheet.appendChild(promises);
+    sheet.appendChild(el('p', 'sheet-note', 'This page goes on the outside. Fold it around the sealed envelope, or paste it to the front.'));
     sheet.appendChild(footer(f.id, f.openWhenNeeded ? 'opens when needed' : 'opens ' + f.openOn));
     return sheet;
   }
