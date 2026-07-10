@@ -36,6 +36,8 @@ Format: date · decision · reasoning · who.
 
 - **2026-07-10 · Founding letters: v0.1 ships with the five already sealed.** Four letters written by Claude during the first real use of the writing room plus one by the author, all sealed through the real `export.js` path and archived in the gitignored `letters/` (four zips + one opened folder). The author may write more after ship; more letters is a life practice, not a release gate. Noted for honesty: founding letters live in their sealed folders and in the sealing browser's registry only — the public site's shelf starts empty for every visitor (per-device storage, by design), so "founding" means they exist, not that they are displayed. A curated public shelf, if ever wanted, is a separate future decision.
 
+- **2026-07-10 · Public era: default branch flips to `main`; docs-only fast-forwards allowed.** At the public flip the author set GitHub's default branch to `main`, so visitors, clones, and forks land on the released state that Netlify serves (supersedes the `dev`-default note in the repo decision above; `dev` stays the working branch, fork PRs get retargeted to `dev` by hand). Workflow nuance recorded with it: `main` may take **docs-only fast-forwards** from `dev` between releases when the public face needs accuracy (this entry and the README address fix are the first case); the app itself — anything the versioning triple covers — still moves only via `/release`. A `protect-main` ruleset (block force pushes, restrict deletions) guards the branch.
+
 ## Standing author gates
 1. Real USPTO/EUIPO trademark clearance before anything commercial (classes 9 + 16).
 2. v1.0 public announcement timing + copy.
