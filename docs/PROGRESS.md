@@ -2,7 +2,7 @@
 
 The living record of what is actually done, against [roadmap.md](roadmap.md). Update when a task lands; `/release` refuses if this file lies. The cross-machine twin is the Ariadne vault (`projects/tessera.md`) — status there, granularity here.
 
-**Snapshot (2026-07-10, night):** **v0.1.0 shipped.** The front door is live at tessera-letters.netlify.app (unlisted — no announcement), `main` minted and deployed, all gates re-run green the same evening. v0.2 (the opening) is next; plans are written.
+**Snapshot (2026-07-10):** **v0.2.0 shipped.** The opening is live at tessera-letters.netlify.app (still unlisted) — the fourth door receives, verifies, opens with ceremony, answers forward, and takes letters into custody. `main` fast-forwarded from `dev`, versioning triple at 0.2.0 / `'0.2.0'` / `'tessera-v0.2.0'`. All release gates re-run this session: Gate 1–3 green (five suites, prose clean, full browser walkthrough 375px-first), /spec-sync clean, century-audit all rows evidenced with one author-accepted physical-walkthrough waiver (kit unchanged from v0.1.0). The three remaining v0.2 plans (reminders, encryption, envelope-themes) are next; reminders first.
 
 ## v0.1 — Foundations
 
@@ -26,9 +26,9 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 
 | Item | State | Plan |
 |---|---|---|
-| Zip reader + verification core | done | [plans/v0.2-opening.md](plans/v0.2-opening.md) Tasks 1–2; `tools/test-open.js` green |
-| Receive · verify · ceremony (Tasks 3–4) | done, browser-verified | fourth door + date check + ceremony committed (`2dcc986`, `5f827d2`); QA log below |
-| Write-back + custody intake (Task 5) | done, browser-verified | reply lineage sealed end-to-end; schema 3 (`role`); QA log below |
+| Zip reader + verification core | shipped v0.2.0 | [plans/v0.2-opening.md](plans/v0.2-opening.md) Tasks 1–2; `tools/test-open.js` green |
+| Receive · verify · ceremony (Tasks 3–4) | shipped v0.2.0 | fourth door + date check + ceremony (`2dcc986`, `5f827d2`) |
+| Write-back + custody intake (Task 5) | shipped v0.2.0 | reply lineage end-to-end; schema 3 (`role`); `31a8bb5` |
 | ICS export + open-dates card | planned | [plans/v0.2-reminders.md](plans/v0.2-reminders.md) |
 | Passphrase privacy + escrow card + honesty page | planned | [plans/v0.2-encryption.md](plans/v0.2-encryption.md) |
 | Envelope generator + print themes | planned | [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) |
@@ -47,6 +47,46 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-10 (v0.2.0 — the opening ships)** — Released via `/release`. Version: minor bump to
+  0.2.0 (a whole new capability, the opening, with no format-breaking change — the manifest
+  `tessera` spec version stays 0.1; the reserved `writeback` field simply came alive and the
+  README gained a conditional, additive lineage line). Triple moved together: `version.json`
+  0.2.0 · `LOCAL_VERSION` `'0.2.0'` · `CACHE_VERSION` `'tessera-v0.2.0'`. What shipped: the fourth
+  door — a store-method zip reader, verification core (checksums + token re-derivation + README
+  fallback), the date interstitial, the ceremony (paper-first offer, chrome quiets, facts held a
+  breath, letter fades in; reduced-motion collapses), "Answer it forward." write-back carrying
+  `{inReplyTo, generation}` into the sealed manifest and README, and custody intake (facts-only
+  `role: "custodian"` entries, storage schema 3). Ship: `main` fast-forwarded from `dev`, pushed;
+  Netlify deploys `main` at tessera-letters.netlify.app (unlisted).
+
+  Gates re-run this session, all green: Gate 1 — syntax sweep over every tracked JS silent, five
+  module suites green (`test-manifest` with new writeback/lineage asserts, `test-zip`,
+  `test-token`, `test-state` at schema 3, `test-open` with writeback round-trip), fixtures
+  byte-identical. Gate 2 — prose clean. Gate 3 — full browser walkthrough 375px-first then
+  desktop: real wizard seal (auto-download, registry row persists reload), print overlay, opening
+  door across clean/tamper/early-open, ceremony + reduced-motion, both themes, no overflow, zero
+  console errors, SW re-registered (26 precached entries). /spec-sync clean after the
+  readme-template lineage addition.
+
+  Century audit (all rows evidenced this session; **physical walkthrough waived** — author-
+  accepted, decisions.md 2026-07-10: kit structurally identical to the v0.1.0 walkthrough, sole
+  new paper element is the wrap-tested lineage line):
+
+  | Row | Verdict | Evidence |
+  |---|---|---|
+  | A: no required URL in export | ✓ | reply README adds only the letter ID; "web addresses die, none required" intact |
+  | A: file:// + no external requests | ✓ | network log across open→verify→ceremony→answer→reply-seal: only same-origin, `blob:`, one inline `data:` icon — 0 external |
+  | A: fork = identical tool, no keys | ✓ | no package.json/build; opening feature pure vanilla |
+  | A: data only on device + exports | ✓ | custody intake stores facts-only locally; network log confirms nothing leaves |
+  | B: UTF-8, no BOM | ✓ | node hex check on all five files of a real reply |
+  | B: zip store method | ✓ | reply letter text found raw in zip bytes; suite green |
+  | B: manifest ⊂ README prose (incl. writeback) | ✓ | node: all seven facts incl. lineage in prose; originating letter emits none |
+  | B: dates ISO + words | ✓ | "the twenty-first of June, two thousand and forty-four (2044-06-21)" |
+  | B: media guidance | n-a | no media in v0.2 |
+  | B: token.svg plain, no scripts/refs/fonts | ✓ | only `xmlns` namespace + internal `url(#cut-*)`; token.js untouched |
+  | C: spec CC0 · tool MIT · format outlives project · decisions recorded | ✓ | headers unchanged; decisions.md has the three v0.2 entries + the waiver |
+  | D: paper completeness · cold-read · token-by-eye · checksums · assembly | ✓ (structure) | kit structurally identical to the v0.1.0 physical walkthrough; physical re-walk waived (above) |
 
 - **2026-07-10 (v0.2 write-back + custody intake)** — Task 5 of plans/v0.2-opening.md landed,
   closing the plan's implementation tasks. Write-back: "Answer it forward." after the ceremony

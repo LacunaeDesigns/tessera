@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  var LOCAL_VERSION = '0.1.0';
+  var LOCAL_VERSION = '0.2.0';
 
   var SCREENS = ['home', 'write', 'open', 'letters', 'about'];
 

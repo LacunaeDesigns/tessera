@@ -46,6 +46,8 @@ Format: date · decision · reasoning · who.
 
 - **2026-07-10 · Custody intake stores facts, never the letter.** *"I am keeping this for someone"* (verify screen, before any opening) records `{facts, role: "custodian", status: "kept"}` — no letter text, ever, matching the registry's privacy stance. Storage schema bumps to 3 via `state.migrate()`: every registry entry gains `role` (`"writer" | "custodian" | "opened"`), existing entries backfill to `"writer"`; `"opened"` is reserved unwritten for a future "letters you have opened" record. The shelf shows custodian entries under their own heading, "In your keeping". Intake dedupes by letter ID (a second press reports it is already kept).
 
+- **2026-07-10 · v0.2.0 physical-walkthrough waiver (author-accepted).** The century-audit's per-release physical walkthrough (print → cut → seal → cold-read) was not re-run for v0.2.0. Accepted trade: the opening feature is screen-only for the reader (receiving, verifying, ceremony, custody all happen on screen); the print kit is structurally identical to the kit physically walked at the v0.1.0 ship (same cover/letter/instructions/token sheets, same assembly line); and the sole new paper artifact is the reply's "In answer to:" lineage line, whose wrap width and content are asserted in `tools/test-manifest.js`. All other century-audit rows were evidenced this session (table in the PROGRESS.md release note). The full physical walkthrough is deferred to the next release that changes kit structure — the envelope-themes plan is the natural trigger.
+
 ## Standing author gates
 1. Real USPTO/EUIPO trademark clearance before anything commercial (classes 9 + 16).
 2. v1.0 public announcement timing + copy.
