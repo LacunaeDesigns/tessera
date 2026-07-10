@@ -26,8 +26,9 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 
 | Item | State | Plan |
 |---|---|---|
-| Zip reader + verification core | planned | [plans/v0.2-opening.md](plans/v0.2-opening.md) |
-| Receive · verify · ceremony · write-back · custody intake | planned | same |
+| Zip reader + verification core | done | [plans/v0.2-opening.md](plans/v0.2-opening.md) Tasks 1–2; `tools/test-open.js` green |
+| Receive · verify · ceremony (Tasks 3–4) | done, browser-verified | fourth door + date check + ceremony committed (`2dcc986`, `5f827d2`); QA log below |
+| Write-back + custody intake (Task 5) | planned | same plan |
 | ICS export + open-dates card | planned | [plans/v0.2-reminders.md](plans/v0.2-reminders.md) |
 | Passphrase privacy + escrow card + honesty page | planned | [plans/v0.2-encryption.md](plans/v0.2-encryption.md) |
 | Envelope generator + print themes | planned | [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) |
@@ -46,6 +47,20 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-10 (v0.2 ceremony)** — Task 4 of plans/v0.2-opening.md landed (`5f827d2`): the reveal
+  offers paper first ("Read it on paper instead" → shared print-kit preview, always the re-drawn
+  token, never the enclosed SVG — decision recorded in decisions.md), and reading here quiets the
+  chrome, holds the facts ~2s, and fades into the letter. Browser QA with a synthetic letter
+  (TSR-ce0a-e4d4, built from the real format helpers, deleted after): intake → verify (4/4
+  checksums, facts from manifest) → reveal → ceremony end-to-end; reduced-motion collapses
+  straight to the text (no intro, no animation class); leaving mid-ceremony by nav restores the
+  chrome instantly and the guarded timers never render the letter over the next screen; Done →
+  chrome back, `#home`; paper path renders all four sheets with the re-drawn token and Back
+  returns to the reveal; zero console errors; 375px clean (no horizontal overflow). Gate 1 green
+  (all five suites incl. test-open), prose clean. QA note for next time: the driver must route
+  through another hash between `#open` runs — navigating `#open`→`#open` fires no hashchange
+  (this, not an app bug, was the prior session's "flow stops" symptom).
 
 - **2026-07-10 (v0.1.0 — first ship)** — Released via `/release`. Version: the triple already
   read `0.1.0` / `'0.1.0'` / `'tessera-v0.1.0'` consistently and nothing had ever shipped, so
