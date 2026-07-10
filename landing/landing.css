@@ -1420,3 +1420,77 @@ select:focus-visible, textarea:focus-visible {
   .seal-preview { padding: 22px 20px; }
   .footer-meta { text-align: left; }
 }
+
+/* ================= THE OPENING DOOR (overlay) ================= */
+/* a focused takeover over a dimmed page; the ceremony gets its quiet.
+   Sits below the print overlay (z-index 90) so "read it on paper" covers it. */
+body.open-mode { overflow: hidden; }
+.open-overlay {
+  position: fixed; inset: 0; z-index: 70;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 40px 20px; overflow-y: auto;
+  background: rgba(57,46,31,0.38);
+}
+.open-card {
+  position: relative; width: min(640px, 100%);
+  background: #FFFDF6; border: 1px solid rgba(57,46,31,0.16); border-radius: 10px;
+  padding: 30px 34px; box-sizing: border-box;
+  box-shadow: 0 22px 60px rgba(40,30,15,0.42);
+}
+.open-x {
+  position: absolute; top: 12px; right: 14px;
+  background: none; border: none; font-size: 20px; line-height: 1;
+  color: rgba(57,46,31,0.4); cursor: pointer; padding: 6px;
+}
+.open-x:hover { color: var(--ink); }
+.open-q { font-family: var(--serif-display); font-weight: normal; font-size: 24px; margin: 4px 0 10px; }
+.open-hint { font-family: var(--ui); font-size: 14px; line-height: 1.6; color: rgba(57,46,31,0.65); margin: 0 0 18px; }
+.open-warn {
+  font-family: var(--ui); font-size: 13.5px; line-height: 1.55;
+  color: #8A4B2D; background: rgba(221,143,134,0.12);
+  border-left: 2px solid #DD8F86; border-radius: 3px; padding: 8px 12px; margin: 0 0 12px;
+}
+.open-drop {
+  border: 1px dashed rgba(57,46,31,0.35); border-radius: 8px;
+  padding: 28px 20px; text-align: center; font-family: var(--ui); color: rgba(57,46,31,0.6);
+}
+.open-drop-armed { border-color: #B65432; background: rgba(221,143,134,0.10); }
+.open-drop input { display: block; margin: 14px auto 0; font-family: var(--ui); }
+.open-nav { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+.btn-small { font-size: 13px; padding: 8px 14px; }
+
+/* verify: facts, checksums, token compare */
+.seal-facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; margin: 0 0 18px; font-size: 15px; }
+.seal-facts dt { font-family: var(--ui); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(57,46,31,0.5); align-self: center; }
+.seal-facts dd { margin: 0; }
+.verify-checks { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 6px; }
+.verify-checks li { display: flex; gap: 10px; align-items: baseline; font-size: 14px; font-family: var(--ui); }
+.verify-ok span:first-child { color: #4a7a45; }
+.verify-bad { color: #8A4B2D; }
+.verify-bad span:first-child { color: #b3402a; font-weight: bold; }
+.token-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 16px 0; align-items: start; }
+.token-compare figure { margin: 0; text-align: center; }
+.token-compare img, .token-compare svg { max-width: 100%; height: auto; }
+.token-compare figcaption { font-family: var(--ui); font-size: 12px; color: rgba(57,46,31,0.55); margin-top: 6px; }
+.token-large { margin-top: 12px; }
+.token-large svg { max-width: 100%; height: auto; }
+
+/* ceremony: a breath, then the letter */
+.ceremony-intro { margin-top: 8vh; text-align: center; }
+.ceremony-intro .seal-facts { display: inline-grid; text-align: left; }
+.ceremony-veil { transition: opacity 1s ease; }
+.ceremony-fading { opacity: 0; }
+.ceremony-in { animation: open-ceremony-in 1.1s ease both; }
+@keyframes open-ceremony-in { from { opacity: 0; } to { opacity: 1; } }
+.opened-letter .letter-body {
+  white-space: pre-wrap; max-width: 60ch; font-family: var(--serif-body);
+  font-size: 17px; line-height: 1.7;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ceremony-in { animation: none; }
+  .ceremony-veil { transition: none; }
+}
+@media (max-width: 560px) {
+  .open-card { padding: 24px 20px; }
+  .token-compare { grid-template-columns: 1fr; }
+}
