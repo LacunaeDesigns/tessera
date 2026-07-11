@@ -18,10 +18,22 @@
     <span class="ld-wordmark">Tessera</span>
   </a>
   <div class="ld-navlinks">
-    <a class="ld-navlink ld-navlink--strong" id="nav-write" href="#home">Write a letter</a>
-    <a class="ld-navlink" id="nav-open" href="#open">Open a letter</a>
-    <a class="ld-navlink" href="#letters">Your letters</a>
-    <a class="ld-navlink" href="#about">About</a>
+    <a class="ld-navlink ld-navlink--strong" id="nav-write" href="#home">
+      <svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16 5a2 2 0 0 1 3 3L8 19l-4 1z"/><path d="M14 7l3 3"/></svg>
+      <span class="nav-lb-full">Write a letter</span><span class="nav-lb-short">Write</span>
+    </a>
+    <a class="ld-navlink" id="nav-open" href="#open">
+      <svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5V19a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8.5"/><path d="M4 10.5l8-6 8 6"/><path d="M4 10.5l8 5.5 8-5.5"/></svg>
+      <span class="nav-lb-full">Open a letter</span><span class="nav-lb-short">Open</span>
+    </a>
+    <a class="ld-navlink" href="#letters">
+      <svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="1.5"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14.5" x2="20" y2="14.5"/><circle cx="12" cy="7.5" r="0.55" fill="currentColor" stroke="none"/></svg>
+      <span class="nav-lb-full">Your letters</span><span class="nav-lb-short">Letters</span>
+    </a>
+    <a class="ld-navlink" href="#about">
+      <svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.8" r="0.6" fill="currentColor" stroke="none"/></svg>
+      <span class="nav-lb-full">About</span><span class="nav-lb-short">About</span>
+    </a>
   </div>
 </nav>
 
@@ -325,6 +337,8 @@
     <p>A passphrase, if you use one, locks the letter’s words against a stranger who opens the box too early. It is privacy, not a clock. It cannot hold the date shut, only keep the words unreadable without the key. That is the honest limit, and Tessera will not dress it up as more.</p>
     <p>So the key lives on paper. When you lock a letter you can print a key card and give it to someone who is not the keeper, so that opening it takes two people meeting, not a server that has to still be running in forty years.</p>
     <p>Most letters are better left open. A passphrase no one remembers is a letter no one can read, and the people likeliest to lose it are the very heirs you were writing to. Lock a letter only when a stranger reading it early would truly harm someone.</p>
+    <h3 class="about-sub">Yours to keep</h3>
+    <p>Tessera is open source. You can <a class="about-link" href="https://github.com/LacunaeDesigns/tessera" target="_blank" rel="noopener noreferrer">clone or download it from GitHub</a> and run the whole thing from a folder on your own machine, with no website and no network. If this site ever goes dark, your copy still writes, seals, and opens letters. That is the century test: the tool should outlive its host.</p>
     <p class="about-fine">Your letters never leave this device. There is no account and no analytics of any kind.</p>
   </div>
 </section>
@@ -379,7 +393,8 @@
       <div class="footer-tagline">Letters across time. Paper is the reference copy.</div>
     </div>
     <div class="footer-meta">
-      Code MIT · Format CC0, public domain forever<br>A Lacunae project <span id="version-note" class="footer-version"></span>
+      Code MIT · Format CC0, public domain forever<br>
+      <a class="footer-link" href="https://github.com/LacunaeDesigns/tessera" target="_blank" rel="noopener noreferrer">Source on GitHub</a> · A Lacunae project <span id="version-note" class="footer-version"></span>
     </div>
   </div>
 </footer>
