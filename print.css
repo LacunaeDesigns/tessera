@@ -57,6 +57,28 @@
 .envelope-steps { margin-top: 1rem; font-size: 0.95rem; }
 .envelope-steps li { margin-bottom: 0.3rem; }
 
+/* ---- print themes (features/print-kit.md §v0.2) ----
+   A theme is a `theme-<name>` class on #print-root, chosen at print time.
+   Themes restyle only the cover, envelope, letter and token sheets, always
+   within the print rules (ink-light, hairline, serif body, pt sizes). The
+   instructions sheet is deliberately never theme-scoped — it stays byte-
+   identical across themes. letterpress = the untouched base look. */
+
+/* aerogramme — airmail edging, "par avion" kicker, lighter rules */
+.theme-aerogramme .sheet-cover, .theme-aerogramme .sheet-envelope {
+  border: 2.4mm solid transparent;
+  border-image: repeating-linear-gradient(45deg,
+    #b23a34 0 4px, transparent 4px 8px,
+    #365f9e 8px 12px, transparent 12px 16px) 9 repeat;
+}
+.theme-aerogramme .sheet-cover::before {
+  content: 'Par avion'; display: block; font-family: var(--display);
+  font-size: 8pt; letter-spacing: 0.24em; text-transform: uppercase;
+  color: #365f9e; margin-bottom: 0.5rem;
+}
+.theme-aerogramme .cover-rule { border-top-color: rgba(33,29,22,0.28); }
+.theme-aerogramme .cover-kicker { color: #365f9e; }
+
 /* the open-dates card — two per sheet, cut apart along the dashed line */
 .sheet-card .wallet-card { padding: 0.6rem 0.2rem; }
 .card-heading { font-family: var(--display); font-weight: normal; font-size: 1.15rem; margin-bottom: 0.5rem; }
