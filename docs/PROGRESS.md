@@ -49,6 +49,21 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 
 ## Log (newest first)
 
+- **2026-07-11 (one wash, glass sections — on dev, unreleased)** — The landing's hero watercolor
+  is now the page's only background: a fixed full-viewport layer (`body::before`, iOS-safe) that
+  every section scrolls over, each section's inner wrapper a translucent warm-white liquid-glass
+  panel (`backdrop-filter: blur(8px)`, with a more opaque `@supports` fallback so readability
+  never depends on the effect). The per-section art (`bg-seal`/`bg-token`/`bg-letters`) and the
+  `sec-fade` gradient seams are unreferenced; hero art variants now select by viewport
+  aspect-ratio instead of width; the seal and token grids gained `min(…, 100%)` column guards so
+  panel padding can't reintroduce a 375px overflow. CSS + HTML only — no JS, no format change.
+  Verified: six suites green; browser pass at 375px (hero, seal, how, about, token, letters,
+  footer, plus the writing phase — scrollWidth never exceeded the viewport) and 1280px (16:9
+  wash variant confirmed); zero console errors. QA note: the in-app pane's screenshot capture
+  kept timing out on the animated hero (pre-existing — reproduced on the pre-change checkout via
+  stash), so the visual pass ran through Playwright's own Chromium instead. decisions.md entry
+  same day.
+
 - **2026-07-11 (v0.3.1 — token generation 2, the watercolor mosaic)** — Released via `/release`.
   Version: patch bump to 0.3.1 (an art change within the token family; no format-breaking change —
   the manifest `tessera` spec version stays 0.1, `/spec-sync` confirms zero lines changed across

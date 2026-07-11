@@ -46,6 +46,21 @@ body {
   color: var(--ink);
   font-family: var(--serif-body);
 }
+
+/* the fixed wash: the hero art is the page's only background and the whole
+   page scrolls over it. A fixed layer, not background-attachment: fixed,
+   which iOS ignores. Responsive variants live at the end of the file. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: #FBF3EC;
+  background-image: url('assets/bg-hero-9x16.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
 [hidden] { display: none !important; }
 a { color: #B65432; }
 a:hover { color: #8A4B2D; }
@@ -100,18 +115,31 @@ a:hover { color: #8A4B2D; }
 }
 .sec-lede { color: rgba(57,46,31,0.6); margin: 0 0 36px; }
 
-.sec-fade {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 120px;
-  pointer-events: none;
-  z-index: 5;
+/* liquid-glass panels: each section floats on the wash as a translucent
+   sheet. Without backdrop-filter the sheet is simply more opaque. */
+.seal-inner, .how-inner, .about-card, .token-inner, .letters-inner {
+  background: rgba(255, 253, 246, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(96, 70, 60, 0.14);
 }
-.sec-fade--to-seal { background: linear-gradient(to bottom, transparent, #F6EEDD); }
-.sec-fade--to-how { background: linear-gradient(to bottom, transparent, #FBF6EC); }
-.sec-fade--to-token { height: 100px; background: linear-gradient(to bottom, transparent, #FBEDE6); }
-.sec-fade--to-letters { background: linear-gradient(to bottom, transparent, #F1F0E6); }
-.sec-fade--to-footer { height: 70px; background: linear-gradient(to bottom, transparent, #E6C7B8); }
+.seal-inner, .how-inner, .token-inner, .letters-inner {
+  padding: 44px clamp(20px, 4.5vw, 48px) 48px;
+}
+/* blur stays at 8px: the wash is soft watercolor, so a wider radius adds
+   nothing visually but rasterizes brutally on machines without GPU compositing */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .seal-inner, .how-inner, .about-card, .token-inner, .letters-inner {
+    background: rgba(255, 253, 246, 0.58);
+    -webkit-backdrop-filter: blur(8px) saturate(1.15);
+    backdrop-filter: blur(8px) saturate(1.15);
+  }
+  .ld-footer {
+    background: rgba(230, 199, 184, 0.6);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
 
 /* ---------------- nav ---------------- */
 
@@ -150,11 +178,6 @@ a:hover { color: #8A4B2D; }
   position: relative;
   overflow: clip;
   padding: 44px 20px 90px;
-  background-color: #FBF3EC;
-  background-image: url('assets/bg-hero-9x16.jpg');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
 }
 .hero-wrap { max-width: 1060px; margin: 0 auto; }
 .hero-copy { text-align: center; }
@@ -731,12 +754,6 @@ a:hover { color: #8A4B2D; }
 
 .sec-seal {
   position: relative;
-  background-color: #F6EEDD;
-  background-image: url('assets/bg-seal.jpg');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-  border-top: 1px solid rgba(57,46,31,0.1);
   padding: 74px 24px 84px;
 }
 .seal-inner { max-width: 980px; margin: 0 auto; }
@@ -745,7 +762,7 @@ a:hover { color: #8A4B2D; }
 
 .seal-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 44px;
   align-items: start;
 }
@@ -903,7 +920,7 @@ a:hover { color: #8A4B2D; }
 
 /* ---------------- how it works ---------------- */
 
-.sec-how { background: #FBF6EC; padding: 84px 24px; }
+.sec-how { padding: 84px 24px; }
 .how-inner { max-width: 980px; margin: 0 auto; }
 .how-grid {
   display: grid;
@@ -963,14 +980,11 @@ a:hover { color: #8A4B2D; }
 
 /* ---------------- the honest part ---------------- */
 
-.sec-about { position: relative; background: #FBF6EC; padding: 10px 24px 88px; }
+.sec-about { position: relative; padding: 10px 24px 88px; }
 .about-card {
   max-width: 660px;
   margin: 0 auto;
-  border: 1px solid rgba(57,46,31,0.18);
-  border-radius: 6px;
   padding: 36px 40px;
-  background: #FFFDF6;
 }
 .about-title { font-family: var(--serif-display); font-weight: normal; font-size: 24px; margin: 0 0 14px; }
 .about-card p { font-size: 15.5px; line-height: 1.7; color: rgba(57,46,31,0.75); margin: 0 0 12px; text-wrap: pretty; }
@@ -980,19 +994,13 @@ a:hover { color: #8A4B2D; }
 
 .sec-token {
   position: relative;
-  background-color: #FBEDE6;
-  background-image: url('assets/bg-token-9x16.jpg');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  border-top: 1px solid rgba(57,46,31,0.08);
   padding: 86px 24px;
 }
 .token-inner {
   max-width: 980px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 48px;
   align-items: center;
 }
@@ -1025,12 +1033,6 @@ a:hover { color: #8A4B2D; }
 
 .sec-letters {
   position: relative;
-  background-color: #F1F0E6;
-  background-image: url('assets/bg-letters-9x16.jpg');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  border-top: 1px solid rgba(57,46,31,0.08);
   padding: 86px 24px 96px;
 }
 .letters-inner { max-width: 980px; margin: 0 auto; }
@@ -1244,7 +1246,7 @@ a:hover { color: #8A4B2D; }
 
 /* ---------------- footer ---------------- */
 
-.ld-footer { background: #E6C7B8; color: #4A3626; padding: 54px 28px 60px; }
+.ld-footer { background: rgba(230,199,184,0.88); color: #4A3626; padding: 54px 28px 60px; }
 .footer-inner {
   max-width: 980px;
   margin: 0 auto;
@@ -1264,47 +1266,21 @@ a:hover { color: #8A4B2D; }
   line-height: 1.9;
 }
 
-/* ---------------- responsive backgrounds ----------------
-   Last in the file on purpose: these override the sections' own
+/* ---------------- responsive background ----------------
+   Last in the file on purpose: overrides the wash's default
    background-image at equal specificity.
 
-   Hero: art-directed variants of the same composition, one per screen
-   shape, so cover never has to blow the flowers up. The hero box is
-   roughly viewport-width x 1500px on desktop, so the width breakpoints
-   approximate the box's aspect ratio (16:9 / 4:3 / 3:4 / 9:16). */
-@media (min-width: 900px) {
-  .sec-hero { background-image: url('assets/bg-hero-3x4.jpg'); }
+   The wash fills the viewport, so the art-directed variants of the hero
+   composition (9:16 / 3:4 / 4:3 / 16:9) are chosen by the viewport's own
+   aspect ratio; cover never has to blow the flowers up. */
+@media (min-aspect-ratio: 2/3) {
+  body::before { background-image: url('assets/bg-hero-3x4.jpg'); }
 }
-@media (min-width: 1500px) {
-  .sec-hero { background-image: url('assets/bg-hero-4x3.jpg'); }
+@media (min-aspect-ratio: 1/1) {
+  body::before { background-image: url('assets/bg-hero-4x3.jpg'); }
 }
-@media (min-width: 2350px) {
-  .sec-hero { background-image: url('assets/bg-hero-16x9.jpg'); }
-}
-
-/* Letters: art-directed variants like the hero. The letters box is wider
-   and shallower (~viewport x 1000px on desktop), so the breakpoints sit
-   lower than the hero's. */
-@media (min-width: 700px) {
-  .sec-letters { background-image: url('assets/bg-letters-3x4.jpg'); }
-}
-@media (min-width: 1200px) {
-  .sec-letters { background-image: url('assets/bg-letters-4x3.jpg'); }
-}
-@media (min-width: 1700px) {
-  .sec-letters { background-image: url('assets/bg-letters-wide.jpg'); }
-}
-
-/* Token: the shallowest box on the page (~620px tall once its two columns
-   sit side by side around 750px), so it reaches the wide art soonest. */
-@media (min-width: 560px) {
-  .sec-token { background-image: url('assets/bg-token-3x4.jpg'); }
-}
-@media (min-width: 750px) {
-  .sec-token { background-image: url('assets/bg-token-4x3.jpg'); }
-}
-@media (min-width: 950px) {
-  .sec-token { background-image: url('assets/bg-token-wide.jpg'); }
+@media (min-aspect-ratio: 3/2) {
+  body::before { background-image: url('assets/bg-hero-16x9.jpg'); }
 }
 
 /* ---------------- interaction polish ----------------
