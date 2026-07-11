@@ -2,7 +2,7 @@
 
 The living record of what is actually done, against [roadmap.md](roadmap.md). Update when a task lands; `/release` refuses if this file lies. The cross-machine twin is the Ariadne vault (`projects/tessera.md`) — status there, granularity here.
 
-**Snapshot (2026-07-11):** **v0.3.1 shipped — the watercolor mosaic token.** The token disk's art is reborn as generation 2 (seeded pastel washes under a finer per-letter mosaic); generation 1 is frozen forever in `js/token-legacy.js` and `verifyLetter` falls back to it, so every previously sealed letter still verifies clean with no warning. No format change (fixtures byte-identical for the untouched files; old token fixtures renamed, never regenerated; new ones born). Triple at 0.3.1 / `'0.3.1'` / `'tessera-v0.3.1'`; `main` fast-forwarded from `dev`. All gates re-run this session (six suites incl. both-generation token tests, prose, full browser walkthrough, spec-sync clean), century-audit rows evidenced with a real physical walkthrough (printed, cut, matched by eye — not waived). Remaining v0.2 plans: encryption, then envelope-themes.
+**Snapshot (2026-07-11):** **v0.3.2 shipped — the sealed-receipt overflow fix.** The mid-session 375px horizontal overflow (scrollWidth 444 after write → seal → open-overlay) is fixed: the sealed receipt's token SVG now sizes to its container instead of laying out at its raw 400px. One CSS rule, no format change. Previous: **v0.3.1 — the watercolor mosaic token.** The token disk's art is reborn as generation 2 (seeded pastel washes under a finer per-letter mosaic); generation 1 is frozen forever in `js/token-legacy.js` and `verifyLetter` falls back to it, so every previously sealed letter still verifies clean with no warning. No format change (fixtures byte-identical for the untouched files; old token fixtures renamed, never regenerated; new ones born). Triple at 0.3.1 / `'0.3.1'` / `'tessera-v0.3.1'`; `main` fast-forwarded from `dev`. All gates re-run this session (six suites incl. both-generation token tests, prose, full browser walkthrough, spec-sync clean), century-audit rows evidenced with a real physical walkthrough (printed, cut, matched by eye — not waived). Remaining v0.2 plans: encryption, then envelope-themes.
 
 ## v0.1 — Foundations
 
@@ -96,16 +96,23 @@ Every roadmap item through v2.x now has a written plan — index with confidence
   | D: paper completeness · cold-read · checksums · assembly | ✓ | kit structure unchanged; only the token's tile art changed |
   | D: token authenticates by eye | ✓ (done, not waived) | author printed a gen-2 sheet, cut along the dashed line, halves matched by eye |
 
-- **2026-07-11 (sealed-receipt token overflow fix)** — The browser-QA layout quirk (scrollWidth 444
+- **2026-07-11 (v0.3.2 — sealed-receipt overflow fix)** — Released via `/release`. Version: patch
+  bump to 0.3.2 (a layout fix, no format change). Triple: `version.json` 0.3.2 · `LOCAL_VERSION`
+  `'0.3.2'` · `CACHE_VERSION` `'tessera-v0.3.2'`. The browser-QA layout quirk (scrollWidth 444
   at a 375px viewport after write → seal → open-overlay, no reload) is fixed. Root cause was not the
   typewriter scene as the QA pass suggested — `.sec-hero { overflow: clip }` contains it in every
   phase — but the sealed receipt injecting the full token SVG (`width="400"` attributes) into
   `.sealed-token` (max-width 230px) with no svg sizing rule, inside `.sec-seal`, which has no
   overflow clip: right edge exactly 444. One-line fix in `landing.css`
   (`.sealed-token svg { width: 100%; height: auto; }`, the `.token-half svg` idiom); the token now
-  renders at its container width. Verified in-browser: scrollWidth === clientWidth at every phase
-  (fresh, writing, sealed, open overlay) at 375px and desktop; six Gate-1 suites green; no copy
-  changes. Full reasoning in decisions.md (same day).
+  renders at its container width. Verified independently in-browser this session (twice — once on
+  the fix branch, once after merge): scrollWidth === clientWidth === 375 at every phase (fresh,
+  writing, sealed, open overlay); six Gate-1 suites green; prose clean (same justified WARNs);
+  `/spec-sync` trivial (no format-critical file touched); zero console errors; no copy changes.
+  Ship: `main` fast-forwarded from `dev`, pushed; Netlify deploys `main` (unlisted).
+
+  Century audit: n/a for a CSS-only fix touching no format/century-test row; letter-level rows
+  carry unchanged from v0.3.1.
 
 - **2026-07-11 (v0.3.0 — one front end)** — Released via `/release`. Version: minor bump to 0.3.0
   (two whole capabilities land — reminders and the unified front end — with no format-breaking
