@@ -78,6 +78,49 @@
     return fl;
   }
 
+  /* a step-by-step fold diagram in hairline SVG (self-generated, no assets):
+     dashed = the fold to make this step, solid = folds already done. Pictures
+     outlive the language: a reader who can't read the words can still follow. */
+  function envelopeGuide() {
+    var A = 'fill="none" stroke="#211d16" stroke-linecap="round" stroke-linejoin="round"';
+    var sheet = '<rect x="12" y="4" width="40" height="40" rx="1.5" stroke-width="1"/>';
+    var foldT = '<line x1="12" y1="17" x2="52" y2="17" stroke-width="0.9"';
+    var foldB = '<line x1="12" y1="31" x2="52" y2="31" stroke-width="0.9"';
+    var dash = ' stroke-dasharray="2.2 2.2"/>';
+    var svg = function (inner) {
+      return '<svg viewBox="0 0 64 52" ' + A + '>' + sheet + inner + '</svg>';
+    };
+    var steps = [
+      { n: '1', cap: 'top down', svg: svg(
+        foldT + dash + foldB + ' opacity="0.35"' + dash +
+        '<path d="M32 6 L32 13.5" stroke-width="1"/><path d="M28.5 10 L32 13.8 L35.5 10" stroke-width="1"/>') },
+      { n: '2', cap: 'bottom up', svg: svg(
+        foldT + '/>' + foldB + dash +
+        '<path d="M32 42 L32 34.5" stroke-width="1"/><path d="M28.5 38 L32 34.2 L35.5 38" stroke-width="1"/>') },
+      { n: '3', cap: 'glue sides', svg: svg(
+        foldT + '/>' + foldB + '/>' +
+        '<rect x="6" y="20" width="6" height="8" stroke-width="0.8"' + dash +
+        '<rect x="52" y="20" width="6" height="8" stroke-width="0.8"' + dash +
+        '<path d="M4.5 24 L10.5 24" stroke-width="1"/><path d="M8 21.6 L11 24 L8 26.4" stroke-width="1"/>' +
+        '<path d="M59.5 24 L53.5 24" stroke-width="1"/><path d="M56 21.6 L53 24 L56 26.4" stroke-width="1"/>') },
+      { n: '4', cap: 'sealed', svg:
+        '<svg viewBox="0 0 64 52" ' + A + '>' +
+        '<rect x="12" y="9" width="40" height="30" rx="1.5" stroke-width="1"/>' +
+        '<path d="M12 9 L32 25 L52 9" stroke-width="0.9"/>' +
+        '<circle cx="32" cy="22" r="2.6" stroke-width="0.9"/></svg>' }
+    ];
+    var guide = el('div', 'envelope-guide');
+    steps.forEach(function (st) {
+      var cell = el('div', 'envelope-guide-step');
+      var art = el('div', 'envelope-guide-art');
+      art.innerHTML = st.svg; /* self-generated hairline SVG, no user content */
+      cell.appendChild(art);
+      cell.appendChild(el('span', 'envelope-guide-cap', st.n + '. ' + st.cap));
+      guide.appendChild(cell);
+    });
+    return guide;
+  }
+
   function envelopeSheet(s) {
     var M = root.TesseraManifest;
     var f = s.fields;
@@ -102,6 +145,7 @@
       (f.openWhenNeeded ? 'when the title says so' : M.dateInWords(f.openOn)) + '.'));
     template.appendChild(flap);
     sheet.appendChild(template);
+    sheet.appendChild(envelopeGuide());
 
     var steps = el('ol', 'envelope-steps');
     ['Fold along the upper fold line, bringing the top third down over the middle.',
