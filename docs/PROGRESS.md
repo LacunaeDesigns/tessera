@@ -2,7 +2,7 @@
 
 The living record of what is actually done, against [roadmap.md](roadmap.md). Update when a task lands; `/release` refuses if this file lies. The cross-machine twin is the Ariadne vault (`projects/tessera.md`) — status there, granularity here.
 
-**Snapshot (2026-07-11):** **v0.3.2 shipped — the sealed-receipt overflow fix.** The mid-session 375px horizontal overflow (scrollWidth 444 after write → seal → open-overlay) is fixed: the sealed receipt's token SVG now sizes to its container instead of laying out at its raw 400px. One CSS rule, no format change. Previous: **v0.3.1 — the watercolor mosaic token.** The token disk's art is reborn as generation 2 (seeded pastel washes under a finer per-letter mosaic); generation 1 is frozen forever in `js/token-legacy.js` and `verifyLetter` falls back to it, so every previously sealed letter still verifies clean with no warning. No format change (fixtures byte-identical for the untouched files; old token fixtures renamed, never regenerated; new ones born). Triple at 0.3.1 / `'0.3.1'` / `'tessera-v0.3.1'`; `main` fast-forwarded from `dev`. All gates re-run this session (six suites incl. both-generation token tests, prose, full browser walkthrough, spec-sync clean), century-audit rows evidenced with a real physical walkthrough (printed, cut, matched by eye — not waived). Remaining v0.2 plans: encryption, then envelope-themes.
+**Snapshot (2026-07-11):** **v0.3.3 shipped — one wash, glass sections.** The landing's hero watercolor is the page's only background (fixed `body::before` layer, iOS-safe); every section scrolls over it as a translucent liquid-glass panel (`backdrop-filter: blur(8px)`, more-opaque `@supports` fallback). Per-section art and `sec-fade` seams unreferenced; hero art variants keyed to viewport aspect ratio; `min(…,100%)` grid guards protect 375px. CSS/HTML only — no format change (spec stays 0.1, fixtures untouched). Triple at 0.3.3 / `'0.3.3'` / `'tessera-v0.3.3'`. All gates re-run in-session (six suites, prose, Playwright browser walkthrough with a real three-letter seal loop + A4/Letter print kit PDFs + offline + reduced-motion, century audit all rows evidenced, spec-sync clean). Previous: **v0.3.2 — the sealed-receipt overflow fix.** The mid-session 375px horizontal overflow (scrollWidth 444 after write → seal → open-overlay) is fixed: the sealed receipt's token SVG now sizes to its container instead of laying out at its raw 400px. One CSS rule, no format change. Previous: **v0.3.1 — the watercolor mosaic token.** The token disk's art is reborn as generation 2 (seeded pastel washes under a finer per-letter mosaic); generation 1 is frozen forever in `js/token-legacy.js` and `verifyLetter` falls back to it, so every previously sealed letter still verifies clean with no warning. No format change (fixtures byte-identical for the untouched files; old token fixtures renamed, never regenerated; new ones born). Triple at 0.3.1 / `'0.3.1'` / `'tessera-v0.3.1'`; `main` fast-forwarded from `dev`. All gates re-run this session (six suites incl. both-generation token tests, prose, full browser walkthrough, spec-sync clean), century-audit rows evidenced with a real physical walkthrough (printed, cut, matched by eye — not waived). Remaining v0.2 plans: encryption, then envelope-themes.
 
 ## v0.1 — Foundations
 
@@ -49,7 +49,55 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 
 ## Log (newest first)
 
-- **2026-07-11 (one wash, glass sections — on dev, unreleased)** — The landing's hero watercolor
+- **2026-07-11 (v0.3.3 — one wash, glass sections)** — Released via `/release`. Version: patch bump
+  to 0.3.3 (a landing restyle; no JS behavior change, no format change — `/spec-sync` confirms zero
+  lines changed across every format-critical file since v0.3.2). Triple moved together:
+  `version.json` 0.3.3 · `LOCAL_VERSION` `'0.3.3'` · `CACHE_VERSION` `'tessera-v0.3.3'`. What
+  shipped: the wash-and-glass redesign recorded in the log entry below (fixed hero watercolor as
+  the page's only background; sections as translucent liquid-glass panels). Gates, all re-run this
+  session with evidence: Gate 1 (no JS touched by the restyle; six suites PASS; zero fixture
+  diffs), Gate 2 (prose-check: 9 WARNs, all em-dashes in code comments or the two recorded
+  placeholder glyphs — no letter-facing copy changed), Gate 3 via Playwright Chromium (the in-app
+  pane's screenshot capture stalls on the animated hero — pre-existing, reproduced on the v0.3.2
+  checkout): 375px-first walkthrough with a real seal loop — three letters sealed through
+  export.js (TSR-2403-32a8 with custody, TSR-d92c-072c, TSR-891f-436a), zip verified (store
+  method bytes `00 00`, no BOM, SHA-256 of letter.txt independently recomputed and matched
+  checksums.txt), registry rows + reload persistence, print kit rendered as real A4 + Letter PDFs
+  (cover assembly line, letter sheet, instructions, token cut sheet, footers on every page),
+  wallet card PDF, offline reload served whole from `tessera-v0.3.2` SW cache (40 entries),
+  reduced-motion leaves no reveal armed, zero console errors, scrollWidth never exceeded the
+  viewport at 375 or 1280. Century audit: all rows ✓ or n-a with evidence (0 external requests
+  from localhost AND `file://`; app fully renders from `file://`; token.svg's only "http" is the
+  xmlns namespace identifier; custody prose confirmed in README). Physical walkthrough: no
+  format or print-surface change since the v0.3.1 physical pass (author printed, cut, matched) —
+  that result stands, per the v0.3.2 precedent. Found en route, pre-existing and out of scope
+  (flagged as a follow-up task): hardware-keyboard input during the greeting autotype interleaves
+  text into the letter (`onTaInput` lacks the guard `typeChar` has).
+
+  | Century-audit row | Verdict | Evidence |
+  |---|---|---|
+  | A1 no required URL in folder | ✓ | README.txt http occurrences: 0; "Web addresses die, so none is required" |
+  | A2 file://-clean, no external requests | ✓ | Playwright request log: 33/33 localhost, 0 external; file:// run renders + composes |
+  | A3 fork = identical tool | ✓ | no package.json, no node_modules, no build; js/vendor absent |
+  | A4 data only on device | ✓ | localStorage `tessera_v1` + downloaded zips; 0 external requests |
+  | B1 UTF-8, no BOM | ✓ | first bytes of all five files: no EF BB BF |
+  | B2 zip store method | ✓ | local header method bytes `00 00` |
+  | B3 manifest facts as README prose | ✓ | custody line verified: "The people who agreed to look after this letter: …" |
+  | B4 dates ISO + words | ✓ | "the eleventh of July, two thousand and twenty-six (2026-07-11)" |
+  | B5 media guidance | n-a | no media feature at v0.3 |
+  | B6 token.svg plain, no scripts/fonts/external | ✓ | greps clean; only "http" is the xmlns namespace identifier |
+  | C1 spec CC0 | ✓ | SPEC.md header: CC0 1.0 Universal |
+  | C2 tool MIT, self-contained | ✓ | LICENSE MIT; no build step, no deps |
+  | C3 format needs no project | ✓ | zero format-critical diffs since v0.3.2 (spec-sync) |
+  | C4 decisions recorded | ✓ | wash-and-glass entry, decisions.md same day |
+  | D1 paper is a complete letter | ✓ | kit PDF TSR-891f-436a: cover + letter + instructions + token |
+  | D2 README works cold | ✓ | cold-reader sections in kit PDF pp. 3-4 |
+  | D3 token authenticates by eye | ✓ | cut sheet + break line; renderer fixture-frozen, test-token PASS |
+  | D4 checksums an offer, not a requirement | ✓ | "Any computer of your era can do this check; none needs to." |
+  | D5 kit teaches its own assembly | ✓ | cover: "This page goes on the outside…" |
+  | Gate 4 physical walkthrough | ✓ (stands) | no format/print change since the v0.3.1 physical pass (author) |
+
+- **2026-07-11 (one wash, glass sections — on dev, committed f1f29dc)** — The landing's hero watercolor
   is now the page's only background: a fixed full-viewport layer (`body::before`, iOS-safe) that
   every section scrolls over, each section's inner wrapper a translucent warm-white liquid-glass
   panel (`backdrop-filter: blur(8px)`, with a more opaque `@supports` fallback so readability
