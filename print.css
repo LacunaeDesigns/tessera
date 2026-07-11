@@ -63,8 +63,8 @@
 .glue-edge-label { writing-mode: vertical-rl; }
 .envelope-flap { position: absolute; top: 66.66%; left: 0; right: 0; bottom: 0;
                  display: flex; flex-direction: column; align-items: center; justify-content: center;
-                 text-align: center; padding: 0 8mm; }
-.envelope-flap-line { font-family: var(--display); margin: 0.15rem 0; }
+                 text-align: center; padding: 0 4mm; }
+.envelope-flap-line { font-family: var(--display); margin: 0.1rem 0; }
 .envelope-guide { display: flex; justify-content: space-between; gap: 3mm; margin: 1rem 0 0.2rem; }
 .envelope-guide-step { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .envelope-guide-art svg { display: block; width: 16mm; max-width: 100%; height: auto; margin: 0 auto; }
@@ -168,6 +168,6 @@
      (heading, template, step diagrams, text steps, assembly diagram, footer)
      clears one page on both A4 (267mm) and the tighter Letter (249mm), with
      headroom for a flap date that wraps (far-future years render long) */
-  .envelope-template { height: 96mm; }
-  .envelope-flap-line { font-size: 11pt; }
+  .envelope-template { height: 88mm; }
+  .envelope-flap-line { font-size: 10pt; }
 }
