@@ -96,6 +96,17 @@ Every roadmap item through v2.x now has a written plan — index with confidence
   | D: paper completeness · cold-read · checksums · assembly | ✓ | kit structure unchanged; only the token's tile art changed |
   | D: token authenticates by eye | ✓ (done, not waived) | author printed a gen-2 sheet, cut along the dashed line, halves matched by eye |
 
+- **2026-07-11 (sealed-receipt token overflow fix)** — The browser-QA layout quirk (scrollWidth 444
+  at a 375px viewport after write → seal → open-overlay, no reload) is fixed. Root cause was not the
+  typewriter scene as the QA pass suggested — `.sec-hero { overflow: clip }` contains it in every
+  phase — but the sealed receipt injecting the full token SVG (`width="400"` attributes) into
+  `.sealed-token` (max-width 230px) with no svg sizing rule, inside `.sec-seal`, which has no
+  overflow clip: right edge exactly 444. One-line fix in `landing.css`
+  (`.sealed-token svg { width: 100%; height: auto; }`, the `.token-half svg` idiom); the token now
+  renders at its container width. Verified in-browser: scrollWidth === clientWidth at every phase
+  (fresh, writing, sealed, open overlay) at 375px and desktop; six Gate-1 suites green; no copy
+  changes. Full reasoning in decisions.md (same day).
+
 - **2026-07-11 (v0.3.0 — one front end)** — Released via `/release`. Version: minor bump to 0.3.0
   (two whole capabilities land — reminders and the unified front end — with no format-breaking
   change; the manifest `tessera` spec version stays 0.1, fixtures byte-identical). Triple moved
