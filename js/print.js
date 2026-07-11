@@ -46,6 +46,40 @@
     return sheet;
   }
 
+  function envelopeSheet(s) {
+    var M = root.TesseraManifest;
+    var f = s.fields;
+    var sheet = el('section', 'sheet sheet-envelope');
+    sheet.appendChild(el('h2', 'sheet-heading', 'The envelope'));
+    sheet.appendChild(el('p', 'sheet-note', 'Fold this sheet into an envelope for the letter inside. No cutting required.'));
+
+    var template = el('div', 'envelope-template');
+    template.appendChild(el('div', 'fold-line fold-line-upper'));
+    template.appendChild(el('div', 'fold-line fold-line-lower'));
+    template.appendChild(el('div', 'fold-line fold-line-outer'));
+    template.appendChild(el('div', 'glue-tab glue-tab-left', 'glue'));
+    template.appendChild(el('div', 'glue-tab glue-tab-right', 'glue'));
+    var flap = el('div', 'envelope-flap');
+    flap.appendChild(el('p', 'envelope-flap-line', 'A letter, sealed ' + M.dateInWords(f.written) + '.'));
+    flap.appendChild(el('p', 'envelope-flap-line', 'For ' + f.to + '.'));
+    flap.appendChild(el('p', 'envelope-flap-line', 'Opens ' +
+      (f.openWhenNeeded ? 'when the title says so' : M.dateInWords(f.openOn)) + '.'));
+    template.appendChild(flap);
+    sheet.appendChild(template);
+
+    var steps = el('ol', 'envelope-steps');
+    ['Fold along the upper dashed line, bringing the top third down over the middle.',
+      'Fold along the lower dashed line, bringing the bottom third up and over, so the flap sits on top.',
+      'Fold the glue tabs at each side inward, and glue or tape them down.',
+      'Trim the outer dashed line if you like a clean edge, or just fold it under.'].forEach(function (t) {
+        steps.appendChild(el('li', '', t));
+      });
+    sheet.appendChild(steps);
+
+    sheet.appendChild(footer(f.id, f.openWhenNeeded ? 'opens when needed' : 'opens ' + f.openOn));
+    return sheet;
+  }
+
   function letterSheet(s) {
     var f = s.fields;
     var sheet = el('section', 'sheet sheet-letter');
@@ -83,11 +117,13 @@
     return sheet;
   }
 
-  function kitSheets(sealed) {
+  function kitSheets(sealed, opts) {
     var occ = root.TesseraOccasions.bySlug(sealed.fields.occasion || 'custom');
     sealed.coverLine = occ.coverLine ? 'To be opened ' + occ.title.replace(/^Open /, '') + '.' : '';
     if (occ.group === 'open-when') sealed.coverLine = occ.title + '.';
+    var withEnvelope = opts && typeof opts.envelope === 'boolean' ? opts.envelope : !sealed.fields.openWhenNeeded;
     var sheets = [coverSheet(sealed)];
+    if (withEnvelope) sheets.push(envelopeSheet(sealed));
     if (sealed.letterText) sheets.push(letterSheet(sealed));
     sheets.push(instructionsSheet(sealed));
     if (sealed.token) sheets.push(tokenSheet(sealed));
@@ -180,7 +216,7 @@
     document.body.classList.remove('printing-preview');
   }
 
-  function printKit(sealed) { show(kitSheets(sealed)); }
+  function printKit(sealed, opts) { show(kitSheets(sealed, opts)); }
   function printRegister(entries) { show([registerSheet(entries)]); }
   function printCard(entries) { show([cardSheet(entries)]); }
   function printEscrowCard(o) { show([escrowSheet(o)]); }

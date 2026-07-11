@@ -11,7 +11,9 @@
 
 /* ---- print overlay (screen preview: stacked paper cards) ---- */
 #print-overlay { position: fixed; inset: 0; overflow: auto; background: var(--paper, #f7f3ea); padding: 1rem; z-index: 90; }
-.print-toolbar { display: flex; justify-content: space-between; max-width: 46rem; margin: 0 auto 1rem; }
+.print-toolbar { display: flex; justify-content: space-between; align-items: center; max-width: 46rem; margin: 0 auto 1rem; }
+.print-toolbar-left { display: flex; align-items: center; gap: 1rem; }
+.print-opt { font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; }
 .sheet { background: #fdfbf5; color: #211d16; max-width: 46rem; margin: 0 auto 1.5rem;
          padding: 2.2rem 2.4rem; border: 1px solid rgba(33,29,22,0.18); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 .sheet-footer { margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(33,29,22,0.25);
@@ -30,6 +32,29 @@
 .register-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
 .register-table td, .register-table th { border-bottom: 1px solid rgba(33,29,22,0.25);
                   padding: 0.35rem 0.5rem; text-align: left; }
+
+/* the envelope fold-and-glue template — a letter sheet folded in thirds
+   becomes its own envelope (features/print-kit.md). Dashed hairlines only,
+   no filled areas (ink-light rule); screen preview shows it as a card,
+   the print block sizes the template in mm so it fits A4 and Letter alike. */
+.envelope-template { position: relative; height: 20rem; margin: 1rem 0; border: 1px solid rgba(33,29,22,0.2); }
+.fold-line { position: absolute; left: 0; right: 0; border-top: 0.5pt dashed rgba(33,29,22,0.5); }
+.fold-line-upper { top: 33.33%; }
+.fold-line-lower { top: 66.66%; }
+.fold-line-outer { position: absolute; top: 4mm; right: 4mm; bottom: 4mm; left: 4mm;
+                    border: 0.5pt dashed rgba(33,29,22,0.35); }
+.glue-tab { position: absolute; top: 40%; width: 10mm; height: 16mm;
+            border: 0.5pt dashed rgba(33,29,22,0.5); display: flex; align-items: center;
+            justify-content: center; font-family: var(--typewriter); font-size: 8pt;
+            color: rgba(33,29,22,0.6); }
+.glue-tab-left { left: 4mm; }
+.glue-tab-right { right: 4mm; }
+.envelope-flap { position: absolute; top: 66.66%; left: 0; right: 0; bottom: 0;
+                 display: flex; flex-direction: column; align-items: center; justify-content: center;
+                 text-align: center; padding: 0 8mm; }
+.envelope-flap-line { font-family: var(--display); margin: 0.15rem 0; }
+.envelope-steps { margin-top: 1rem; font-size: 0.95rem; }
+.envelope-steps li { margin-bottom: 0.3rem; }
 
 /* the open-dates card — two per sheet, cut apart along the dashed line */
 .sheet-card .wallet-card { padding: 0.6rem 0.2rem; }
@@ -59,4 +84,9 @@
            break-after: page; font-size: 11.5pt; }
   .sheet:last-child { break-after: auto; }
   .letter-body { font-size: 11.5pt; }
+  /* envelope template: fits the printable area on both A4 (267x180mm) and
+     Letter (249x186mm) minus room for the heading, steps and footer above/below */
+  .envelope-template { height: 150mm; }
+  .envelope-flap-line { font-size: 11pt; }
+  .glue-tab { font-size: 7pt; }
 }

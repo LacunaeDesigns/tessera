@@ -1054,7 +1054,10 @@
     refs.keepCopy.addEventListener('change', function (e) { state.keepCopy = e.target.checked; });
     refs.sealLetterBtn.addEventListener('click', sealNow);
     $('sealed-print').addEventListener('click', function () {
-      if (state.sealed) TesseraPrint.printKit(state.sealed);
+      if (!state.sealed) return;
+      var envelopeDefault = !state.sealed.fields.openWhenNeeded;
+      $('print-envelope').checked = envelopeDefault;
+      TesseraPrint.printKit(state.sealed, { envelope: envelopeDefault });
     });
     refs.sealedKeycard.addEventListener('click', function () {
       if (state.sealed && state.sealed.encrypted) {
@@ -1075,6 +1078,9 @@
     });
     $('print-close').addEventListener('click', TesseraPrint.hide);
     $('print-go').addEventListener('click', function () { window.print(); });
+    $('print-envelope').addEventListener('change', function (e) {
+      if (state.sealed) TesseraPrint.printKit(state.sealed, { envelope: e.target.checked });
+    });
     $('write-another').addEventListener('click', writeAnother);
 
     var tabs = refs.shelfTabs.children;

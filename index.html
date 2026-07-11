@@ -403,7 +403,10 @@
 
 <div id="print-overlay" hidden>
   <div class="print-toolbar">
-    <button id="print-close" class="btn-quiet">Back</button>
+    <div class="print-toolbar-left">
+      <button id="print-close" class="btn-quiet">Back</button>
+      <label class="print-opt"><input type="checkbox" id="print-envelope"> Include the envelope template</label>
+    </div>
     <button id="print-go" class="btn-cta">Print the kit</button>
   </div>
   <div id="print-root"></div>
