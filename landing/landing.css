@@ -146,13 +146,16 @@ a:hover { color: #8A4B2D; }
 .ld-nav {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   gap: 8px 22px;
   max-width: 1080px;
-  margin: 0 auto;
-  padding: 22px 28px 18px;
-  border-bottom: 1px solid rgba(57,46,31,0.14);
+  margin: 14px auto 0;
+  padding: 14px 24px;
+  background: rgba(255, 253, 246, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(96, 70, 60, 0.12);
 }
 .ld-logo {
   display: flex;
@@ -168,9 +171,21 @@ a:hover { color: #8A4B2D; }
   display: inline-block;
 }
 .ld-wordmark { font-family: var(--serif-display); font-size: 19px; letter-spacing: 0.05em; }
-.ld-navlinks { display: flex; gap: 22px; align-items: baseline; font-family: var(--ui); font-size: 13.5px; }
-.ld-navlink { color: rgba(57,46,31,0.6); text-decoration: none; }
+.ld-navlinks { display: flex; gap: 22px; align-items: center; font-family: var(--ui); font-size: 13.5px; }
+.ld-navlink { color: rgba(57,46,31,0.85); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: color 0.15s; }
+.ld-navlink:hover { color: var(--ink); }
 .ld-navlink--strong { color: var(--ink); }
+.nav-ic { display: none; }          /* desktop is text-only; icons appear at ≤700px */
+.nav-lb-short { display: none; }
+/* translucent glass when supported — placed after the base rule so it wins;
+   without backdrop-filter the base 0.86 sheet keeps the links readable */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ld-nav {
+    background: rgba(255, 253, 246, 0.62);
+    -webkit-backdrop-filter: blur(8px) saturate(1.15);
+    backdrop-filter: blur(8px) saturate(1.15);
+  }
+}
 
 /* ---------------- hero ---------------- */
 
@@ -991,6 +1006,7 @@ a:hover { color: #8A4B2D; }
 .about-title { font-family: var(--serif-display); font-weight: normal; font-size: 24px; margin: 0 0 14px; }
 .about-sub { font-family: var(--serif-display); font-weight: normal; font-size: 18px; margin: 22px 0 10px; }
 .about-card p { font-size: 15.5px; line-height: 1.7; color: rgba(57,46,31,0.75); margin: 0 0 12px; text-wrap: pretty; }
+.about-link { color: #B65432; text-decoration: underline; text-underline-offset: 2px; }
 .about-fine { font-family: var(--ui); font-size: 12.5px !important; color: rgba(57,46,31,0.5) !important; margin: 0 !important; }
 
 /* ---------------- token story ---------------- */
@@ -1268,6 +1284,8 @@ a:hover { color: #8A4B2D; }
   text-align: right;
   line-height: 1.9;
 }
+.footer-link { color: #4A3626; text-decoration: underline; text-underline-offset: 2px; }
+.footer-link:hover { color: #2c1f14; }
 
 /* ---------------- responsive background ----------------
    Last in the file on purpose: overrides the wash's default
@@ -1323,6 +1341,14 @@ select:focus-visible, textarea:focus-visible {
 
 /* ---------------- mobile ergonomics (<=700px) ---------------- */
 @media (max-width: 700px) {
+  /* the nav collapses to icons + short labels, evenly spread on their own row */
+  .ld-nav { margin: 8px 10px 0; padding: 10px 12px; gap: 6px 0; }
+  .ld-navlinks { flex: 1 1 100%; justify-content: space-between; gap: 0; }
+  .ld-navlink { flex-direction: column; align-items: center; gap: 4px; flex: 1; text-align: center; }
+  .nav-ic { display: block; width: 22px; height: 22px; }
+  .nav-lb-full { display: none; }
+  .nav-lb-short { display: block; font-size: 10.5px; letter-spacing: 0.02em; }
+
   .sec-hero { padding: 32px 20px 64px; }
   .hero-eyebrow { font-size: 11.5px; letter-spacing: 0.18em; }
   .hero-lede { font-size: 16.5px; }
