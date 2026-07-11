@@ -58,11 +58,12 @@
     /* theme-support ornament, shown only under .theme-wax-seal: a dashed
        placement circle around the letter's own token, inviting real wax */
     var mark = el('div', 'cover-seal-mark');
-    if (s.token) {
-      var ring = el('div', 'cover-seal-ring');
-      ring.innerHTML = s.token.full; /* the token disk SVG, generated from the seed */
-      mark.appendChild(ring);
-    }
+    var ring = el('div', 'cover-seal-ring');
+    /* the dashed circle is the placement mark; the token disk is an ornament
+       inside it when a full disk is available (the opening path passes only a
+       re-drawn half-sheet, no .full, so the ring stays an empty circle) */
+    if (s.token && s.token.full) ring.innerHTML = s.token.full; /* seed-generated SVG */
+    mark.appendChild(ring);
     mark.appendChild(el('p', 'cover-seal-note', 'seal here, if you have wax'));
     sheet.appendChild(mark);
     sheet.appendChild(footer(f.id, f.openWhenNeeded ? 'opens when needed' : 'opens ' + f.openOn));
