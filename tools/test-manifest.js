@@ -84,6 +84,17 @@ ok('readme speaks the lineage (manifest-in-prose rule)',
 ok('readme lineage wrapped ≤ 66 cols', rwb.split('\n').every(l => l.length <= 66));
 ok('originating readme has no lineage line', readme.indexOf('In answer to') === -1);
 
+/* encryption: optional field, present only when the letter file is locked (v0.2) */
+const encMan = M.buildManifest({
+  id: 'TSR-3333-4444', written: '2026-07-10', openOn: '2046-07-10',
+  from: 'A', to: 'B', tokenSeed: 's',
+  encryption: { algo: 'AES-256-GCM', kdf: 'PBKDF2-SHA256', iterations: 600000, salt: 'c2FsdA==', iv: 'aXY=', hint: 'our first city' }
+});
+ok('manifest carries encryption when set', encMan.encryption && encMan.encryption.algo === 'AES-256-GCM' && encMan.encryption.kdf === 'PBKDF2-SHA256');
+ok('manifest encryption keeps the hint', encMan.encryption.hint === 'our first city');
+ok('manifest stays version 0.1 with encryption (additive field)', encMan.tessera === '0.1');
+ok('manifest omits encryption when absent', !('encryption' in M.buildManifest({ id: 'x', written: 'w', openOn: 'o', from: 'f', to: 't', tokenSeed: 's' })));
+
 /* open-when: no-date variant */
 const rn = M.renderReadme({
   id: 'TSR-aaaa-bbbb', written: '2026-07-10', openOn: '2026-07-10',
