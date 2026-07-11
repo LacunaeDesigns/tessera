@@ -44,6 +44,11 @@
              color: rgba(33,29,22,0.55); }
 .card-cut { border-top: 1px dashed rgba(33,29,22,0.5); margin: 1.4rem 0; }
 
+/* the key-escrow card — passphrase or hint, handed to someone who isn't the custodian */
+.escrow-label { font-family: var(--typewriter); font-size: 8.5pt; text-transform: uppercase;
+                letter-spacing: 0.08em; color: rgba(33,29,22,0.6); margin: 1rem 0 0.2rem; }
+.escrow-value { font-family: var(--display); font-size: 1.3rem; }
+
 /* ---- the print engine itself ---- */
 @page { margin: 15mm; }
 @media print {

@@ -212,6 +212,12 @@
         <input class="seal-input" id="custody-note" placeholder="Keep with the family papers.">
         <p class="seal-helper seal-helper--tight">A custodian keeps the sealed letter safe and passes it on with its story. You can simply keep it yourself.</p>
 
+        <h3 class="seal-q seal-q--gap">Lock it? <span class="seal-optional">optional</span></h3>
+        <input class="seal-input" id="pass-phrase" type="password" autocomplete="new-password" placeholder="A passphrase, if you want one">
+        <input class="seal-input" id="pass-confirm" type="password" autocomplete="new-password" placeholder="Type it again">
+        <input class="seal-input" id="pass-hint" placeholder="A hint for the keeper (never the answer itself)">
+        <p class="seal-helper">A passphrase locks the letter file against strangers. It does not enforce the date, and most letters should not have one, because a lost passphrase is a lost letter. <a href="#honesty" class="seal-link" id="honesty-link">Read the honest part first.</a></p>
+
         <h3 class="seal-q seal-q--gap">Which seal?</h3>
         <button class="seal-pick" id="seal-pick-btn">
           <img class="seal-pick-img" id="seal-pick-img" src="landing/assets/wax-seal.webp" alt="">
@@ -246,6 +252,7 @@
       <p class="sealed-summary">For <span id="sealed-to"></span> · opens <span id="sealed-opens"></span>. The folder has downloaded: the letter, its manifest, a README for whoever finds it, and this token to cut in two.</p>
       <div class="sealed-actions">
         <button class="btn-quiet" id="sealed-print">Print the kit</button>
+        <button class="btn-quiet" id="sealed-keycard" hidden>Print the key card</button>
         <button class="btn-quiet" id="sealed-download">Download it again</button>
         <button class="btn-quiet" id="sealed-calendar">Add to calendar</button>
         <button class="btn-cta" id="write-another">Write another</button>
@@ -314,6 +321,10 @@
     <h2 class="about-title">The honest part</h2>
     <p>Tessera cannot stop anyone opening a letter early, and will not pretend it can. Sealing here is ritual and custody, not enforcement. There are no delivery promises, because there is no deliverer.</p>
     <p>What holds instead: a named keeper, a printed date, and the small ceremony of a token broken in two. The way it has always worked.</p>
+    <h3 class="about-sub" id="honesty">If you lock a letter</h3>
+    <p>A passphrase, if you use one, locks the letter’s words against a stranger who opens the box too early. It is privacy, not a clock. It cannot hold the date shut, only keep the words unreadable without the key. That is the honest limit, and Tessera will not dress it up as more.</p>
+    <p>So the key lives on paper. When you lock a letter you can print a key card and give it to someone who is not the keeper, so that opening it takes two people meeting, not a server that has to still be running in forty years.</p>
+    <p>Most letters are better left open. A passphrase no one remembers is a letter no one can read, and the people likeliest to lose it are the very heirs you were writing to. Lock a letter only when a stranger reading it early would truly harm someone.</p>
     <p class="about-fine">Your letters never leave this device. There is no account and no analytics of any kind.</p>
   </div>
 </section>
@@ -388,6 +399,7 @@
 <script src="js/token.js"></script>
 <script src="js/token-legacy.js"></script>
 <script src="js/zip.js"></script>
+<script src="js/crypt.js"></script>
 <script src="js/state.js"></script>
 <script src="js/export.js"></script>
 <script src="js/print.js"></script>

@@ -31,7 +31,7 @@ The living record of what is actually done, against [roadmap.md](roadmap.md). Up
 | Write-back + custody intake (Task 5) | shipped v0.2.0 | reply lineage end-to-end; schema 3 (`role`); `31a8bb5` |
 | ICS export + open-dates card | done, browser-verified (unreleased) | [plans/v0.2-reminders.md](plans/v0.2-reminders.md) all 3 tasks; `test-ics.js` + fixture; QA log below |
 | Unify the front end (landing = the app) | done, browser-verified (unreleased) | [superpowers/plans/2026-07-11-unify-front-end.md](superpowers/plans/2026-07-11-unify-front-end.md); opening + reminders now live in the landing; app.html retired; QA log below |
-| Passphrase privacy + escrow card + honesty page | planned | [plans/v0.2-encryption.md](plans/v0.2-encryption.md) |
+| Passphrase privacy + escrow card + honesty page | done, browser-verified (in review, unreleased) | [plans/v0.2-encryption.md](plans/v0.2-encryption.md); branch `feat/v0.2-encryption`. AES-256-GCM + PBKDF2 (`js/crypt.js`), optional manifest `encryption` field (additive, format stays 0.1), `letter.txt.enc` with README always plaintext, escrow key card (`print.js`), honesty page (#honesty), decrypt prompt in `opening.js`. QA log below |
 | Envelope generator + print themes | planned | [plans/v0.2-envelope-themes.md](plans/v0.2-envelope-themes.md) |
 
 ## v0.3+
@@ -48,6 +48,20 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-11 (v0.2 passphrase privacy — in review, unreleased)** — On `feat/v0.2-encryption`
+  (off `dev`), five commits: `js/crypt.js` AES-256-GCM + PBKDF2-SHA256 wrapper (fixture-tested,
+  the one module exempt from the no-randomness rule); optional `encryption` manifest field +
+  `open.js` encrypted-letter handling (detects `letter.txt.enc`, defers the plaintext-derived token
+  check, no false warnings); the format event (SPEC §9, schema doc, decisions.md — additive, format
+  stays 0.1 because the version string is baked into the token seed; `/spec-sync` clean); and the
+  UI/seal/print/honesty/open wiring. Two isolated files (`print.js` escrow card, `opening.js` decrypt
+  prompt) built by parallel subagents, reviewed and integrated. Browser QA (real WebCrypto, desktop +
+  375px): encrypted seal writes `letter.txt.enc` with README plaintext and the passphrase absent from
+  every folder byte; verify defers the token cleanly; wrong passphrase gives a clear retry; right
+  passphrase decrypts; unencrypted control still writes `letter.txt`; escrow card renders; full open
+  flow (date gate → passphrase → retry → unlock → read) works; no console errors; no 375px overflow.
+  All 7 Gate-1 suites + prose green. Not merged; awaiting review/release.
 
 - **2026-07-11 (v0.3.3 — one wash, glass sections)** — Released via `/release`. Version: patch bump
   to 0.3.3 (a landing restyle; no JS behavior change, no format change — `/spec-sync` confirms zero

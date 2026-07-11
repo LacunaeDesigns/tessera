@@ -26,6 +26,7 @@ The manifest is the machine-readable card catalogue of a letter. It never carrie
 | `custody` | array | Ordered custody chain | Each entry: `{ "holder": string, "instructions": string }`. First entry is the current custodian. See [custody.md](custody.md). |
 | `writeback` | object or null | Lineage, for reply chains (v0.2+) | `{ "inReplyTo": "<id>", "generation": 2 }`. `null` or absent for an originating letter. |
 | `media` | array | One-line descriptions of `media/` files | Each entry: `{ "file": "media/…", "note": string }`. Duplicated in prose in README.txt. |
+| `encryption` | object | How `letter.txt.enc` is locked (SPEC §9) | Present **only** when the letter file is `letter.txt.enc`. `{ "algo": "AES-256-GCM", "kdf": "PBKDF2-SHA256", "iterations": int, "salt": base64, "iv": base64, "hint"?: string }`. The `hint` is a writer-chosen recovery cue, optional and omitted when blank — never the passphrase itself. `README.txt` is never encrypted. Additive field in the 0.1 line; absent for unencrypted letters. |
 
 ## Forward-compatibility rules (the two that matter)
 

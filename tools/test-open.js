@@ -2,10 +2,12 @@
    tamper detection (warn, never block), manifest-damage fallback to README,
    and a zip round-trip with folder prefixes (engineering/testing.md) */
 'use strict';
+if (typeof globalThis.crypto === 'undefined') globalThis.crypto = require('crypto').webcrypto;
 const M = require('../js/manifest.js');
 const T = require('../js/token.js');
 const Z = require('../js/zip.js');
 const O = require('../js/open.js');
+const Crypt = require('../js/crypt.js');
 const crypto = require('crypto');
 
 let fails = 0;
@@ -118,6 +120,54 @@ function buildFolder(overrides) {
   ok('legacy token verifies clean (fallback)', v5.tokenOk === true, JSON.stringify(v5.warnings));
   ok('legacy: no token warning', !v5.warnings.some(w => /enclosed token/.test(w)), JSON.stringify(v5.warnings));
   ok('legacy: redrawn token is the matching generation', v5.token.redrawnSheet === TL.renderTokenSvg(legacySeed, legacyId).sheet);
+
+  /* 6. an encrypted letter: letter.txt.enc replaces letter.txt, README stays
+     plaintext, checksums pass over the ciphertext, and the token is deferred
+     (it derives from the plaintext, which the door cannot read until unlocked) */
+  const FIX = {
+    salt: Uint8Array.from({ length: 16 }, (_, i) => i + 1),
+    iv: Uint8Array.from({ length: 12 }, (_, i) => i + 101),
+    iterations: 600000
+  };
+  const encFields = {
+    to: 'Whoever holds the key', from: 'The v0.2 suite', written: '2026-07-10',
+    openOn: '2046-07-10', occasion: 'future-self', language: 'en',
+    custody: [{ holder: 'The test bench', instructions: 'Keep it green.' }],
+    letter: 'Dear opener,\n\nThis one was locked.\n'
+  };
+  const encLetterText = M.canonLetterText(encFields.letter) + '\n';
+  const encPass = 'a passphrase someone was trusted with';
+  const locked = await Crypt.encryptLetter(encLetterText, encPass, FIX);
+  const encSeed = sha(M.tokenSeedString(encFields));
+  const encId = M.deriveId(encSeed);
+  const encF = {
+    id: encId, written: encFields.written, openOn: encFields.openOn,
+    from: encFields.from, to: encFields.to, occasion: encFields.occasion,
+    language: encFields.language, custody: encFields.custody, tokenSeed: encSeed,
+    encryption: locked.manifestField, writeback: null
+  };
+  const encFiles = [
+    { name: 'README.txt', data: M.renderReadme(encF) },
+    { name: 'letter.txt.enc', data: locked.wrapper },
+    { name: 'manifest.json', data: M.manifestJson(encF) },
+    { name: 'token.svg', data: T.renderTokenSvg(encSeed, encId).sheet + '\n' }
+  ];
+  let encChecks = '';
+  for (const file of encFiles) encChecks += sha(file.data) + '  ' + file.name + '\n';
+  encFiles.push({ name: 'checksums.txt', data: encChecks });
+  const v6 = await O.verifyLetter(encFiles.map(fl => ({ name: fl.name, data: Z.utf8(fl.data) })));
+  ok('encrypted: flagged as encrypted', v6.encrypted === true);
+  ok('encrypted: plaintext not exposed by the door', v6.letterText === null);
+  ok('encrypted: no false "letter.txt missing" warning', !v6.warnings.some(w => /letter\.txt is missing/.test(w)), JSON.stringify(v6.warnings));
+  ok('encrypted: checksums pass over the ciphertext', v6.checks.length === 4 && v6.checks.every(c => c.ok), JSON.stringify(v6.checks));
+  ok('encrypted: README facts still read from manifest', v6.facts.source === 'manifest' && v6.facts.to === 'Whoever holds the key');
+  ok('encrypted: token deferred, not falsely warned', v6.tokenOk === null && !v6.warnings.some(w => /could not be re-drawn/.test(w)), JSON.stringify(v6.warnings));
+  ok('encrypted: manifest carries the encryption field', v6.facts.encryption && v6.facts.encryption.algo === 'AES-256-GCM');
+  /* the door hands the wrapper to crypt.js; the right passphrase unlocks it */
+  const encEntry = v6.encryptedWrapper;
+  ok('encrypted: door exposes the wrapper for unlocking', typeof encEntry === 'string' && /Tessera encrypted letter/.test(encEntry));
+  const unlocked = await Crypt.decryptLetter(encEntry, encPass);
+  ok('encrypted: right passphrase unlocks the exact plaintext', unlocked === encLetterText, JSON.stringify(unlocked));
 
   console.log(fails ? 'open: FAILURES' : 'open: all green');
   process.exit(fails ? 1 : 0);

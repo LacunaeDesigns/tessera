@@ -113,7 +113,7 @@
       catch (e) { renderIntake('That file could not be read as a letter. (' + e.message + ')'); return; }
       return O.verifyLetter(entries).then(function (result) {
         if (!open) return;
-        view = { result: result };
+        view = { result: result, decryptedText: null };
         renderVerify();
       });
     }).catch(function (e) { renderIntake('That file could not be read. (' + e.message + ')'); });
@@ -189,7 +189,7 @@
     nav.appendChild(back);
     var openBtn = el('button', 'btn-cta', 'Open it');
     openBtn.type = 'button';
-    openBtn.disabled = r.letterText === null;
+    openBtn.disabled = r.letterText === null && !r.encrypted;
     openBtn.addEventListener('click', dateGate);
     nav.appendChild(openBtn);
     body.appendChild(nav);
@@ -209,7 +209,7 @@
     var id = r.facts.id || 'unknown';
     var waiting = r.facts.openOn && !r.facts.openWhenNeeded && r.facts.openOn > todayIso();
     if (waiting && !asked[id]) { asked[id] = true; renderWait(); }
-    else ceremony();
+    else openGate();
   }
 
   function renderWait() {
@@ -223,9 +223,65 @@
     nav.appendChild(no);
     var yes = el('button', 'btn-cta', 'Open it');
     yes.type = 'button';
-    yes.addEventListener('click', ceremony);
+    yes.addEventListener('click', openGate);
     nav.appendChild(yes);
     body.appendChild(nav);
+  }
+
+  /* an encrypted letter needs its passphrase before the ceremony can show
+     anything of the body; a normal letter passes straight through */
+  function openGate() {
+    var r = view.result;
+    if (r.encrypted && view.decryptedText === null) renderPassphrase();
+    else ceremony();
+  }
+
+  function renderPassphrase(problem) {
+    var r = view.result;
+    body.innerHTML = '';
+    body.appendChild(el('h2', 'open-q', 'This letter is locked.'));
+    body.appendChild(el('p', 'open-hint', 'Enter the passphrase from the key card to read it.'));
+    if (problem) body.appendChild(el('p', 'open-warn', problem));
+
+    var form = el('form');
+    var input = el('input', 'seal-input');
+    input.type = 'password';
+    input.autocomplete = 'off';
+    input.setAttribute('aria-label', 'Passphrase');
+    form.appendChild(input);
+
+    var nav = el('div', 'open-nav');
+    var back = el('button', 'btn-quiet', 'Not now');
+    back.type = 'button';
+    back.addEventListener('click', closeOverlay);
+    nav.appendChild(back);
+    var unlock = el('button', 'btn-cta', 'Unlock');
+    unlock.type = 'submit';
+    nav.appendChild(unlock);
+    form.appendChild(nav);
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      unlock.disabled = true;
+      root.TesseraCrypt.decryptLetter(r.encryptedWrapper, input.value).then(function (text) {
+        if (!open) return;
+        view.decryptedText = text;
+        ceremony();
+      }, function () {
+        if (!open) return;
+        renderPassphrase('That passphrase didn’t open it. Check the key card and try again.');
+      });
+    });
+
+    body.appendChild(form);
+    input.focus();
+  }
+
+  /* the readable body: the decrypted text once unlocked, or the plain
+     letterText for a letter that was never locked */
+  function letterBody() {
+    var r = view.result;
+    return r.encrypted ? view.decryptedText : r.letterText;
   }
 
   function ceremony() {
@@ -252,7 +308,7 @@
         written: r.facts.written || '', openOn: r.facts.openOn || '',
         openWhenNeeded: !!r.facts.openWhenNeeded, occasion: r.facts.occasion || 'custom'
       },
-      letterText: r.letterText || '',
+      letterText: letterBody() || '',
       readme: r.readmeText || '',
       /* always the re-drawn token: foreign SVG never reaches innerHTML */
       token: r.token ? { sheet: r.token.redrawnSheet } : null
@@ -281,7 +337,7 @@
     body.innerHTML = '';
     var wrap = el('div', 'opened-letter' + (reducedMotion() ? '' : ' ceremony-in'));
     var letter = el('div', 'letter-body');
-    letter.textContent = r.letterText;
+    letter.textContent = letterBody();
     wrap.appendChild(letter);
     var nav = el('div', 'open-nav');
     var done = el('button', 'btn-quiet', 'Done');

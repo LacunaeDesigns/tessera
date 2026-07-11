@@ -98,9 +98,15 @@
       return null;
     }
 
+    /* an encrypted letter carries letter.txt.enc in place of letter.txt; the
+       door cannot read the plaintext (that needs the passphrase, handled by
+       the UI), so it exposes the wrapper and defers the token check */
+    var encEntry = get('letter.txt.enc');
+    var encrypted = !!encEntry;
+    var encryptedWrapper = encEntry ? asText(encEntry.data) : null;
     var letterEntry = get('letter.txt');
     var letterText = letterEntry ? asText(letterEntry.data) : null;
-    if (!letterEntry) warnings.push('letter.txt is missing from the folder.');
+    if (!letterEntry && !encEntry) warnings.push('letter.txt is missing from the folder.');
 
     var facts = null;
     var manifestEntry = get('manifest.json');
@@ -117,6 +123,7 @@
           language: man.language || null,
           custody: man.custody || [],
           tokenSeed: man.tokenSeed || null,
+          encryption: man.encryption || null,
           writeback: man.writeback || null,
           source: 'manifest'
         };
@@ -158,7 +165,8 @@
     if (!tokenEntry) {
       tokenJob = Promise.resolve(null); /* a letter without a token is still valid (SPEC §1) */
     } else if (!canDerive) {
-      warnings.push('the token could not be re-drawn for comparison; some of the facts it depends on are unreadable.');
+      /* an encrypted letter defers its token check to after unlocking, not a fault */
+      if (!encrypted) warnings.push('the token could not be re-drawn for comparison; some of the facts it depends on are unreadable.');
       tokenJob = Promise.resolve(null);
     } else {
       var seedString = M.tokenSeedString({
@@ -199,6 +207,8 @@
         token: results[1] ? { redrawnFull: results[1].redrawnFull, redrawnSheet: results[1].redrawnSheet, enclosed: results[1].enclosed } : null,
         letterText: letterText,
         readmeText: readmeEntry ? asText(readmeEntry.data) : null,
+        encrypted: encrypted,
+        encryptedWrapper: encryptedWrapper,
         warnings: warnings
       };
     });

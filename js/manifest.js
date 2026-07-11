@@ -83,6 +83,7 @@
     if (f.custody && f.custody.length) man.custody = f.custody;
     man.checksumAlgo = 'SHA-256';
     man.tokenSeed = f.tokenSeed;
+    if (f.encryption) man.encryption = f.encryption;
     man.writeback = f.writeback || null;
     if (f.media && f.media.length) man.media = f.media;
     return man;

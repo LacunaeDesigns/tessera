@@ -805,6 +805,8 @@ a:hover { color: #8A4B2D; }
 .date-words { color: #B65432; font-style: italic; min-height: 24px; margin: 12px 0 26px; }
 .seal-helper { font-family: var(--ui); font-size: 12.5px; color: rgba(57,46,31,0.55); margin: 8px 0 26px; }
 .seal-helper--tight { margin-bottom: 0; }
+.seal-optional { font-family: var(--ui); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(57,46,31,0.4); margin-left: 6px; }
+.seal-link { color: #B65432; text-decoration: underline; text-underline-offset: 2px; }
 
 .seal-pick {
   display: flex;
@@ -987,6 +989,7 @@ a:hover { color: #8A4B2D; }
   padding: 36px 40px;
 }
 .about-title { font-family: var(--serif-display); font-weight: normal; font-size: 24px; margin: 0 0 14px; }
+.about-sub { font-family: var(--serif-display); font-weight: normal; font-size: 18px; margin: 22px 0 10px; }
 .about-card p { font-size: 15.5px; line-height: 1.7; color: rgba(57,46,31,0.75); margin: 0 0 12px; text-wrap: pretty; }
 .about-fine { font-family: var(--ui); font-size: 12.5px !important; color: rgba(57,46,31,0.5) !important; margin: 0 !important; }
 
