@@ -10,6 +10,7 @@
 
   var M = root.TesseraManifest || (typeof require === 'function' ? require('./manifest.js') : null);
   var T = root.TesseraToken || (typeof require === 'function' ? require('./token.js') : null);
+  var TL = root.TesseraTokenLegacy || (typeof require === 'function' ? require('./token-legacy.js') : null);
   var Z = root.TesseraZip || (typeof require === 'function' ? require('./zip.js') : null);
 
   function toHex(buf) {
@@ -176,9 +177,15 @@
            manifest is foreign: only a well-formed id may pass; anything
            else falls back to the hex-derived one (XSS guard) */
         var safeId = (facts.id && /^TSR-[0-9a-f]{4}-[0-9a-f]{4}$/.test(facts.id)) ? facts.id : derivedId;
-        var t = T.renderTokenSvg(seedHex, safeId);
         var enclosed = asText(tokenEntry.data);
+        /* try the current art generation first, then the frozen legacy one:
+           letters sealed before generation 2 must never become "wrong" */
+        var t = T.renderTokenSvg(seedHex, safeId);
         var same = (t.sheet + '\n') === enclosed;
+        if (!same && TL) {
+          var tl = TL.renderTokenSvg(seedHex, safeId);
+          if ((tl.sheet + '\n') === enclosed) { t = tl; same = true; }
+        }
         if (!same) warnings.push('the enclosed token does not match one re-drawn from this letter; if you hold a printed half, trust the paper and compare the broken edge by eye.');
         return { ok: same, redrawnFull: t.full, redrawnSheet: t.sheet, enclosed: enclosed };
       });

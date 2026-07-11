@@ -99,6 +99,26 @@ function buildFolder(overrides) {
   const v4 = await O.verifyLetter(Z.readZip(zip));
   ok('zip round-trip: verifies clean through readZip', v4.checks.every(c => c.ok) && v4.tokenOk === true && v4.warnings.length === 0);
 
+  /* 5. a letter sealed under generation-1 art verifies clean via the legacy fallback */
+  const TL = require('../js/token-legacy.js');
+  const legacyF = buildFolder();
+  const liIdx = legacyF.files.findIndex(f => f.name === 'token.svg');
+  const legacySeed = legacyF.seedHex;
+  const legacyId = M.deriveId(legacySeed);
+  legacyF.files[liIdx] = { name: 'token.svg', data: Z.utf8(TL.renderTokenSvg(legacySeed, legacyId).sheet + '\n') };
+  /* checksums were computed over the gen-2 token; recompute for the legacy one */
+  const ciIdx = legacyF.files.findIndex(f => f.name === 'checksums.txt');
+  let cks = '';
+  for (const fl of legacyF.files) {
+    if (fl.name === 'checksums.txt') continue;
+    cks += sha(Buffer.from(fl.data)) + '  ' + fl.name + '\n';
+  }
+  legacyF.files[ciIdx] = { name: 'checksums.txt', data: Z.utf8(cks) };
+  const v5 = await O.verifyLetter(legacyF.files);
+  ok('legacy token verifies clean (fallback)', v5.tokenOk === true, JSON.stringify(v5.warnings));
+  ok('legacy: no token warning', !v5.warnings.some(w => /enclosed token/.test(w)), JSON.stringify(v5.warnings));
+  ok('legacy: redrawn token is the matching generation', v5.token.redrawnSheet === TL.renderTokenSvg(legacySeed, legacyId).sheet);
+
   console.log(fails ? 'open: FAILURES' : 'open: all green');
   process.exit(fails ? 1 : 0);
 })().catch(function (e) { console.error(e); process.exit(1); });
