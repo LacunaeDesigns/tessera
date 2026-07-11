@@ -59,6 +59,9 @@
   function setDraft(slot, draft) { load().drafts[slot] = draft; save(); }
   function clearDraft(slot) { delete load().drafts[slot]; save(); }
 
+  function getSetting(key) { return load().settings[key]; }
+  function setSetting(key, val) { load().settings[key] = val; save(); }
+
   function addRegistryEntry(entry) { load().registry.push(entry); save(); }
   function getRegistry() { return load().registry.slice(); }
   function updateRegistryEntry(id, patch) {
@@ -83,6 +86,7 @@
   var api = {
     load: load, save: save, migrate: migrate,
     getDraft: getDraft, setDraft: setDraft, clearDraft: clearDraft,
+    getSetting: getSetting, setSetting: setSetting,
     addRegistryEntry: addRegistryEntry, getRegistry: getRegistry,
     updateRegistryEntry: updateRegistryEntry, removeRegistryEntry: removeRegistryEntry
   };

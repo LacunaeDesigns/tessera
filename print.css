@@ -11,7 +11,10 @@
 
 /* ---- print overlay (screen preview: stacked paper cards) ---- */
 #print-overlay { position: fixed; inset: 0; overflow: auto; background: var(--paper, #f7f3ea); padding: 1rem; z-index: 90; }
-.print-toolbar { display: flex; justify-content: space-between; max-width: 46rem; margin: 0 auto 1rem; }
+.print-toolbar { display: flex; justify-content: space-between; align-items: center; max-width: 46rem; margin: 0 auto 1rem; }
+.print-toolbar-left { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.print-opt { font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; }
+#print-theme { font: inherit; font-size: 0.9rem; }
 .sheet { background: #fdfbf5; color: #211d16; max-width: 46rem; margin: 0 auto 1.5rem;
          padding: 2.2rem 2.4rem; border: 1px solid rgba(33,29,22,0.18); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 .sheet-footer { margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(33,29,22,0.25);
@@ -30,6 +33,105 @@
 .register-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
 .register-table td, .register-table th { border-bottom: 1px solid rgba(33,29,22,0.25);
                   padding: 0.35rem 0.5rem; text-align: left; }
+
+/* the envelope fold-and-glue template — a letter sheet folded in thirds
+   becomes its own envelope (features/print-kit.md). Dashed hairlines only,
+   no filled areas (ink-light rule); screen preview shows it as a card,
+   the print block sizes the template in mm so it fits A4 and Letter alike. */
+.envelope-template { position: relative; height: 20rem; margin: 1rem 0; border: 1px solid rgba(33,29,22,0.2); }
+/* fold lines: dashed, each labelled with which way its panel turns */
+.fold-line { position: absolute; left: 0; right: 0; border-top: 0.5pt dashed rgba(33,29,22,0.5); }
+.fold-line-upper { top: 33.33%; }
+.fold-line-lower { top: 66.66%; }
+.fold-label { position: absolute; left: 50%; top: -1.15em; transform: translateX(-50%);
+              font-family: var(--typewriter); font-size: 7.5pt; letter-spacing: 0.1em;
+              color: rgba(33,29,22,0.5); white-space: nowrap; }
+/* the optional trim guide: a finer dotted rectangle, clearly not a fold */
+.envelope-trim { position: absolute; top: 4mm; right: 4mm; bottom: 4mm; left: 4mm;
+                 border: 0.4pt dotted rgba(33,29,22,0.3); }
+.envelope-trim-label { position: absolute; top: 1mm; right: 1.6mm;
+                       font-family: var(--typewriter); font-size: 7pt; letter-spacing: 0.06em;
+                       color: rgba(33,29,22,0.4); }
+/* the two open sides: glue where the folded thirds overlap, down each edge of
+   the middle band. No separate tabs, so nothing needs cutting. */
+.glue-edge { position: absolute; top: 33.33%; bottom: 33.33%; width: 7mm;
+             display: flex; align-items: center; justify-content: center;
+             font-family: var(--typewriter); font-size: 7pt; letter-spacing: 0.05em;
+             color: rgba(33,29,22,0.55); }
+.glue-edge-left { left: 0; border-right: 0.5pt dashed rgba(33,29,22,0.45); }
+.glue-edge-right { right: 0; border-left: 0.5pt dashed rgba(33,29,22,0.45); }
+.glue-edge-label { writing-mode: vertical-rl; }
+.envelope-flap { position: absolute; top: 66.66%; left: 0; right: 0; bottom: 0;
+                 display: flex; flex-direction: column; align-items: center; justify-content: center;
+                 text-align: center; padding: 0 4mm; }
+.envelope-flap-line { font-family: var(--display); margin: 0.1rem 0; }
+.envelope-guide { display: flex; justify-content: space-between; gap: 5mm; margin: 1.1rem 0 0.3rem; }
+.envelope-guide-step { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.envelope-guide-art svg { display: block; width: 17mm; max-width: 100%; height: auto; margin: 0 auto; }
+.envelope-guide-cap { margin-top: 0.35rem; font-size: 8.5pt; line-height: 1.3; color: rgba(33,29,22,0.8); }
+.envelope-assembly { margin-top: 0.9rem; }
+.envelope-assembly-art svg { display: block; width: 118mm; max-width: 100%; height: auto; margin: 0.2rem auto 0; }
+.envelope-steps li { margin-bottom: 0.3rem; }
+
+/* ---- print themes (features/print-kit.md §v0.2) ----
+   A theme is a `theme-<name>` class on #print-root, chosen at print time.
+   Themes restyle only the cover, envelope, letter and token sheets, always
+   within the print rules (ink-light, hairline, serif body, pt sizes). The
+   instructions sheet is deliberately never theme-scoped — it stays byte-
+   identical across themes. letterpress = the untouched base look. */
+
+/* aerogramme — airmail edging, "par avion" kicker, lighter rules */
+.theme-aerogramme .sheet-cover, .theme-aerogramme .sheet-envelope {
+  border: 2.4mm solid transparent;
+  border-image: repeating-linear-gradient(45deg,
+    #b23a34 0 4px, transparent 4px 8px,
+    #365f9e 8px 12px, transparent 12px 16px) 9 repeat;
+}
+.theme-aerogramme .sheet-cover::before {
+  content: 'Par avion'; display: block; font-family: var(--display);
+  font-size: 8pt; letter-spacing: 0.24em; text-transform: uppercase;
+  color: #365f9e; margin-bottom: 0.5rem;
+}
+.theme-aerogramme .cover-rule { border-top-color: rgba(33,29,22,0.28); }
+.theme-aerogramme .cover-kicker { color: #365f9e; }
+
+/* telegram — a monospace date-stamped header and doubled hairline rules.
+   The .cover-stamp node is always in the DOM but shown only here; the letter
+   body is never monospace (it stays serif). */
+.cover-stamp { display: none; }
+.theme-telegram .cover-stamp {
+  display: block; font-family: var(--typewriter); font-size: 8.5pt;
+  letter-spacing: 0.06em; color: rgba(33,29,22,0.75); margin-bottom: 0.6rem;
+}
+.theme-telegram .sheet-cover, .theme-telegram .sheet-envelope,
+.theme-telegram .sheet-token {
+  border-top: 0.5pt solid rgba(33,29,22,0.55);
+  box-shadow: inset 0 2pt 0 #fdfbf5, inset 0 2.5pt 0 rgba(33,29,22,0.55);
+}
+.theme-telegram .cover-rule {
+  border-top: 0.5pt solid rgba(33,29,22,0.5);
+  box-shadow: 0 2pt 0 rgba(33,29,22,0.5);
+  margin-bottom: 1.5rem;
+}
+.theme-telegram .cover-kicker { font-family: var(--typewriter); letter-spacing: 0.08em; }
+
+/* wax-seal — a dashed placement circle holding the letter's own token at
+   20mm, captioned to invite real wax. No printed solid ink stands in for it. */
+.cover-seal-mark { display: none; }
+.theme-wax-seal .cover-seal-mark {
+  display: flex; flex-direction: column; align-items: center;
+  margin: 1.8rem 0 0.4rem; text-align: center;
+}
+.theme-wax-seal .cover-seal-ring {
+  width: 20mm; height: 20mm; padding: 1.5mm; border-radius: 50%;
+  border: 0.5pt dashed rgba(33,29,22,0.5);
+  display: flex; align-items: center; justify-content: center;
+}
+.theme-wax-seal .cover-seal-ring svg { width: 100%; height: 100%; display: block; }
+.theme-wax-seal .cover-seal-note {
+  font-family: var(--typewriter); font-size: 8pt; letter-spacing: 0.04em;
+  color: rgba(33,29,22,0.55); margin-top: 0.5rem;
+}
 
 /* the open-dates card — two per sheet, cut apart along the dashed line */
 .sheet-card .wallet-card { padding: 0.6rem 0.2rem; }
@@ -59,4 +161,11 @@
            break-after: page; font-size: 11.5pt; }
   .sheet:last-child { break-after: auto; }
   .letter-body { font-size: 11.5pt; }
+  /* envelope template: schematic only (the physical fold uses the whole
+     sheet), so its height is free to shrink. Kept at 104mm so the whole sheet
+     (heading, template, step diagrams, text steps, assembly diagram, footer)
+     clears one page on both A4 (267mm) and the tighter Letter (249mm), with
+     headroom for a flap date that wraps (far-future years render long) */
+  .envelope-template { height: 88mm; }
+  .envelope-flap-line { font-size: 10pt; }
 }
