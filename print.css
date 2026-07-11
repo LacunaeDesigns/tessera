@@ -79,6 +79,26 @@
 .theme-aerogramme .cover-rule { border-top-color: rgba(33,29,22,0.28); }
 .theme-aerogramme .cover-kicker { color: #365f9e; }
 
+/* telegram — a monospace date-stamped header and doubled hairline rules.
+   The .cover-stamp node is always in the DOM but shown only here; the letter
+   body is never monospace (it stays serif). */
+.cover-stamp { display: none; }
+.theme-telegram .cover-stamp {
+  display: block; font-family: var(--typewriter); font-size: 8.5pt;
+  letter-spacing: 0.06em; color: rgba(33,29,22,0.75); margin-bottom: 0.6rem;
+}
+.theme-telegram .sheet-cover, .theme-telegram .sheet-envelope,
+.theme-telegram .sheet-token {
+  border-top: 0.5pt solid rgba(33,29,22,0.55);
+  box-shadow: inset 0 2pt 0 #fdfbf5, inset 0 2.5pt 0 rgba(33,29,22,0.55);
+}
+.theme-telegram .cover-rule {
+  border-top: 0.5pt solid rgba(33,29,22,0.5);
+  box-shadow: 0 2pt 0 rgba(33,29,22,0.5);
+  margin-bottom: 1.5rem;
+}
+.theme-telegram .cover-kicker { font-family: var(--typewriter); letter-spacing: 0.08em; }
+
 /* the open-dates card — two per sheet, cut apart along the dashed line */
 .sheet-card .wallet-card { padding: 0.6rem 0.2rem; }
 .card-heading { font-family: var(--display); font-weight: normal; font-size: 1.15rem; margin-bottom: 0.5rem; }

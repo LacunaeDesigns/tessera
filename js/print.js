@@ -18,11 +18,24 @@
     return f;
   }
 
+  /* a terse date stamp for the telegram theme's cover header: 2026-07-11 ->
+     "2026 JUL 11". Deterministic, no locale or Date; themes are presentation. */
+  var MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  function stamp(iso) {
+    var p = String(iso).split('-');
+    if (p.length < 3) return String(iso).toUpperCase();
+    return p[0] + ' ' + (MONTHS[Number(p[1]) - 1] || p[1]) + ' ' + p[2];
+  }
+
   function coverSheet(s) {
     var M = root.TesseraManifest;
     var f = s.fields;
     var sheet = el('section', 'sheet sheet-cover');
     sheet.appendChild(el('div', 'cover-rule'));
+    /* theme-support line, shown only under .theme-telegram (hidden otherwise) */
+    sheet.appendChild(el('p', 'cover-stamp', 'SEALED ' + stamp(f.written) +
+      '  ·  OPENS ' + (f.openWhenNeeded ? 'WHEN NEEDED' : stamp(f.openOn)) +
+      '  ·  ' + f.id));
     sheet.appendChild(el('p', 'cover-kicker', 'A letter, sealed ' + M.dateInWords(f.written) + '.'));
     var title = f.openWhenNeeded && s.coverLine ? s.coverLine
       : 'To be opened by ' + f.to + ' on ' + M.dateInWords(f.openOn) + '.';
