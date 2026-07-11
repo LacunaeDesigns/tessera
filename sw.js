@@ -19,6 +19,7 @@ var CORE = [
   'js/manifest.js',
   'js/zip.js',
   'js/token.js',
+  'js/token-legacy.js',
   'js/export.js',
   'js/ics.js',
   'js/open.js',
