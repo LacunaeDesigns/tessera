@@ -121,6 +121,34 @@
     return guide;
   }
 
+  /* one exploded diagram of how the kit nests: the letter (and the writer's
+     token half) go inside the sealed envelope, and the cover wraps the
+     outside. Hairline SVG, self-generated. */
+  function assemblyGuide() {
+    var A = 'fill="none" stroke="#211d16" stroke-linecap="round" stroke-linejoin="round"';
+    var svg = '<svg viewBox="0 0 300 56" ' + A + '>' +
+      '<rect x="60" y="3" width="150" height="50" rx="4" stroke-width="0.9" stroke-dasharray="3 3"/>' +
+      '<text x="64" y="11" font-size="6.5" stroke="none" fill="#211d16" font-family="monospace" opacity="0.65">cover</text>' +
+      '<rect x="80" y="12" width="112" height="36" rx="2" stroke-width="1"/>' +
+      '<path d="M80 12 L136 31 L192 12" stroke-width="0.9"/>' +
+      '<circle cx="136" cy="27" r="3.4" stroke-width="0.9"/>' +
+      '<rect x="6" y="17" width="50" height="26" rx="1.5" stroke-width="0.9"/>' +
+      '<line x1="12" y1="25" x2="50" y2="25" stroke-width="0.6"/>' +
+      '<line x1="12" y1="30" x2="50" y2="30" stroke-width="0.6"/>' +
+      '<line x1="12" y1="35" x2="40" y2="35" stroke-width="0.6"/>' +
+      '<path d="M60 30 L78 30" stroke-width="1"/><path d="M74 27 L78.5 30 L74 33" stroke-width="1"/>' +
+      '<rect x="214" y="21" width="16" height="16" rx="1" stroke-width="0.9"/>' +
+      '<text x="222" y="33" font-size="10" text-anchor="middle" stroke="none" fill="#211d16" font-family="serif">½</text>' +
+      '<path d="M212 29 L196 29" stroke-width="1"/><path d="M200 26 L195.5 29 L200 32" stroke-width="1"/>' +
+      '</svg>';
+    var box = el('div', 'envelope-assembly');
+    box.appendChild(el('p', 'sheet-note', 'Once it is folded: the letter and your token half go inside, and the cover sheet wraps the outside.'));
+    var art = el('div', 'envelope-assembly-art');
+    art.innerHTML = svg; /* self-generated hairline SVG, no user content */
+    box.appendChild(art);
+    return box;
+  }
+
   function envelopeSheet(s) {
     var M = root.TesseraManifest;
     var f = s.fields;
@@ -155,6 +183,7 @@
         steps.appendChild(el('li', '', t));
       });
     sheet.appendChild(steps);
+    sheet.appendChild(assemblyGuide());
 
     sheet.appendChild(footer(f.id, f.openWhenNeeded ? 'opens when needed' : 'opens ' + f.openOn));
     return sheet;
