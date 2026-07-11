@@ -337,7 +337,8 @@
       handleValue(nv, ch);
       if (ch === '\n') {
         clearInterval(typerI);
-        setTimeout(function () { typerI = setInterval(step, 46 + Math.random() * 40); }, 300);
+        /* the pause must not resurrect a run the writer already interrupted */
+        setTimeout(function () { if (state.autotyping) typerI = setInterval(step, 46 + Math.random() * 40); }, 300);
       }
     }
     typerI = setInterval(step, 46 + Math.random() * 40);
@@ -346,6 +347,13 @@
   /* ---------- input plumbing ---------- */
   function onTaInput(e) {
     if (state.demoActive) state.demoActive = false;
+    /* hardware keys land here mid-greeting; it's the writer's turn now,
+       same as the on-screen key path in typeChar */
+    if (state.autotyping) {
+      clearInterval(typerI);
+      state.autotyping = false;
+      renderCaret();
+    }
     handleValue(e.target.value, e.data != null ? e.data : null);
   }
   function onTaKeyDown(e) {
