@@ -114,6 +114,75 @@
       ]
     },
     {
+      slug: 'graduation',
+      group: 'milestone',
+      title: 'For a graduation',
+      coverLine: 'To be opened on the day they finish.',
+      prompts: [
+        'Tell them what you saw them push through to get here, the part no stage will mention.',
+        'What are you proud of that has nothing to do with the grade or the gown? Say it plainly.',
+        'Give them one thing to carry into whatever comes next, in your words and not a speech’s.'
+      ]
+    },
+    {
+      slug: 'open-when-heartbroken',
+      group: 'open-when',
+      title: 'Open when your heart is broken',
+      coverLine: 'To be opened when someone has broken it.',
+      canBeUndated: true,
+      prompts: [
+        'Fix nothing. Tell them the plain thing you know: it hurts like this because it mattered.',
+        'Remind them who they were before this person, and that the person is still in there.',
+        'Name one ordinary joy that will still be waiting when the worst of it passes. Be specific.'
+      ]
+    },
+    {
+      slug: 'marrying-my-child',
+      group: 'milestone',
+      title: 'To the person marrying my child',
+      coverLine: 'To be opened by the one who marries them.',
+      prompts: [
+        'Tell them one thing about the person they are marrying that they may not have seen yet.',
+        'What do you hope they will be gentle with? Name it without any warning attached.',
+        'Welcome them into the family in the words you would actually use, not a toast’s.'
+      ]
+    },
+    {
+      slug: 'retirement',
+      group: 'milestone',
+      title: 'For a retirement',
+      coverLine: 'To be opened on the last day, or the first free morning after.',
+      prompts: [
+        'Tell them what their work meant to the people around it, the part no review recorded.',
+        'What are you glad they will finally have time for? Point at the actual thing.',
+        'Wish them something for the mornings that no longer belong to anyone else.'
+      ]
+    },
+    {
+      slug: 'last-day',
+      group: 'milestone',
+      title: 'To yourself, on your last day of work',
+      coverLine: 'To be opened on the last day you clock out.',
+      canBeUndated: true,
+      prompts: [
+        'Tell your future self what the work cost and what it gave, before you round it into a story.',
+        'What did you want it to add up to when you started? Say so, so you can meet it honestly then.',
+        'Name one thing you promise to do with the time that comes after.'
+      ]
+    },
+    {
+      slug: 'next-owner',
+      group: 'far',
+      title: 'To the next owner of this house',
+      coverLine: 'To be opened by whoever lives here next.',
+      canBeUndated: true,
+      prompts: [
+        'Tell them one thing about this house that only someone who has lived here would know. Where the morning light lands, which stair complains.',
+        'What happened here that mattered to you? Name the actual room, so they can stand in it.',
+        'Wish them something for their life inside these walls. Be specific to the rooms, not to life in general.'
+      ]
+    },
+    {
       slug: 'custom',
       group: 'custom',
       title: 'Something else',
