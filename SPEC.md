@@ -15,7 +15,7 @@ A Tessera letter is a single folder (or a `.zip` archive of that folder — "sto
 ```
 tessera-TSR-4f2a-91c3/
 ├── README.txt        ← for humans: self-describing, duplicates everything essential in prose
-├── letter.txt        ← the letter itself, plain text, UTF-8
+├── letter.txt        ← the letter itself, plain text, UTF-8 (letter.txt.enc if locked, see §9)
 ├── manifest.json     ← for machines: metadata
 ├── checksums.txt     ← SHA-256 of every other file
 ├── token.svg         ← the two-half tessera token (see §5)
@@ -25,7 +25,7 @@ tessera-TSR-4f2a-91c3/
 The folder name is `tessera-<ID>` where `<ID>` is the letter ID (§4). Nothing in the format depends on the folder name surviving.
 
 ### Required files
-`README.txt`, `letter.txt`, `manifest.json`, `checksums.txt`. A letter missing `token.svg` or `media/` is still a valid Tessera letter.
+`README.txt`, `letter.txt`, `manifest.json`, `checksums.txt`. A letter missing `token.svg` or `media/` is still a valid Tessera letter. When a letter is locked with a passphrase (§9), `letter.txt.enc` stands in for `letter.txt` — but `README.txt` is **never** encrypted, so a finder can always learn what the letter is and what to do.
 
 ### Priority rule
 If the files ever disagree, **`README.txt` wins, then `letter.txt`, then `manifest.json`**. Prose outranks structure, because prose is what a finder in 2126 can still read.
@@ -93,7 +93,16 @@ Tessera does **not** provide time-lock cryptography. Enforcing "cannot be read b
 
 The heart of the format. Every Tessera letter carries a README addressed to **whoever finds it**, written to be understood cold: what this is, who it is for, when it may be opened, what the other files are, what a custodian should do, and what Tessera is — with the honest note that URLs die and none of this needs one. Canonical template (CC0, translatable): [docs/spec/readme-template.md](docs/spec/readme-template.md).
 
-## 9. Conformance
+## 9. Passphrase privacy (optional)
+
+A letter may be locked with a passphrase — **privacy from strangers, not time-release** (§7). When it is:
+
+- `letter.txt.enc` replaces `letter.txt`: the plaintext, encrypted with **AES-256-GCM**, the key derived from the passphrase by **PBKDF2-SHA256** with a per-letter random salt and a high iteration count. The file is a plain-text wrapper — a header comment naming the algorithm, salt, IV, and iteration count, then the base64 ciphertext — so a finder can see what it is even without a tool.
+- `README.txt` is **never encrypted.** The finder instructions must always be readable; encryption hides the letter's words, never the fact that it is a letter or what to do with it.
+- The manifest gains an optional `encryption` object (`algo`, `kdf`, `iterations`, `salt`, `iv`, and an optional writer-chosen `hint`) — see [docs/spec/manifest-schema.md](docs/spec/manifest-schema.md). This is an additive optional field: the spec stays `0.1`, the token seed (§5) is unchanged, and letters sealed without a passphrase are byte-for-byte unaffected.
+- The passphrase is escrowed on paper — printed on a key card given to someone who is *not* the custodian, so unlocking takes two people, not a live service. A lost passphrase is a lost letter; most letters should not have one. The reasoning is stated plainly at `/about#honesty` and in [docs/features/encryption.md](docs/features/encryption.md).
+
+## 10. Conformance
 
 An implementation conforms if it: produces folders with the four required files; follows the text conventions (§2); derives ID and tokenSeed exactly as specified (§4–5); preserves unknown manifest fields; and passes the century-test checklist in [docs/spec/century-test.md](docs/spec/century-test.md). Test vectors (letters with known IDs, seeds, and token fixtures) ship with the reference implementation.
 
