@@ -2,7 +2,7 @@
 
 The living record of what is actually done, against [roadmap.md](roadmap.md). Update when a task lands; `/release` refuses if this file lies. The cross-machine twin is the Ariadne vault (`projects/tessera.md`) — status there, granularity here.
 
-**Snapshot (2026-07-11):** **v0.3.0 shipped — one front end.** The redesigned landing is now the whole app, live at tessera-letters.netlify.app (unlisted): write at the typewriter desk, open a received letter with ceremony (a focused overlay), answer it forward, keep one for someone, and export calendar/wallet-card reminders. `app.html` retired to a redirect; the plain renderers (`compose.js`/`registry.js`/`main.js`/`style.css`) deleted; `open.js` pruned to its pure verification core; `LOCAL_VERSION` relocated to `js/version.js`. Triple at 0.3.0 / `'0.3.0'` / `'tessera-v0.3.0'`; `main` fast-forwarded from `dev`. All gates re-run this session (six suites, prose, full 375px-first walkthrough, spec-sync), century-audit rows evidenced (format unchanged; physical-walkthrough waiver reused). Remaining v0.2 plans: encryption, then envelope-themes.
+**Snapshot (2026-07-11):** **v0.3.1 shipped — the watercolor mosaic token.** The token disk's art is reborn as generation 2 (seeded pastel washes under a finer per-letter mosaic); generation 1 is frozen forever in `js/token-legacy.js` and `verifyLetter` falls back to it, so every previously sealed letter still verifies clean with no warning. No format change (fixtures byte-identical for the untouched files; old token fixtures renamed, never regenerated; new ones born). Triple at 0.3.1 / `'0.3.1'` / `'tessera-v0.3.1'`; `main` fast-forwarded from `dev`. All gates re-run this session (six suites incl. both-generation token tests, prose, full browser walkthrough, spec-sync clean), century-audit rows evidenced with a real physical walkthrough (printed, cut, matched by eye — not waived). Remaining v0.2 plans: encryption, then envelope-themes.
 
 ## v0.1 — Foundations
 
@@ -49,7 +49,11 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 
 ## Log (newest first)
 
-- **2026-07-11 (token generation 2 — on dev, unreleased)** — The token disk is reborn as the
+- **2026-07-11 (v0.3.1 — token generation 2, the watercolor mosaic)** — Released via `/release`.
+  Version: patch bump to 0.3.1 (an art change within the token family; no format-breaking change —
+  the manifest `tessera` spec version stays 0.1, `/spec-sync` confirms zero lines changed across
+  every format-critical file). Triple moved together: `version.json` 0.3.1 · `LOCAL_VERSION`
+  `'0.3.1'` · `CACHE_VERSION` `'tessera-v0.3.1'`. What shipped: the token disk is reborn as the
   **watercolor mosaic** (author-selected A2 from three rendered candidates): seeded pastel washes
   pooling beneath a finer per-letter ring mosaic (4–5 seeded rings, ~175–208 tiles, per-ring
   phase), ink-dark skeleton preserved for grayscale/fading; the break line and its interlocking
@@ -59,14 +63,38 @@ Every roadmap item through v2.x now has a written plan — index with confidence
   renderer, gen-2 fixtures born; `verifyLetter` falls back to the legacy renderer so every
   previously sealed letter verifies clean with no warning (proven in test-open: a gen-1-sealed
   folder returns tokenOk with zero token warnings, and the re-drawn art shown is the matching
-  generation). test-token walks both generations (51 asserts). Token-lab visual pass: fixture
-  seeds + four exploratory seeds rendered at full/faded/drawer-distance on the companion; the two
-  flagged concerns checked — wash-core stacking caps at ~0.79 alpha of a light pastel (cannot go
-  opaque-dark) and break-stroke contrast bottoms at ~1.8:1 over gold pastel (same order as gen 1
-  over its warm mids, ~8:1 over ink) — plus the author's own selection from rendered candidates.
-  Spec/plan: superpowers/{specs,plans}/2026-07-11-token-watercolor*. Awaits browser QA + `/release`
-  as v0.3.1 (author go/no-go pending; recommended cheap physical check: print one gen-2 sheet,
-  cut it, match by eye).
+  generation). Ship: `main` fast-forwarded from `dev`, pushed; Netlify deploys `main` (unlisted).
+  Author approved the ship.
+
+  Gates re-run this session, all green: Gate 1 — syntax sweep silent, six suites green (test-token
+  walks both generations, 51 asserts), fixtures byte-identical (`git status --porcelain
+  tools/fixtures/` empty). Gate 2 — prose clean but for the same nine justified WARNs as v0.3.0
+  (code-comment em-dashes + the documented placeholder glyphs; no new letter-facing copy). Gate 3
+  — full browser pass: seal shows gen-2 art on the receipt (209 tiles, wash fill-opacity present)
+  and the print kit; a freshly sealed letter verifies clean via the current renderer ("They
+  match.", no warnings); a letter built with the frozen legacy renderer verifies clean via the
+  fallback (no "enclosed token" warning; the re-drawn figure is provably the legacy art — zero
+  wash fill-opacity, ~64-tile count) and still opens and reads correctly; zero console errors; no
+  external requests; 375px clean. Token-lab visual pass: fixture seeds + four exploratory seeds
+  rendered at full/faded/drawer-distance on the companion — wash-core stacking caps at ~0.79 alpha
+  of a light pastel (cannot go opaque-dark), break-stroke contrast bottoms at ~1.8:1 over gold
+  pastel (same order as gen 1 over its warm mids, ~8:1 over ink). `/spec-sync` clean: zero lines
+  changed across every format-critical file (manifest.js, zip.js, export.js, SPEC.md, spec docs)
+  in all seven token commits.
+
+  Century audit (letter-level rows carry from v0.3.0 — no format change; the token row is
+  re-evidenced for both generations this session; **physical walkthrough done, not waived**: the
+  author printed a real generation-2 sheet, cut it, and matched the halves by eye — decisions.md):
+
+  | Row | Verdict | Evidence |
+  |---|---|---|
+  | A: no required URL · file:// + no external requests · fork = identical tool · data only on device | ✓ | unchanged since v0.3.0; token art carries no network dependency in either generation |
+  | B: UTF-8 no BOM · zip store · manifest ⊂ README · dates ISO+words | ✓ | six suites green, fixtures byte-identical; manifest/zip/export untouched |
+  | B: token.svg plain, no scripts/refs/fonts/filters — **both generations** | ✓ | node check: gen 2 and legacy both `noScript/noFilter/noExternal/genericFontsOnly = true` |
+  | B: media guidance | n-a | no media |
+  | C: spec CC0 · tool MIT · format outlives project · decisions recorded | ✓ | unchanged; decisions.md holds the format-event entry + the physical-check record |
+  | D: paper completeness · cold-read · checksums · assembly | ✓ | kit structure unchanged; only the token's tile art changed |
+  | D: token authenticates by eye | ✓ (done, not waived) | author printed a gen-2 sheet, cut along the dashed line, halves matched by eye |
 
 - **2026-07-11 (v0.3.0 — one front end)** — Released via `/release`. Version: minor bump to 0.3.0
   (two whole capabilities land — reminders and the unified front end — with no format-breaking
