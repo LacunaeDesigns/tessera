@@ -24,5 +24,11 @@ Start the preview server (`.claude/launch.json` → "tessera", or `node tools/se
 4. Print preview at **A4 and US Letter**: page breaks between sheets, footer on every sheet, no clipped content, ink-light rule (no solid fields).
 5. Both themes (paper / lamplight); `prefers-reduced-motion` on the sealing flourish.
 
+## Resilience rules (Gate 3)
+
+- **Environment first** (user-level `env-doctor` skill has the full list): confirm the server on 8137 serves THIS working tree (`Get-NetTCPConnection -LocalPort 8137 -State Listen`, check the owning process — another chat's server has hijacked ports before); cache-bust every navigation (`?v=<timestamp>`); the SW can serve a stale build — confirm the version triple matches the checkout.
+- **Timeout policy:** a capture that times out gets ONE retry; on second failure fall back to the accessibility tree / rendered text and mark that item `verified-via-DOM`. Two consecutive automation stalls → finish the walkthrough manually and say so in the report. A late honest report beats a hung session.
+- **Budget guard:** before Gate 3, check usage (`npx -y ccusage@latest blocks --active --json`); at ≥90% of the 5-hour window, report Gates 1–2 now and checkpoint Gate 3 for a fresh session.
+
 ## Report format
 One line per gate item: ✓/✗/n-a + evidence (command output line, screenshot, or file:line). Any ✗ means not done — say so plainly.
