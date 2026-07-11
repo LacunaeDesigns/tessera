@@ -1,7 +1,13 @@
-/* token.js — the tessera token: deterministic two-half SVG from a seed hex.
-   Reference "mosaic ring" family (docs/features/token.md). Pure, dual
-   browser/Node. Determinism contract: no Math.random, no Date, no locale;
-   all floats through r2(); all iteration orders explicit. */
+/* token.js — the tessera token, art generation 2 ("watercolor mosaic",
+   2026-07-11): deterministic two-half SVG from a seed hex. Under the tile
+   field, 3-5 soft pastel washes (blobby seeded polygons, fill-opacity
+   0.5-0.7) pool like watercolor pigment and show through the grout gaps.
+   Above them, a finer seeded ring mosaic (4-5 rings, per-seed sector
+   counts) keeps an ink-dark skeleton so the disk survives grayscale
+   printing and decades of fading. Generation 1 is frozen in
+   token-legacy.js; verification accepts either. Pure, dual browser/Node.
+   Determinism contract: no Math.random, no Date, no locale; all floats
+   through r2(); all iteration orders explicit. */
 (function (root) {
   'use strict';
 
@@ -31,45 +37,115 @@
 
   function r2(v) { return Math.round(v * 100) / 100; }
 
-  /* palette: design-language.md — ink / wax / warm mids */
-  var INK = '#211d16', WAX = '#8a4b2d', MID1 = '#6e5c44', MID2 = '#b39b78';
+  /* palette: design-language.md — ink skeleton, wax, deep pastels above;
+     light watercolor pastels beneath */
+  var INK = '#211d16', DEEP_INK = '#392E1F', WAX = '#8a4b2d';
+  var BLUSH = '#F2C7B6', BASE = '#FBF6EC';
+  var DEEP = ['#B65432', '#C97567', '#9DBBA6', '#CDB878', '#A8B4B8'];
+  var WASH_COLORS = ['#F5E0D5', '#DFEDE3', '#F3E9D0', '#E4E9EA', '#F2C7B6'];
 
+  /* tile fills: ink family ~50%, wax ~20%, deep pastels ~30% —
+     the light pastels live in the wash beneath, not in the tiles */
   function pickColor(r) {
     var v = r();
-    if (v < 0.55) return INK;
-    if (v < 0.80) return WAX;
-    return r() < 0.5 ? MID1 : MID2;
+    if (v < 0.42) return INK;
+    if (v < 0.50) return DEEP_INK;
+    if (v < 0.70) return WAX;
+    return DEEP[Math.floor(r() * DEEP.length) % DEEP.length];
   }
 
   var CX = 200, CY = 200, R_OUT = 168;
-  var RINGS = [[34, 72], [72, 106], [106, 138], [138, 166]];
-  var SECTORS = [10, 14, 18, 22];
 
   function pt(rad, ang) {
     return [r2(CX + rad * Math.cos(ang)), r2(CY + rad * Math.sin(ang))];
   }
 
+  /* one blobby watercolor wash: a many-point polygon whose radius follows
+     seeded low-frequency lobes plus fine jitter, clamped inside the disk */
+  function washPoly(r) {
+    var ox = (r() - 0.5) * 28; // wash center drifts a little off the disk center
+    var oy = (r() - 0.5) * 28;
+    var nPts = 14 + Math.floor(r() * 7);  // 14..20 points
+    var baseR = 95 + r() * 40;            // 95..135
+    var amp = 20 + r() * 18;              // lobe depth 20..38
+    var lobes = 2 + Math.floor(r() * 3);  // 2..4 lobes
+    var phase = r() * Math.PI * 2;
+    var pts = [];
+    for (var i = 0; i < nPts; i++) {
+      var ang = (i / nPts) * Math.PI * 2;
+      var rad = baseR + amp * Math.sin(phase + ang * lobes) + (r() - 0.5) * 16;
+      if (rad < 60) rad = 60;
+      var x = CX + ox + rad * Math.cos(ang);
+      var y = CY + oy + rad * Math.sin(ang);
+      var dx = x - CX, dy = y - CY;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      if (d > 163) { x = CX + dx * (163 / d); y = CY + dy * (163 / d); } // stay inside the rim
+      pts.push([r2(x), r2(y)]);
+    }
+    return pts;
+  }
+
+  /* shrink a polygon toward its centroid — the darker pooled core of a wash */
+  function shrink(pts, k) {
+    var cx = 0, cy = 0, i;
+    for (i = 0; i < pts.length; i++) { cx += pts[i][0]; cy += pts[i][1]; }
+    cx /= pts.length; cy /= pts.length;
+    var out = [];
+    for (i = 0; i < pts.length; i++) {
+      out.push([r2(cx + (pts[i][0] - cx) * k), r2(cy + (pts[i][1] - cy) * k)]);
+    }
+    return out;
+  }
+
+  /* the whole field: washes beneath, then a per-seed ring mosaic above.
+     Ring count (4 or 5), band boundaries, each ring's sector count, angular
+     phase and tile jitter are all drawn from the stream in fixed order, so
+     every disk is individually laid rather than stamped from one template. */
   function tilePolys(r) {
-    var polys = [];
-    for (var ring = 0; ring < RINGS.length; ring++) {
-      var r0 = RINGS[ring][0], r1 = RINGS[ring][1];
-      var n = SECTORS[ring];
-      var gapA = 0.035; // radians of grout between tiles
+    var washes = [];
+    var nW = 3 + Math.floor(r() * 3); // 3..5 washes
+    var cStart = Math.floor(r() * WASH_COLORS.length) % WASH_COLORS.length;
+    var cStep = 1 + Math.floor(r() * 3); // 1..3, coprime with 5 → no repeated wash color
+    for (var w = 0; w < nW; w++) {
+      var pts = washPoly(r);
+      var op = r2(0.5 + r() * 0.2); // fill-opacity 0.5..0.7
+      washes.push({
+        points: polyline(pts),
+        core: polyline(shrink(pts, 0.72)),
+        fill: WASH_COLORS[(cStart + w * cStep) % WASH_COLORS.length],
+        opacity: op
+      });
+    }
+
+    var tiles = [];
+    var nRings = r() < 0.45 ? 4 : 5;
+    var rIn = 40, rOutMax = 160;
+    var band = (rOutMax - rIn) / nRings;
+    var bounds = [rIn];
+    for (var b = 1; b < nRings; b++) bounds.push(r2(rIn + band * b + (r() - 0.5) * 8));
+    bounds.push(rOutMax);
+
+    for (var ring = 0; ring < nRings; ring++) {
+      var r0 = bounds[ring], r1 = bounds[ring + 1];
+      var rMid = (r0 + r1) / 2;
+      var tileW = 14 + r() * 6; // target tile width in px, per ring
+      var n = Math.max(10, Math.round((Math.PI * 2 * rMid) / tileW));
+      var phase = r() * Math.PI * 2; // rings don't align — laid by hand
+      var gapHalf = 1.6 / rMid; // ~3.2px linear grout regardless of radius
       for (var s = 0; s < n; s++) {
-        var a0 = (s / n) * Math.PI * 2 + gapA;
-        var a1 = ((s + 1) / n) * Math.PI * 2 - gapA;
-        var j = function () { return (r() - 0.5) * 6; };
-        var p1 = pt(r0 + 2.5 + j() * 0.4, a0);
-        var p2 = pt(r1 - 2.5 + j() * 0.4, a0 + (r() - 0.5) * 0.02);
-        var p3 = pt(r1 - 2.5 + j() * 0.4, a1 + (r() - 0.5) * 0.02);
-        var p4 = pt(r0 + 2.5 + j() * 0.4, a1);
-        polys.push({
+        var a0 = phase + (s / n) * Math.PI * 2 + gapHalf;
+        var a1 = phase + ((s + 1) / n) * Math.PI * 2 - gapHalf;
+        var p1 = pt(r0 + 1.8 + (r() - 0.5) * 2.4, a0);
+        var p2 = pt(r1 - 1.8 + (r() - 0.5) * 2.4, a0 + (r() - 0.5) * 0.015);
+        var p3 = pt(r1 - 1.8 + (r() - 0.5) * 2.4, a1 + (r() - 0.5) * 0.015);
+        var p4 = pt(r0 + 1.8 + (r() - 0.5) * 2.4, a1);
+        tiles.push({
           points: p1.join(',') + ' ' + p2.join(',') + ' ' + p3.join(',') + ' ' + p4.join(','),
           fill: pickColor(r)
         });
       }
     }
-    return polys;
+    return { washes: washes, tiles: tiles };
   }
 
   function breakLine(r) {
@@ -112,13 +188,22 @@
     return '400,20 ' + s + ' 400,380';
   }
 
-  function tokenBody(polys) {
+  /* substrate disk → washes (each with a pooled core) → tile field →
+     ink rim → blush halo → wax disc. Washes peek through the grout. */
+  function tokenBody(art) {
     var s = '';
-    s += '<circle cx="' + CX + '" cy="' + CY + '" r="' + R_OUT + '" fill="none" stroke="' + INK + '" stroke-width="3"/>';
-    s += '<circle cx="' + CX + '" cy="' + CY + '" r="24" fill="' + WAX + '"/>';
-    for (var i = 0; i < polys.length; i++) {
-      s += '<polygon points="' + polys[i].points + '" fill="' + polys[i].fill + '"/>';
+    s += '<circle cx="' + CX + '" cy="' + CY + '" r="166" fill="' + BASE + '"/>';
+    for (var w = 0; w < art.washes.length; w++) {
+      var wash = art.washes[w];
+      s += '<polygon points="' + wash.points + '" fill="' + wash.fill + '" fill-opacity="' + wash.opacity + '"/>';
+      s += '<polygon points="' + wash.core + '" fill="' + wash.fill + '" fill-opacity="0.3"/>';
     }
+    for (var i = 0; i < art.tiles.length; i++) {
+      s += '<polygon points="' + art.tiles[i].points + '" fill="' + art.tiles[i].fill + '"/>';
+    }
+    s += '<circle cx="' + CX + '" cy="' + CY + '" r="' + R_OUT + '" fill="none" stroke="' + INK + '" stroke-width="3"/>';
+    s += '<circle cx="' + CX + '" cy="' + CY + '" r="31" fill="' + BLUSH + '"/>';
+    s += '<circle cx="' + CX + '" cy="' + CY + '" r="24" fill="' + WAX + '" stroke="' + DEEP_INK + '" stroke-width="1.5"/>';
     return s;
   }
 
@@ -133,7 +218,7 @@
     var polys = tilePolys(r);
     var brk = breakLine(r);
     var body = tokenBody(polys);
-    var brkStroke = '<polyline points="' + polyline(brk) + '" fill="none" stroke="#f7f3ea" stroke-width="4"/>';
+    var brkStroke = '<polyline points="' + polyline(brk) + '" fill="none" stroke="#FBF6EC" stroke-width="4"/>';
 
     var full = svgOpen(400, 400) + body + brkStroke + '</svg>';
 
