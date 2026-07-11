@@ -91,19 +91,19 @@
       return '<svg viewBox="0 0 64 52" ' + A + '>' + sheet + inner + '</svg>';
     };
     var steps = [
-      { n: '1', cap: 'top down', svg: svg(
+      { n: '1', cap: 'Fold the top third down over the middle.', svg: svg(
         foldT + dash + foldB + ' opacity="0.35"' + dash +
         '<path d="M32 6 L32 13.5" stroke-width="1"/><path d="M28.5 10 L32 13.8 L35.5 10" stroke-width="1"/>') },
-      { n: '2', cap: 'bottom up', svg: svg(
+      { n: '2', cap: 'Fold the bottom third up; the flap sits on top.', svg: svg(
         foldT + '/>' + foldB + dash +
         '<path d="M32 42 L32 34.5" stroke-width="1"/><path d="M28.5 38 L32 34.2 L35.5 38" stroke-width="1"/>') },
-      { n: '3', cap: 'glue sides', svg: svg(
+      { n: '3', cap: 'Glue or tape the two open sides shut.', svg: svg(
         foldT + '/>' + foldB + '/>' +
         '<line x1="12" y1="13" x2="12" y2="35" stroke-width="1.7"/>' +
         '<line x1="52" y1="13" x2="52" y2="35" stroke-width="1.7"/>' +
         '<path d="M22 24 L14 24" stroke-width="0.9"/><path d="M16.5 22 L13.5 24 L16.5 26" stroke-width="0.9"/>' +
         '<path d="M42 24 L50 24" stroke-width="0.9"/><path d="M47.5 22 L50.5 24 L47.5 26" stroke-width="0.9"/>') },
-      { n: '4', cap: 'sealed', svg:
+      { n: '4', cap: 'Sealed. Trim the dotted line if you like a clean edge.', svg:
         '<svg viewBox="0 0 64 52" ' + A + '>' +
         '<rect x="12" y="9" width="40" height="30" rx="1.5" stroke-width="1"/>' +
         '<path d="M12 9 L32 25 L52 9" stroke-width="0.9"/>' +
@@ -181,15 +181,6 @@
     template.appendChild(flap);
     sheet.appendChild(template);
     sheet.appendChild(envelopeGuide());
-
-    var steps = el('ol', 'envelope-steps');
-    ['Fold along the upper fold line, bringing the top third down over the middle.',
-      'Fold along the lower fold line, bringing the bottom third up and over, so the flap sits on top.',
-      'Glue or tape the two open sides shut, along the edges where the folded thirds overlap.',
-      'Trim the outer dotted line if you like a clean edge, or just fold it under.'].forEach(function (t) {
-        steps.appendChild(el('li', '', t));
-      });
-    sheet.appendChild(steps);
     sheet.appendChild(assemblyGuide());
 
     sheet.appendChild(footer(f.id, f.openWhenNeeded ? 'opens when needed' : 'opens ' + f.openOn));

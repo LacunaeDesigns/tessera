@@ -65,13 +65,11 @@
                  display: flex; flex-direction: column; align-items: center; justify-content: center;
                  text-align: center; padding: 0 4mm; }
 .envelope-flap-line { font-family: var(--display); margin: 0.1rem 0; }
-.envelope-guide { display: flex; justify-content: space-between; gap: 3mm; margin: 1rem 0 0.2rem; }
+.envelope-guide { display: flex; justify-content: space-between; gap: 5mm; margin: 1.1rem 0 0.3rem; }
 .envelope-guide-step { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.envelope-guide-art svg { display: block; width: 16mm; max-width: 100%; height: auto; margin: 0 auto; }
-.envelope-guide-cap { margin-top: 0.25rem; font-family: var(--typewriter); font-size: 7.5pt;
-                      letter-spacing: 0.03em; color: rgba(33,29,22,0.6); }
-.envelope-steps { margin-top: 0.6rem; font-size: 0.95rem; }
-.envelope-assembly { margin-top: 0.7rem; }
+.envelope-guide-art svg { display: block; width: 17mm; max-width: 100%; height: auto; margin: 0 auto; }
+.envelope-guide-cap { margin-top: 0.35rem; font-size: 8.5pt; line-height: 1.3; color: rgba(33,29,22,0.8); }
+.envelope-assembly { margin-top: 0.9rem; }
 .envelope-assembly-art svg { display: block; width: 118mm; max-width: 100%; height: auto; margin: 0.2rem auto 0; }
 .envelope-steps li { margin-bottom: 0.3rem; }
 
