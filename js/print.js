@@ -144,6 +144,26 @@
     return sheet;
   }
 
+  /* the key-escrow card (features/encryption.md): printed at seal time from
+     live passphrase/hint values passed in by the caller, never stored in
+     the letter folder or manifest. */
+  function escrowSheet(o) {
+    var sheet = el('section', 'sheet sheet-escrow');
+    sheet.appendChild(el('h2', 'sheet-heading', 'A Tessera key card.'));
+    if (o.passphrase) {
+      sheet.appendChild(el('p', 'escrow-label', 'Passphrase'));
+      sheet.appendChild(el('p', 'escrow-value mono', o.passphrase));
+    }
+    if (o.hint) {
+      sheet.appendChild(el('p', 'escrow-label', 'Hint'));
+      sheet.appendChild(el('p', 'escrow-value', o.hint));
+    }
+    sheet.appendChild(el('p', 'sheet-note', 'Give this card to someone who is not the custodian.'));
+    sheet.appendChild(el('p', 'sheet-note', 'This unlocks the letter file. A lost passphrase is a lost letter.'));
+    sheet.appendChild(footer(o.id, 'key card'));
+    return sheet;
+  }
+
   /* show sheets in the print preview overlay; printing prints only #print-root */
   function show(sheets) {
     var overlay = document.getElementById('print-overlay');
@@ -163,7 +183,8 @@
   function printKit(sealed) { show(kitSheets(sealed)); }
   function printRegister(entries) { show([registerSheet(entries)]); }
   function printCard(entries) { show([cardSheet(entries)]); }
+  function printEscrowCard(o) { show([escrowSheet(o)]); }
 
-  var api = { printKit: printKit, printRegister: printRegister, printCard: printCard, hide: hide, kitSheets: kitSheets };
+  var api = { printKit: printKit, printRegister: printRegister, printCard: printCard, printEscrowCard: printEscrowCard, hide: hide, kitSheets: kitSheets };
   root.TesseraPrint = api;
 })(typeof self !== 'undefined' ? self : this);

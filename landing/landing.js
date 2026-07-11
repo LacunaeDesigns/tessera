@@ -48,6 +48,7 @@
     phase: 'idle', value: '', lines: [''], col: 0, focused: false, autotyping: false, demoActive: true,
     to: '', occasion: null, customOccasion: '', showPrompts: true, setupStep: null, machineColorU: null,
     openOn: '', openWhenNeeded: false, fromWho: '', custodyHolder: '', custodyNote: '', keepCopy: false,
+    passphrase: '', passConfirm: '', passHint: '',
     sealed: null, freshId: '', sealing: false, soundOnU: null, shelfStyleU: null,
     sealChoice: 'blue', sealPickerOpen: false, writeback: null
   };
@@ -458,7 +459,8 @@
   function sealNow() {
     var d = state;
     var validDate = /^\d{4}-\d{2}-\d{2}$/.test(d.openOn);
-    if (d.sealing || !d.value.trim() || !d.fromWho.trim() || !(d.openWhenNeeded || validDate)) return;
+    var passMismatch = d.passphrase.length > 0 && d.passphrase !== d.passConfirm;
+    if (d.sealing || !d.value.trim() || !d.fromWho.trim() || !(d.openWhenNeeded || validDate) || passMismatch) return;
     d.sealing = true;
     renderSealSection();
     var fields = {
@@ -473,7 +475,9 @@
         : [],
       letter: d.value,
       openWhenNeeded: d.openWhenNeeded,
-      writeback: d.writeback || null
+      writeback: d.writeback || null,
+      passphrase: d.passphrase || '',
+      hint: d.passHint.trim() || ''
     };
     TesseraExport.seal(fields).then(function (sealed) {
       TesseraState.addRegistryEntry({
@@ -514,6 +518,7 @@
     state.phase = 'idle'; state.value = ''; state.lines = ['']; state.col = 0;
     state.sealed = null; state.openOn = ''; state.openWhenNeeded = false;
     state.custodyHolder = ''; state.custodyNote = ''; state.keepCopy = false;
+    state.passphrase = ''; state.passConfirm = ''; state.passHint = '';
     renderPaper(); renderCaret(); renderSealSection(); renderHero();
     setSetupStep(1);
     updateCarriage(false);
@@ -657,6 +662,9 @@
       if (refs.fromWho.value !== state.fromWho) refs.fromWho.value = state.fromWho;
       if (refs.custodyHolder.value !== state.custodyHolder) refs.custodyHolder.value = state.custodyHolder;
       if (refs.custodyNote.value !== state.custodyNote) refs.custodyNote.value = state.custodyNote;
+      if (refs.passPhrase.value !== state.passphrase) refs.passPhrase.value = state.passphrase;
+      if (refs.passConfirm.value !== state.passConfirm) refs.passConfirm.value = state.passConfirm;
+      if (refs.passHint.value !== state.passHint) refs.passHint.value = state.passHint;
 
       var meta = sealMeta(state.sealChoice);
       refs.sealPickImg.src = meta.src;
@@ -674,11 +682,16 @@
       refs.pvKept.textContent = state.custodyHolder.trim() || 'you';
       refs.pvText.textContent = state.value;
       refs.keepCopy.checked = state.keepCopy;
-      var canSeal = !state.sealing && state.value.trim().length > 0 && state.fromWho.trim().length > 0 && (state.openWhenNeeded || validDate);
+      /* a passphrase must be confirmed before it can lock a letter. A mistyped
+         passphrase is a lost letter, so we never seal on an unconfirmed one */
+      var passMismatch = state.passphrase.length > 0 && state.passphrase !== state.passConfirm;
+      var canSeal = !state.sealing && state.value.trim().length > 0 && state.fromWho.trim().length > 0 && (state.openWhenNeeded || validDate) && !passMismatch;
       refs.sealLetterBtn.disabled = !canSeal;
       refs.sealLetterBtn.style.opacity = canSeal ? 1 : 0.45;
       refs.sealLetterBtn.textContent = state.sealing ? 'Sealing…' : 'Seal the letter';
-      refs.sealHint.textContent = (canSeal || state.sealing) ? '' : 'A date (or “when it’s needed”) and a sender make it sealable.';
+      refs.sealHint.textContent = (canSeal || state.sealing) ? ''
+        : passMismatch ? 'The two passphrases do not match yet.'
+        : 'A date (or “when it’s needed”) and a sender make it sealable.';
     }
 
     if (state.sealed) {
@@ -688,6 +701,7 @@
       refs.sealedOpens.textContent = state.sealed.fields.openWhenNeeded ? 'when it’s needed' : dateInWords(state.sealed.fields.openOn);
       var cal = document.getElementById('sealed-calendar');
       if (cal) cal.hidden = !!state.sealed.fields.openWhenNeeded; /* no date, no calendar */
+      if (refs.sealedKeycard) refs.sealedKeycard.hidden = !state.sealed.encrypted;
     }
   }
   function buildDateChips() {
@@ -938,6 +952,9 @@
     refs.fromWho = $('from-who');
     refs.custodyHolder = $('custody-holder');
     refs.custodyNote = $('custody-note');
+    refs.passPhrase = $('pass-phrase');
+    refs.passConfirm = $('pass-confirm');
+    refs.passHint = $('pass-hint');
     refs.sealPickBtn = $('seal-pick-btn');
     refs.sealPickImg = $('seal-pick-img');
     refs.sealPickLabel = $('seal-pick-label');
@@ -955,6 +972,7 @@
     refs.sealedId = $('sealed-id');
     refs.sealedTo = $('sealed-to');
     refs.sealedOpens = $('sealed-opens');
+    refs.sealedKeycard = $('sealed-keycard');
     refs.storyToken = $('story-token');
     refs.shelfTabs = $('shelf-tabs');
     refs.shelfEmpty = $('shelf-empty');
@@ -1026,6 +1044,9 @@
     refs.fromWho.addEventListener('input', function (e) { state.fromWho = e.target.value; renderSealSection(); });
     refs.custodyHolder.addEventListener('input', function (e) { state.custodyHolder = e.target.value; renderSealSection(); });
     refs.custodyNote.addEventListener('input', function (e) { state.custodyNote = e.target.value; renderSealSection(); });
+    refs.passPhrase.addEventListener('input', function (e) { state.passphrase = e.target.value; renderSealSection(); });
+    refs.passConfirm.addEventListener('input', function (e) { state.passConfirm = e.target.value; renderSealSection(); });
+    refs.passHint.addEventListener('input', function (e) { state.passHint = e.target.value; });
     refs.sealPickBtn.addEventListener('click', function () {
       state.sealPickerOpen = !state.sealPickerOpen;
       renderSealSection();
@@ -1034,6 +1055,11 @@
     refs.sealLetterBtn.addEventListener('click', sealNow);
     $('sealed-print').addEventListener('click', function () {
       if (state.sealed) TesseraPrint.printKit(state.sealed);
+    });
+    refs.sealedKeycard.addEventListener('click', function () {
+      if (state.sealed && state.sealed.encrypted) {
+        TesseraPrint.printEscrowCard({ id: state.sealed.fields.id, passphrase: state.passphrase, hint: state.passHint.trim() });
+      }
     });
     $('sealed-download').addEventListener('click', function () {
       if (state.sealed) TesseraExport.download(state.sealed);

@@ -24,53 +24,73 @@
 
     return sha256Hex(seedString).then(function (seedHex) {
       var id = M.deriveId(seedHex);
-      var f = {
-        id: id,
-        written: fields.written,
-        openOn: fields.openOn,
-        from: fields.from,
-        to: fields.to,
-        occasion: fields.occasion,
-        language: fields.language || 'en',
-        custody: fields.custody || [],
-        tokenSeed: seedHex,
-        openWhenNeeded: !!fields.openWhenNeeded,
-        writeback: fields.writeback || null
-      };
-      var readme = M.renderReadme(f);
-      var manifest = M.manifestJson(f);
-      var token = root.TesseraToken.renderTokenSvg(seedHex, id);
-      var tokenSvg = token.sheet + '\n';
 
-      var files = [
-        { name: 'README.txt', data: readme },
-        { name: 'letter.txt', data: letterText },
-        { name: 'manifest.json', data: manifest },
-        { name: 'token.svg', data: tokenSvg }
-      ];
+      /* optional passphrase privacy (SPEC §9): the letter body becomes
+         letter.txt.enc; README.txt is never locked. One seal path still —
+         encryption is just a step inside it. The passphrase itself is never
+         persisted; only salt/iv/iterations (+ optional hint) ride the manifest. */
+      var lockStep;
+      if (fields.passphrase) {
+        lockStep = root.TesseraCrypt.encryptLetter(letterText, fields.passphrase).then(function (enc) {
+          var field = enc.manifestField;
+          if (fields.hint) field.hint = fields.hint;
+          return { name: 'letter.txt.enc', data: enc.wrapper, encryption: field };
+        });
+      } else {
+        lockStep = Promise.resolve({ name: 'letter.txt', data: letterText, encryption: null });
+      }
 
-      return Promise.all(files.map(function (file) {
-        return sha256Hex(file.data);
-      })).then(function (sums) {
-        var checks = '';
-        for (var i = 0; i < files.length; i++) checks += sums[i] + '  ' + files[i].name + '\n';
-        files.push({ name: 'checksums.txt', data: checks });
-
-        var folder = 'tessera-' + id;
-        var dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(f.written);
-        var zip = root.TesseraZip.buildZip(
-          files.map(function (file) { return { name: folder + '/' + file.name, data: file.data }; }),
-          { y: parseInt(dm[1], 10), m: parseInt(dm[2], 10), d: parseInt(dm[3], 10) }
-        );
-
-        return {
-          fields: f,
-          letterText: letterText,
-          readme: readme,
-          token: token,
-          zip: zip,
-          zipName: folder + '.zip'
+      return lockStep.then(function (letterFile) {
+        var f = {
+          id: id,
+          written: fields.written,
+          openOn: fields.openOn,
+          from: fields.from,
+          to: fields.to,
+          occasion: fields.occasion,
+          language: fields.language || 'en',
+          custody: fields.custody || [],
+          tokenSeed: seedHex,
+          openWhenNeeded: !!fields.openWhenNeeded,
+          writeback: fields.writeback || null
         };
+        if (letterFile.encryption) f.encryption = letterFile.encryption;
+        var readme = M.renderReadme(f);
+        var manifest = M.manifestJson(f);
+        var token = root.TesseraToken.renderTokenSvg(seedHex, id);
+        var tokenSvg = token.sheet + '\n';
+
+        var files = [
+          { name: 'README.txt', data: readme },
+          { name: letterFile.name, data: letterFile.data },
+          { name: 'manifest.json', data: manifest },
+          { name: 'token.svg', data: tokenSvg }
+        ];
+
+        return Promise.all(files.map(function (file) {
+          return sha256Hex(file.data);
+        })).then(function (sums) {
+          var checks = '';
+          for (var i = 0; i < files.length; i++) checks += sums[i] + '  ' + files[i].name + '\n';
+          files.push({ name: 'checksums.txt', data: checks });
+
+          var folder = 'tessera-' + id;
+          var dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(f.written);
+          var zip = root.TesseraZip.buildZip(
+            files.map(function (file) { return { name: folder + '/' + file.name, data: file.data }; }),
+            { y: parseInt(dm[1], 10), m: parseInt(dm[2], 10), d: parseInt(dm[3], 10) }
+          );
+
+          return {
+            fields: f,
+            letterText: letterText,
+            readme: readme,
+            token: token,
+            zip: zip,
+            zipName: folder + '.zip',
+            encrypted: !!letterFile.encryption
+          };
+        });
       });
     });
   }
