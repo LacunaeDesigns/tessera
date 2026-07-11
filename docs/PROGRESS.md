@@ -2,7 +2,7 @@
 
 The living record of what is actually done, against [roadmap.md](roadmap.md). Update when a task lands; `/release` refuses if this file lies. The cross-machine twin is the Ariadne vault (`projects/tessera.md`) — status there, granularity here.
 
-**Snapshot (2026-07-10):** **v0.2.0 shipped.** The opening is live at tessera-letters.netlify.app (still unlisted) — the fourth door receives, verifies, opens with ceremony, answers forward, and takes letters into custody. `main` fast-forwarded from `dev`, versioning triple at 0.2.0 / `'0.2.0'` / `'tessera-v0.2.0'`. All release gates re-run this session: Gate 1–3 green (five suites, prose clean, full browser walkthrough 375px-first), /spec-sync clean, century-audit all rows evidenced with one author-accepted physical-walkthrough waiver (kit unchanged from v0.1.0). The three remaining v0.2 plans (reminders, encryption, envelope-themes) are next; reminders first.
+**Snapshot (2026-07-11):** **v0.3.0 shipped — one front end.** The redesigned landing is now the whole app, live at tessera-letters.netlify.app (unlisted): write at the typewriter desk, open a received letter with ceremony (a focused overlay), answer it forward, keep one for someone, and export calendar/wallet-card reminders. `app.html` retired to a redirect; the plain renderers (`compose.js`/`registry.js`/`main.js`/`style.css`) deleted; `open.js` pruned to its pure verification core; `LOCAL_VERSION` relocated to `js/version.js`. Triple at 0.3.0 / `'0.3.0'` / `'tessera-v0.3.0'`; `main` fast-forwarded from `dev`. All gates re-run this session (six suites, prose, full 375px-first walkthrough, spec-sync), century-audit rows evidenced (format unchanged; physical-walkthrough waiver reused). Remaining v0.2 plans: encryption, then envelope-themes.
 
 ## v0.1 — Foundations
 
@@ -48,6 +48,48 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 | CI (Gate 1 + prose on push) | deferred until repo is public (testing.md) |
 
 ## Log (newest first)
+
+- **2026-07-11 (v0.3.0 — one front end)** — Released via `/release`. Version: minor bump to 0.3.0
+  (two whole capabilities land — reminders and the unified front end — with no format-breaking
+  change; the manifest `tessera` spec version stays 0.1, fixtures byte-identical). Triple moved
+  together: `version.json` 0.3.0 · `LOCAL_VERSION` `'0.3.0'` (now in `js/version.js`) ·
+  `CACHE_VERSION` `'tessera-v0.3.0'`. What shipped: the redesigned landing is now the whole app —
+  writing at the typewriter desk, opening a received letter with ceremony (a focused overlay),
+  answering it forward, keeping one for someone, and calendar/wallet-card reminders. `app.html`
+  retired to a redirect; `compose.js`/`registry.js`/`main.js`/`style.css` deleted; `open.js`
+  pruned to its pure verification core; `LOCAL_VERSION` relocated to `js/version.js`. Ship: `main`
+  fast-forwarded from `dev`, pushed; Netlify deploys `main` (unlisted). Author approved the ship.
+
+  Gates re-run this session, all green: Gate 1 — syntax sweep silent, six suites green
+  (`test-open` passes unchanged after the prune, proving the verification core is intact),
+  fixtures byte-identical. Gate 2 — prose clean but for four justified WARNs (two code-comment
+  em-dashes in `print.js`/`manifest.js`; two `'—'` empty-field placeholder glyphs in the landing
+  receipt preview — the documented v0.1.0 placeholders; the new `opening.js`/`reminders.js` copy
+  is em-dash-free; `prose-check.js`'s default file list corrected to drop the deleted renderers
+  and add the landing modules). Gate 3 — full browser walkthrough at 375px then desktop: the
+  typewriter desk still writes and seals (fresh `TSR-7f69-6d8d`, `writeback` null, receipt +
+  shelf + reload persistence); opening loop drop → verify (4/4 checksums, token compare) → future
+  date interstitial → ceremony → letter; answer-forward launches the reply desk; a sealed reply's
+  manifest + README carry the lineage and re-verify clean; custody → "in your keeping" card,
+  deduped; reminders (all-dates ICS excludes open-when, includes dated custodian; wallet card
+  two-up ink-light); `app.html` redirects to `/`; zero console errors; no external requests; no
+  375px overflow. /spec-sync clean (no format module changed).
+
+  Century audit (format unchanged, so letter-level rows are the same artifacts audited at v0.2.0
+  this session; web-tool rows re-verified in the Gate-3 walkthrough; **physical walkthrough
+  waived** — reused from v0.2, no new paper artifact, kit structure unchanged, decisions.md):
+
+  | Row | Verdict | Evidence |
+  |---|---|---|
+  | A: no required URL in export | ✓ | format unchanged since v0.2.0 audit; reply README adds only the letter ID |
+  | A: file:// + no external requests | ✓ | Gate-3 network log across desk-seal + opening + reminders: only same-origin, `blob:`, one inline `data:` icon — 0 external; SW registration stays `file://`-guarded |
+  | A: fork = identical tool, no keys | ✓ | no package.json/build; fewer files than before (plain app deleted) |
+  | A: data only on device + exports | ✓ | single `tessera_v1` key; custody stores facts-only; network log confirms nothing leaves |
+  | B: UTF-8 no BOM · zip store · manifest ⊂ README (incl. writeback) · dates ISO+words · token.svg plain | ✓ | six suites green, fixtures byte-identical; no format module changed |
+  | B: media guidance | n-a | no media |
+  | C: spec CC0 · tool MIT · format outlives project · decisions recorded | ✓ | unchanged; decisions.md holds the unification entries |
+  | D: paper completeness · cold-read · token-by-eye · checksums · assembly | ✓ (structure) | print engine + kit unchanged; physical re-walk waived (above) |
+  | (note) both palettes | n-a | the app is single-palette by design now (decisions.md 2026-07-11); the lamplight dark theme lived only in the retired app.html |
 
 - **2026-07-11 (front end unified — on dev, unreleased)** — The two-front-end split is gone: the
   redesigned landing is now the whole app, and `app.html` is a redirect to `/`. Executed

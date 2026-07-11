@@ -5,8 +5,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const DEFAULT_FILES = ['data/occasions.js', 'index.html', 'js/compose.js',
-  'js/print.js', 'js/registry.js', 'js/manifest.js'];
+const DEFAULT_FILES = ['data/occasions.js', 'index.html', 'js/print.js',
+  'js/manifest.js', 'landing/landing.js', 'landing/opening.js', 'landing/reminders.js'];
 
 const RULES = [
   { re: /—/g, why: 'em-dash (banned outside interrupted speech)' },
