@@ -52,12 +52,15 @@
 .envelope-trim-label { position: absolute; top: 1mm; right: 1.6mm;
                        font-family: var(--typewriter); font-size: 7pt; letter-spacing: 0.06em;
                        color: rgba(33,29,22,0.4); }
-.glue-tab { position: absolute; top: 40%; width: 13mm; height: 16mm;
-            border: 0.5pt dashed rgba(33,29,22,0.5); display: flex; align-items: center;
-            justify-content: center; font-family: var(--typewriter); font-size: 8pt;
-            color: rgba(33,29,22,0.6); white-space: nowrap; }
-.glue-tab-left { left: 4mm; }
-.glue-tab-right { right: 4mm; }
+/* the two open sides: glue where the folded thirds overlap, down each edge of
+   the middle band. No separate tabs, so nothing needs cutting. */
+.glue-edge { position: absolute; top: 33.33%; bottom: 33.33%; width: 7mm;
+             display: flex; align-items: center; justify-content: center;
+             font-family: var(--typewriter); font-size: 7pt; letter-spacing: 0.05em;
+             color: rgba(33,29,22,0.55); }
+.glue-edge-left { left: 0; border-right: 0.5pt dashed rgba(33,29,22,0.45); }
+.glue-edge-right { right: 0; border-left: 0.5pt dashed rgba(33,29,22,0.45); }
+.glue-edge-label { writing-mode: vertical-rl; }
 .envelope-flap { position: absolute; top: 66.66%; left: 0; right: 0; bottom: 0;
                  display: flex; flex-direction: column; align-items: center; justify-content: center;
                  text-align: center; padding: 0 8mm; }
@@ -161,11 +164,10 @@
   .sheet:last-child { break-after: auto; }
   .letter-body { font-size: 11.5pt; }
   /* envelope template: schematic only (the physical fold uses the whole
-     sheet), so its height is free to shrink. Kept at 136mm so the sheet —
-     heading + template + step diagrams + text steps + footer — clears one
-     page on both A4 (267mm) and the tighter Letter (249mm) with headroom for
-     a flap date that wraps (far-future years render long in words) */
-  .envelope-template { height: 104mm; }
+     sheet), so its height is free to shrink. Kept at 104mm so the whole sheet
+     (heading, template, step diagrams, text steps, assembly diagram, footer)
+     clears one page on both A4 (267mm) and the tighter Letter (249mm), with
+     headroom for a flap date that wraps (far-future years render long) */
+  .envelope-template { height: 96mm; }
   .envelope-flap-line { font-size: 11pt; }
-  .glue-tab { font-size: 7pt; }
 }

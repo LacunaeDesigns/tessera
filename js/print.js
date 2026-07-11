@@ -99,10 +99,10 @@
         '<path d="M32 42 L32 34.5" stroke-width="1"/><path d="M28.5 38 L32 34.2 L35.5 38" stroke-width="1"/>') },
       { n: '3', cap: 'glue sides', svg: svg(
         foldT + '/>' + foldB + '/>' +
-        '<rect x="6" y="20" width="6" height="8" stroke-width="0.8"' + dash +
-        '<rect x="52" y="20" width="6" height="8" stroke-width="0.8"' + dash +
-        '<path d="M4.5 24 L10.5 24" stroke-width="1"/><path d="M8 21.6 L11 24 L8 26.4" stroke-width="1"/>' +
-        '<path d="M59.5 24 L53.5 24" stroke-width="1"/><path d="M56 21.6 L53 24 L56 26.4" stroke-width="1"/>') },
+        '<line x1="12" y1="13" x2="12" y2="35" stroke-width="1.7"/>' +
+        '<line x1="52" y1="13" x2="52" y2="35" stroke-width="1.7"/>' +
+        '<path d="M22 24 L14 24" stroke-width="0.9"/><path d="M16.5 22 L13.5 24 L16.5 26" stroke-width="0.9"/>' +
+        '<path d="M42 24 L50 24" stroke-width="0.9"/><path d="M47.5 22 L50.5 24 L47.5 26" stroke-width="0.9"/>') },
       { n: '4', cap: 'sealed', svg:
         '<svg viewBox="0 0 64 52" ' + A + '>' +
         '<rect x="12" y="9" width="40" height="30" rx="1.5" stroke-width="1"/>' +
@@ -136,13 +136,15 @@
       '<line x1="12" y1="25" x2="50" y2="25" stroke-width="0.6"/>' +
       '<line x1="12" y1="30" x2="50" y2="30" stroke-width="0.6"/>' +
       '<line x1="12" y1="35" x2="40" y2="35" stroke-width="0.6"/>' +
+      '<line x1="22.7" y1="17" x2="22.7" y2="43" stroke-width="0.6" stroke-dasharray="2 2"/>' +
+      '<line x1="39.3" y1="17" x2="39.3" y2="43" stroke-width="0.6" stroke-dasharray="2 2"/>' +
       '<path d="M60 30 L78 30" stroke-width="1"/><path d="M74 27 L78.5 30 L74 33" stroke-width="1"/>' +
       '<rect x="214" y="21" width="16" height="16" rx="1" stroke-width="0.9"/>' +
       '<text x="222" y="33" font-size="10" text-anchor="middle" stroke="none" fill="#211d16" font-family="serif">½</text>' +
       '<path d="M212 29 L196 29" stroke-width="1"/><path d="M200 26 L195.5 29 L200 32" stroke-width="1"/>' +
       '</svg>';
     var box = el('div', 'envelope-assembly');
-    box.appendChild(el('p', 'sheet-note', 'Once it is folded: the letter and your token half go inside, and the cover sheet wraps the outside.'));
+    box.appendChild(el('p', 'sheet-note', 'Once it is folded: the letter, folded in thirds, and your token half go inside, and the cover sheet wraps the outside.'));
     var art = el('div', 'envelope-assembly-art');
     art.innerHTML = svg; /* self-generated hairline SVG, no user content */
     box.appendChild(art);
@@ -164,8 +166,13 @@
     template.appendChild(trim);
     template.appendChild(foldLine('fold-line-upper', '▽')); /* top third folds down */
     template.appendChild(foldLine('fold-line-lower', '△')); /* bottom third folds up */
-    template.appendChild(el('div', 'glue-tab glue-tab-left', 'glue →'));
-    template.appendChild(el('div', 'glue-tab glue-tab-right', '← glue'));
+    /* the two open sides: no separate tabs to cut. Once the thirds are folded
+       the layers overlap here, so glue runs down each side edge */
+    ['glue-edge-left', 'glue-edge-right'].forEach(function (side) {
+      var edge = el('div', 'glue-edge ' + side);
+      edge.appendChild(el('span', 'glue-edge-label', 'glue this side'));
+      template.appendChild(edge);
+    });
     var flap = el('div', 'envelope-flap');
     flap.appendChild(el('p', 'envelope-flap-line', 'A letter, sealed ' + M.dateInWords(f.written) + '.'));
     flap.appendChild(el('p', 'envelope-flap-line', 'For ' + f.to + '.'));
@@ -178,7 +185,7 @@
     var steps = el('ol', 'envelope-steps');
     ['Fold along the upper fold line, bringing the top third down over the middle.',
       'Fold along the lower fold line, bringing the bottom third up and over, so the flap sits on top.',
-      'Fold the glue tabs at each side inward, and glue or tape them down.',
+      'Glue or tape the two open sides shut, along the edges where the folded thirds overlap.',
       'Trim the outer dotted line if you like a clean edge, or just fold it under.'].forEach(function (t) {
         steps.appendChild(el('li', '', t));
       });
