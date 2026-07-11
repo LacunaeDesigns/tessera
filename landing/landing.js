@@ -1081,6 +1081,15 @@
     $('print-envelope').addEventListener('change', function (e) {
       if (state.sealed) TesseraPrint.printKit(state.sealed, { envelope: e.target.checked });
     });
+    var savedTheme = TesseraState.getSetting('printTheme') || 'letterpress';
+    $('print-theme').value = savedTheme;
+    $('print-root').classList.add('theme-' + savedTheme);
+    $('print-theme').addEventListener('change', function (e) {
+      var pr = $('print-root');
+      pr.className = pr.className.replace(/\btheme-[\w-]+/g, '').trim();
+      pr.classList.add('theme-' + e.target.value);
+      TesseraState.setSetting('printTheme', e.target.value);
+    });
     $('write-another').addEventListener('click', writeAnother);
 
     var tabs = refs.shelfTabs.children;

@@ -12,8 +12,9 @@
 /* ---- print overlay (screen preview: stacked paper cards) ---- */
 #print-overlay { position: fixed; inset: 0; overflow: auto; background: var(--paper, #f7f3ea); padding: 1rem; z-index: 90; }
 .print-toolbar { display: flex; justify-content: space-between; align-items: center; max-width: 46rem; margin: 0 auto 1rem; }
-.print-toolbar-left { display: flex; align-items: center; gap: 1rem; }
+.print-toolbar-left { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem 1rem; }
 .print-opt { font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; }
+#print-theme { font: inherit; font-size: 0.9rem; }
 .sheet { background: #fdfbf5; color: #211d16; max-width: 46rem; margin: 0 auto 1.5rem;
          padding: 2.2rem 2.4rem; border: 1px solid rgba(33,29,22,0.18); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 .sheet-footer { margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(33,29,22,0.25);
