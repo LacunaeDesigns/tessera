@@ -39,15 +39,23 @@
    no filled areas (ink-light rule); screen preview shows it as a card,
    the print block sizes the template in mm so it fits A4 and Letter alike. */
 .envelope-template { position: relative; height: 20rem; margin: 1rem 0; border: 1px solid rgba(33,29,22,0.2); }
+/* fold lines: dashed, each labelled with which way its panel turns */
 .fold-line { position: absolute; left: 0; right: 0; border-top: 0.5pt dashed rgba(33,29,22,0.5); }
 .fold-line-upper { top: 33.33%; }
 .fold-line-lower { top: 66.66%; }
-.fold-line-outer { position: absolute; top: 4mm; right: 4mm; bottom: 4mm; left: 4mm;
-                    border: 0.5pt dashed rgba(33,29,22,0.35); }
-.glue-tab { position: absolute; top: 40%; width: 10mm; height: 16mm;
+.fold-label { position: absolute; left: 50%; top: -1.15em; transform: translateX(-50%);
+              font-family: var(--typewriter); font-size: 7.5pt; letter-spacing: 0.1em;
+              color: rgba(33,29,22,0.5); white-space: nowrap; }
+/* the optional trim guide: a finer dotted rectangle, clearly not a fold */
+.envelope-trim { position: absolute; top: 4mm; right: 4mm; bottom: 4mm; left: 4mm;
+                 border: 0.4pt dotted rgba(33,29,22,0.3); }
+.envelope-trim-label { position: absolute; top: 1mm; right: 1.6mm;
+                       font-family: var(--typewriter); font-size: 7pt; letter-spacing: 0.06em;
+                       color: rgba(33,29,22,0.4); }
+.glue-tab { position: absolute; top: 40%; width: 13mm; height: 16mm;
             border: 0.5pt dashed rgba(33,29,22,0.5); display: flex; align-items: center;
             justify-content: center; font-family: var(--typewriter); font-size: 8pt;
-            color: rgba(33,29,22,0.6); }
+            color: rgba(33,29,22,0.6); white-space: nowrap; }
 .glue-tab-left { left: 4mm; }
 .glue-tab-right { right: 4mm; }
 .envelope-flap { position: absolute; top: 66.66%; left: 0; right: 0; bottom: 0;

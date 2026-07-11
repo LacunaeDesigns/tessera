@@ -70,6 +70,14 @@
     return sheet;
   }
 
+  /* a fold line carries a label so it reads as a fold, not a cut, and an
+     arrow for which way the panel turns (▽ down, △ up) */
+  function foldLine(cls, arrow) {
+    var fl = el('div', 'fold-line ' + cls);
+    fl.appendChild(el('span', 'fold-label', 'fold ' + arrow));
+    return fl;
+  }
+
   function envelopeSheet(s) {
     var M = root.TesseraManifest;
     var f = s.fields;
@@ -78,11 +86,15 @@
     sheet.appendChild(el('p', 'sheet-note', 'Fold this sheet into an envelope for the letter inside. No cutting required.'));
 
     var template = el('div', 'envelope-template');
-    template.appendChild(el('div', 'fold-line fold-line-upper'));
-    template.appendChild(el('div', 'fold-line fold-line-lower'));
-    template.appendChild(el('div', 'fold-line fold-line-outer'));
-    template.appendChild(el('div', 'glue-tab glue-tab-left', 'glue'));
-    template.appendChild(el('div', 'glue-tab glue-tab-right', 'glue'));
+    /* the optional trim guide: a finer dotted rectangle, labelled so it is
+       clearly not a fold */
+    var trim = el('div', 'envelope-trim');
+    trim.appendChild(el('span', 'envelope-trim-label', 'trim, optional'));
+    template.appendChild(trim);
+    template.appendChild(foldLine('fold-line-upper', '▽')); /* top third folds down */
+    template.appendChild(foldLine('fold-line-lower', '△')); /* bottom third folds up */
+    template.appendChild(el('div', 'glue-tab glue-tab-left', 'glue →'));
+    template.appendChild(el('div', 'glue-tab glue-tab-right', '← glue'));
     var flap = el('div', 'envelope-flap');
     flap.appendChild(el('p', 'envelope-flap-line', 'A letter, sealed ' + M.dateInWords(f.written) + '.'));
     flap.appendChild(el('p', 'envelope-flap-line', 'For ' + f.to + '.'));
@@ -92,10 +104,10 @@
     sheet.appendChild(template);
 
     var steps = el('ol', 'envelope-steps');
-    ['Fold along the upper dashed line, bringing the top third down over the middle.',
-      'Fold along the lower dashed line, bringing the bottom third up and over, so the flap sits on top.',
+    ['Fold along the upper fold line, bringing the top third down over the middle.',
+      'Fold along the lower fold line, bringing the bottom third up and over, so the flap sits on top.',
       'Fold the glue tabs at each side inward, and glue or tape them down.',
-      'Trim the outer dashed line if you like a clean edge, or just fold it under.'].forEach(function (t) {
+      'Trim the outer dotted line if you like a clean edge, or just fold it under.'].forEach(function (t) {
         steps.appendChild(el('li', '', t));
       });
     sheet.appendChild(steps);
