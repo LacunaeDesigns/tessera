@@ -49,6 +49,25 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 
 ## Log (newest first)
 
+- **2026-07-11 (token generation 2 — on dev, unreleased)** — The token disk is reborn as the
+  **watercolor mosaic** (author-selected A2 from three rendered candidates): seeded pastel washes
+  pooling beneath a finer per-letter ring mosaic (4–5 seeded rings, ~175–208 tiles, per-ring
+  phase), ink-dark skeleton preserved for grayscale/fading; the break line and its interlocking
+  notches are byte-identical to generation 1 — the authentication mechanism is untouched. Format
+  event handled loudly: generation 1 frozen forever in `js/token-legacy.js`, original fixture
+  bytes renamed (never regenerated) to `token-legacy-fix*.svg` and asserted against the frozen
+  renderer, gen-2 fixtures born; `verifyLetter` falls back to the legacy renderer so every
+  previously sealed letter verifies clean with no warning (proven in test-open: a gen-1-sealed
+  folder returns tokenOk with zero token warnings, and the re-drawn art shown is the matching
+  generation). test-token walks both generations (51 asserts). Token-lab visual pass: fixture
+  seeds + four exploratory seeds rendered at full/faded/drawer-distance on the companion; the two
+  flagged concerns checked — wash-core stacking caps at ~0.79 alpha of a light pastel (cannot go
+  opaque-dark) and break-stroke contrast bottoms at ~1.8:1 over gold pastel (same order as gen 1
+  over its warm mids, ~8:1 over ink) — plus the author's own selection from rendered candidates.
+  Spec/plan: superpowers/{specs,plans}/2026-07-11-token-watercolor*. Awaits browser QA + `/release`
+  as v0.3.1 (author go/no-go pending; recommended cheap physical check: print one gen-2 sheet,
+  cut it, match by eye).
+
 - **2026-07-11 (v0.3.0 — one front end)** — Released via `/release`. Version: minor bump to 0.3.0
   (two whole capabilities land — reminders and the unified front end — with no format-breaking
   change; the manifest `tessera` spec version stays 0.1, fixtures byte-identical). Triple moved

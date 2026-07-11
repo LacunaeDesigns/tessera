@@ -27,7 +27,8 @@ js/
   version.js        LOCAL_VERSION + the footer version note (SW registration lives in landing.js)
   state.js          localStorage under key `tessera_v1`: { schema, drafts, registry, settings }, with migrate() seam (schema 3: registry sealKey + role)
   manifest.js       PURE: buildManifest, renderReadme, datesInWords, deriveId, tokenSeedString-input canonicalisation
-  token.js          PURE: sfc32 PRNG, renderTokenSvg(seedHex) → {full,left,right,sheet}
+  token.js          PURE: sfc32 PRNG, renderTokenSvg(seedHex) → {full,left,right,sheet} (art generation 2, watercolor mosaic)
+  token-legacy.js   PURE, FROZEN: art generation 1 (mosaic ring); verification fallback only — old tokens never become wrong
   zip.js            PURE: store-method zip writer + reader
   export.js         orchestration: SHA-256 (WebCrypto), checksums.txt, folder assembly, download, print handoff
   print.js          print-kit sheet renderer (kit, register, wallet card) + window.print()
