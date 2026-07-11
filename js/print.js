@@ -55,6 +55,16 @@
     promises.appendChild(ul);
     sheet.appendChild(promises);
     sheet.appendChild(el('p', 'sheet-note', 'This page goes on the outside. Fold it around the sealed envelope, or paste it to the front.'));
+    /* theme-support ornament, shown only under .theme-wax-seal: a dashed
+       placement circle around the letter's own token, inviting real wax */
+    var mark = el('div', 'cover-seal-mark');
+    if (s.token) {
+      var ring = el('div', 'cover-seal-ring');
+      ring.innerHTML = s.token.full; /* the token disk SVG, generated from the seed */
+      mark.appendChild(ring);
+    }
+    mark.appendChild(el('p', 'cover-seal-note', 'seal here, if you have wax'));
+    sheet.appendChild(mark);
     sheet.appendChild(footer(f.id, f.openWhenNeeded ? 'opens when needed' : 'opens ' + f.openOn));
     return sheet;
   }

@@ -99,6 +99,24 @@
 }
 .theme-telegram .cover-kicker { font-family: var(--typewriter); letter-spacing: 0.08em; }
 
+/* wax-seal — a dashed placement circle holding the letter's own token at
+   20mm, captioned to invite real wax. No printed solid ink stands in for it. */
+.cover-seal-mark { display: none; }
+.theme-wax-seal .cover-seal-mark {
+  display: flex; flex-direction: column; align-items: center;
+  margin: 1.8rem 0 0.4rem; text-align: center;
+}
+.theme-wax-seal .cover-seal-ring {
+  width: 20mm; height: 20mm; padding: 1.5mm; border-radius: 50%;
+  border: 0.5pt dashed rgba(33,29,22,0.5);
+  display: flex; align-items: center; justify-content: center;
+}
+.theme-wax-seal .cover-seal-ring svg { width: 100%; height: 100%; display: block; }
+.theme-wax-seal .cover-seal-note {
+  font-family: var(--typewriter); font-size: 8pt; letter-spacing: 0.04em;
+  color: rgba(33,29,22,0.55); margin-top: 0.5rem;
+}
+
 /* the open-dates card — two per sheet, cut apart along the dashed line */
 .sheet-card .wallet-card { padding: 0.6rem 0.2rem; }
 .card-heading { font-family: var(--display); font-weight: normal; font-size: 1.15rem; margin-bottom: 0.5rem; }
