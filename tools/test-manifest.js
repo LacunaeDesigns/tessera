@@ -95,6 +95,23 @@ ok('manifest encryption keeps the hint', encMan.encryption.hint === 'our first c
 ok('manifest stays version 0.1 with encryption (additive field)', encMan.tessera === '0.1');
 ok('manifest omits encryption when absent', !('encryption' in M.buildManifest({ id: 'x', written: 'w', openOn: 'o', from: 'f', to: 't', tokenSeed: 's' })));
 
+/* co-written: optional writers[] elaborates `from`, never touches the seed (v0.3) */
+const coFields = {
+  openOn: '2044-06-21', written: '2026-07-10', from: 'Maria and Tomas',
+  to: 'Our daughter', letter: 'Dear one,\nFrom both of us.\n'
+};
+eq('seed ignores writers (from-string drives it)', M.tokenSeedString(Object.assign({ writers: ['Maria', 'Tomas'] }, coFields)),
+  'tessera:0.1\n2044-06-21\n2026-07-10\nMaria and Tomas\nOur daughter\nDear one,\nFrom both of us.');
+const coMan = M.buildManifest({
+  id: 'TSR-5555-6666', written: '2026-07-10', openOn: '2044-06-21',
+  from: 'Maria and Tomas', to: 'Our daughter', writers: ['Maria', 'Tomas'], tokenSeed: 's'
+});
+ok('manifest carries writers when set', Array.isArray(coMan.writers) && coMan.writers.length === 2 && coMan.writers[0] === 'Maria');
+ok('manifest keeps from as the single string', coMan.from === 'Maria and Tomas');
+ok('manifest stays version 0.1 with writers (additive field)', coMan.tessera === '0.1');
+ok('manifest writers sits right after to', JSON.stringify(Object.keys(coMan).slice(0, 6)) === '["tessera","id","written","openOn","from","to"]' && Object.keys(coMan)[6] === 'writers');
+ok('manifest omits writers when absent', !('writers' in M.buildManifest({ id: 'x', written: 'w', openOn: 'o', from: 'f', to: 't', tokenSeed: 's' })));
+
 /* open-when: no-date variant */
 const rn = M.renderReadme({
   id: 'TSR-aaaa-bbbb', written: '2026-07-10', openOn: '2026-07-10',

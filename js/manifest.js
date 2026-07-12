@@ -78,6 +78,11 @@
       from: f.from,
       to: f.to
     };
+    /* co-written letters: `from` stays the single human string that feeds the
+       token seed (SPEC §5), so IDs and existing fixtures are untouched;
+       `writers` is an optional additive list of the individual authors.
+       Absent for single-author letters (byte-identical to before). */
+    if (f.writers && f.writers.length) man.writers = f.writers;
     if (f.occasion) man.occasion = f.occasion;
     if (f.language) man.language = f.language;
     if (f.custody && f.custody.length) man.custody = f.custody;

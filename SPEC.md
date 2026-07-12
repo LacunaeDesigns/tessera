@@ -62,6 +62,8 @@ Field-by-field reference, examples, and forward-compatibility rules: [docs/spec/
 1. **Readers must ignore fields they do not recognise, and writers must preserve fields they did not create.** (A letter may be re-zipped by a 2050 tool without losing what a 2026 tool wrote.)
 2. `"tessera"` is the spec version. While it begins `0.`, fields may change between versions; from `1.0`, the required fields are frozen forever.
 
+A co-written letter keeps `from` as a single string (the names as signed, e.g. `"Maria and Tomas"`) and adds an optional `writers` array (`["Maria", "Tomas"]`) listing the authors separately. Like `encryption`, this is an additive optional field: `from` still drives the token seed (§5), so the spec stays `0.1`, IDs and token art are unchanged, and single-author letters are byte-for-byte unaffected.
+
 ## 4. Identity and integrity
 
 - **Letter ID:** `TSR-` followed by the first 8 hex characters of the letter hash (§5), grouped in fours: `TSR-4f2a-91c3`. The ID is printed on every sheet of the print kit, so paper and folder can always be matched.
