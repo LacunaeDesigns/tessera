@@ -1565,6 +1565,17 @@
       row.appendChild(el('span', 'bk-page-desc', p.desc));
       holder.appendChild(row);
     });
+    refs.bkPrint.disabled = false;
+  }
+  function printBooklet() {
+    var b = state.booklet;
+    if (!b || !b.model) return;
+    var rows = b.sel.map(bkCand);
+    refs.bkPrint.disabled = true;
+    TesseraPrint.printBooklet(b.model, rows, { mode: 'sequential' }).then(function () {
+      refs.bkPrint.disabled = false;
+      closeBooklet();
+    });
   }
 
   function renderShelf() {
@@ -1728,6 +1739,7 @@
     refs.bkPages = $('bk-pages');
     refs.bkPreviewTitle = $('bk-preview-title');
     refs.bkPreviewSub = $('bk-preview-sub');
+    refs.bkPrint = $('bk-print');
     refs.interviewOverlay = $('interview-overlay');
     refs.ivAsk = $('iv-ask');
     refs.ivStitch = $('iv-stitch');
@@ -1954,6 +1966,7 @@
     $('bk-cancel').addEventListener('click', closeBooklet);
     refs.bkCompose.addEventListener('click', composeBooklet);
     $('bk-back').addEventListener('click', function () { state.booklet.phase = 'select'; renderBooklet(); });
+    refs.bkPrint.addEventListener('click', printBooklet);
     $('print-close').addEventListener('click', TesseraPrint.hide);
     $('print-go').addEventListener('click', function () { window.print(); });
     $('print-envelope').addEventListener('change', function (e) {

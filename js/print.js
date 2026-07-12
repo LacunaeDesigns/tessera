@@ -439,6 +439,221 @@
     return sheet;
   }
 
+  /* ---------- booklet print engine (docs/features/booklet.md, v0.3 Task 3) ----------
+     A4-landscape sheets holding two A5 leaves side by side. Sequential mode:
+     logical reading order, two leaves per sheet, single-sided, meant to be
+     cut down the centre and spiral-bound or stapled. Signature (imposed,
+     duplex) mode is the next chunk — TesseraBooklet.impose() already has the
+     math, unused here. */
+  function bkFooter(id, label) {
+    var f = el('div', 'bk-footer');
+    f.appendChild(el('span', 'mono', id));
+    f.appendChild(el('span', '', label));
+    return f;
+  }
+  function bkLeaf(kind) { return el('div', 'bk-leaf bk-leaf--' + kind); }
+
+  function bkTitleLeaf(model) {
+    var leaf = bkLeaf('title');
+    leaf.appendChild(el('p', 'bk-title-kicker', 'A Tessera booklet'));
+    leaf.appendChild(el('h2', 'bk-title-heading', model.title));
+    leaf.appendChild(el('p', 'bk-title-sub', model.count + ' letter' + (model.count === 1 ? '' : 's') + ', bound together.'));
+    return leaf;
+  }
+
+  function bkFactsLeaf(row) {
+    var M = root.TesseraManifest;
+    var leaf = bkLeaf('facts');
+    leaf.appendChild(el('p', 'bk-facts-to', 'For ' + row.to));
+    leaf.appendChild(el('p', 'bk-facts-line', 'From ' + (row.from || 'someone who loves them')));
+    leaf.appendChild(el('p', 'bk-facts-line', 'Sealed ' + M.dateInWords(row.written) + '.'));
+    leaf.appendChild(el('p', 'bk-facts-line', row.openWhenNeeded
+      ? 'Opened when it was needed.'
+      : 'To be opened ' + M.dateInWords(row.openOn) + '.'));
+    leaf.appendChild(bkFooter(row.id, 'facts'));
+    return leaf;
+  }
+
+  function bkLetterLeafShell(row) {
+    var leaf = bkLeaf('letter');
+    leaf.appendChild(el('div', 'bk-letter-body'));
+    leaf.appendChild(bkFooter(row.id, 'the letter'));
+    return leaf;
+  }
+
+  /* the one place this print job measures the DOM (features/booklet.md Task 2
+     note): fills a hidden probe leaf paragraph by paragraph, and word by word
+     if a single paragraph alone would overflow, splitting into as many A5
+     leaves as the letter needs. */
+  function paginateLetter(row) {
+    var paras = String(row.text || '').trim().split(/\n\n+/).map(function (p) { return p.trim(); }).filter(Boolean);
+    var probe = bkLetterLeafShell(row);
+    probe.style.position = 'fixed';
+    probe.style.left = '-9999px';
+    probe.style.top = '0';
+    probe.style.visibility = 'hidden';
+    /* pinned to the real printed leaf size (half of the 297mm booklet sheet,
+       full 210mm tall): standalone, the probe sits outside the .booklet-sheet
+       flex/aspect-ratio box that normally gives .bk-leaf its dimensions, so
+       without this it collapses to its empty content size and every word
+       "overflows" a near-zero budget. */
+    probe.style.width = '148.5mm';
+    probe.style.height = '210mm';
+    document.body.appendChild(probe);
+    var body = probe.querySelector('.bk-letter-body');
+    var cs = getComputedStyle(probe);
+    var maxH = probe.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    var pages = [];
+    var current = [];
+    function fits() { return body.scrollHeight <= maxH; }
+    function commit() { pages.push(current.join('\n\n')); current = []; body.innerHTML = ''; }
+    for (var i = 0; i < paras.length; i++) {
+      var p = document.createElement('p');
+      p.textContent = paras[i];
+      body.appendChild(p);
+      if (fits()) { current.push(paras[i]); continue; }
+      body.removeChild(p);
+      if (current.length) commit();
+      /* the paragraph alone still doesn't fit an empty leaf: split by words */
+      var words = paras[i].split(/\s+/);
+      var chunk = [];
+      for (var w = 0; w < words.length; w++) {
+        chunk.push(words[w]);
+        var t = document.createElement('p');
+        t.textContent = chunk.join(' ');
+        body.appendChild(t);
+        if (!fits() && chunk.length > 1) {
+          chunk.pop();
+          body.removeChild(t);
+          current.push(chunk.join(' '));
+          commit();
+          chunk = [words[w]];
+          t = document.createElement('p');
+          t.textContent = chunk.join(' ');
+          body.appendChild(t);
+        }
+        body.removeChild(t);
+      }
+      current.push(chunk.join(' '));
+    }
+    if (current.length) commit();
+    document.body.removeChild(probe);
+    if (!pages.length) pages = [''];
+    return pages.map(function (text, idx) {
+      var leaf = bkLetterLeafShell(row);
+      var b = leaf.querySelector('.bk-letter-body');
+      text.split(/\n\n+/).forEach(function (para) { if (para.trim()) b.appendChild(el('p', '', para.trim())); });
+      leaf.querySelector('.bk-footer').lastChild.textContent = pages.length > 1
+        ? 'the letter · ' + (idx + 1) + '/' + pages.length : 'the letter';
+      return leaf;
+    });
+  }
+
+  function bkPlatesLeaf(rows, tokens) {
+    var leaf = bkLeaf('plates');
+    leaf.appendChild(el('h3', 'bk-plates-heading', 'The tokens, gathered.'));
+    var grid = el('div', 'bk-plates-grid');
+    rows.forEach(function (r, i) {
+      var cell = el('div', 'bk-plate-cell');
+      var art = el('div', 'bk-plate-art');
+      if (tokens[i] && tokens[i].full) art.innerHTML = tokens[i].full; /* seed-generated SVG */
+      cell.appendChild(art);
+      cell.appendChild(el('span', 'bk-plate-id mono', r.id));
+      grid.appendChild(cell);
+    });
+    leaf.appendChild(grid);
+    return leaf;
+  }
+
+  function bkColophonLeaf(rows) {
+    var leaf = bkLeaf('colophon');
+    leaf.appendChild(el('h3', 'bk-colophon-heading', 'A note on the format.'));
+    leaf.appendChild(el('p', 'bk-colophon-note',
+      'Each letter in this booklet was written, sealed and kept with Tessera — a way of writing letters across time. ' +
+      'The original sealed files travel separately from this bound copy.'));
+    leaf.appendChild(el('p', 'bk-colophon-label', 'Letters in this booklet:'));
+    var ul = el('ul', 'bk-colophon-list');
+    rows.forEach(function (r) { ul.appendChild(el('li', 'mono', r.id)); });
+    leaf.appendChild(ul);
+    return leaf;
+  }
+
+  function bkBindArtSequential() {
+    var A = 'fill="none" stroke="#211d16" stroke-linecap="round" stroke-linejoin="round"';
+    var svg = '<svg viewBox="0 0 120 90" ' + A + '>' +
+      '<rect x="20" y="8" width="70" height="74" rx="1.5" stroke-width="1"/>' +
+      '<line x1="20" y1="8" x2="20" y2="82" stroke-width="1.6"/>' +
+      '<circle cx="20" cy="24" r="2.4" stroke-width="1"/>' +
+      '<circle cx="20" cy="66" r="2.4" stroke-width="1"/>' +
+      '</svg>';
+    var box = el('div', 'bk-bind-art');
+    box.innerHTML = svg; /* self-generated hairline SVG, no user content */
+    return box;
+  }
+
+  function bkBindLeafSequential() {
+    var leaf = bkLeaf('bind');
+    leaf.appendChild(el('h3', 'bk-bind-heading', 'Binding this booklet.'));
+    leaf.appendChild(bkBindArtSequential());
+    var ol = el('ol', 'bk-bind-steps');
+    ['Print every sheet of this job single-sided, in order.',
+      'Cut each sheet in half along the dashed centre line.',
+      'Stack the halves in page order, title page on top.',
+      'Staple twice along the left edge, or punch holes and spiral-bind.'
+    ].forEach(function (t) { ol.appendChild(el('li', '', t)); });
+    leaf.appendChild(ol);
+    return leaf;
+  }
+
+  function bkAllTokens(rows) {
+    var M = root.TesseraManifest, X = root.TesseraExport, T = root.TesseraToken;
+    return Promise.all(rows.map(function (r) {
+      var f = { openOn: r.openOn, written: r.written, from: r.from, to: r.to, letter: r.text };
+      return X.sha256Hex(M.tokenSeedString(f)).then(function (seedHex) {
+        return T.renderTokenSvg(seedHex, r.id);
+      });
+    }));
+  }
+
+  function buildBookletLeaves(model, rows) {
+    return bkAllTokens(rows).then(function (tokens) {
+      var leaves = [bkTitleLeaf(model)];
+      rows.forEach(function (r) {
+        leaves.push(bkFactsLeaf(r));
+        leaves = leaves.concat(paginateLetter(r));
+      });
+      leaves.push(bkPlatesLeaf(rows, tokens));
+      leaves.push(bkColophonLeaf(rows));
+      return leaves;
+    });
+  }
+
+  function sequentialSheets(leaves) {
+    var items = leaves.slice();
+    if (items.length % 2) items.push(null);
+    var sheets = [];
+    for (var i = 0; i < items.length; i += 2) {
+      var sheet = el('div', 'booklet-sheet');
+      sheet.appendChild(items[i] || bkLeaf('blank'));
+      sheet.appendChild(el('div', 'bk-cut'));
+      sheet.appendChild(items[i + 1] || bkLeaf('blank'));
+      sheets.push(sheet);
+    }
+    return sheets;
+  }
+
+  /* sequential mode only for now (signature/imposed duplex is the next
+     chunk); opts.mode is accepted so callers don't need to change later. */
+  function printBooklet(model, rows, opts) {
+    var mode = (opts && opts.mode) || 'sequential';
+    return buildBookletLeaves(model, rows).then(function (leaves) {
+      leaves.push(bkBindLeafSequential());
+      var sheets = sequentialSheets(leaves);
+      show(sheets);
+      return mode;
+    });
+  }
+
   /* show sheets in the print preview overlay; printing prints only #print-root */
   function show(sheets) {
     var overlay = document.getElementById('print-overlay');
@@ -473,6 +688,6 @@
   function printCard(entries) { show([cardSheet(entries)]); }
   function printEscrowCard(o) { show([escrowSheet(o)]); }
 
-  var api = { printKit: printKit, printKits: printKits, printRegister: printRegister, printCard: printCard, printEscrowCard: printEscrowCard, hide: hide, kitSheets: kitSheets };
+  var api = { printKit: printKit, printKits: printKits, printRegister: printRegister, printCard: printCard, printEscrowCard: printEscrowCard, printBooklet: printBooklet, hide: hide, kitSheets: kitSheets };
   root.TesseraPrint = api;
 })(typeof self !== 'undefined' ? self : this);
