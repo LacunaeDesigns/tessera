@@ -793,6 +793,7 @@
     var card = el('div', compact ? 'pigeon-card' : 'env-card');
     if (lt.kept) card.className += ' env-card--kept';
     card.title = lt.title;
+    card.setAttribute('data-letter-id', lt.id);
     if (!compact) card.style.transform = 'rotate(' + lt.rot + 'deg)';
     var flap = el('div', 'env-flap');
     flap.style.background = lt.tint;
@@ -816,7 +817,126 @@
     card.appendChild(foot);
     return card;
   }
+  /* ---------- render: the letter ladder ---------- */
+  var MS_PER_YEAR = 365.25 * 24 * 3600 * 1000;
+  function isoToMs(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+    if (!m) return NaN;
+    return Date.UTC(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+  }
+  function yearsWords(n) {
+    if (n === 100) return 'a hundred years';
+    var ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    var TEENS = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    var TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    var w;
+    if (n < 10) w = ONES[n] || 'no';
+    else if (n < 20) w = TEENS[n - 10];
+    else if (n < 100) w = TENS[Math.floor(n / 10)] + (n % 10 ? '-' + ONES[n % 10] : '');
+    else w = String(n);
+    return w + (n === 1 ? ' year' : ' years');
+  }
+  function svgEl(tag, attrs) {
+    var n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    if (attrs) for (var k in attrs) if (attrs.hasOwnProperty(k)) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+  /* waiting = dated entries opening strictly after today; undated (open-when-
+     needed) letters have no date to place and are excluded from the axis. */
+  function waitingLetters() {
+    var all = window.TesseraState ? TesseraState.getRegistry() : [];
+    var today = todayIso(), out = [], undatedCount = 0;
+    for (var i = 0; i < all.length; i++) {
+      var l = all[i];
+      if (l.openWhenNeeded) { undatedCount++; continue; }
+      if (!l.openOn || l.openOn <= today) continue;
+      out.push(l);
+    }
+    return { waiting: out, undatedCount: undatedCount, today: today };
+  }
+  function renderLadder() {
+    var data = waitingLetters();
+    var waiting = data.waiting;
+    while (refs.letterLadder.firstChild) refs.letterLadder.removeChild(refs.letterLadder.firstChild);
+    if (!waiting.length) { refs.letterLadder.hidden = true; return; }
+    refs.letterLadder.hidden = false;
+
+    var todayMs = isoToMs(data.today);
+    var W = 640, H = 100, leftPad = 32, rightPad = 22, axisY = 48, axisWidth = W - leftPad - rightPad;
+    var years = [], maxYears = 0;
+    for (var i = 0; i < waiting.length; i++) {
+      var y = (isoToMs(waiting[i].openOn) - todayMs) / MS_PER_YEAR;
+      years.push(y);
+      if (y > maxYears) maxYears = y;
+    }
+    if (maxYears <= 0) maxYears = 1 / 365.25; /* guard: never divide by zero */
+    function xFor(y) { return leftPad + (Math.sqrt(Math.max(y, 0)) / Math.sqrt(maxYears)) * axisWidth; }
+
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'ladder-svg', role: 'img', 'aria-label': 'A timeline of letters waiting to be opened.' });
+    svg.appendChild(svgEl('line', { class: 'ladder-axis', x1: leftPad, y1: axisY, x2: W - rightPad, y2: axisY }));
+    svg.appendChild(svgEl('text', { class: 'ladder-now', x: leftPad, y: axisY - 12, 'text-anchor': 'middle' })).textContent = 'now';
+
+    /* decade ticks at 10/25/50/100 years, plus the furthest letter's own
+       year if it doesn't already sit near one of those */
+    var STANDARD = [10, 25, 50, 100];
+    var ticks = [];
+    for (var s = 0; s < STANDARD.length; s++) if (STANDARD[s] <= maxYears) ticks.push(STANDARD[s]);
+    var nearFinal = false;
+    for (var tchk = 0; tchk < ticks.length; tchk++) {
+      if (Math.abs(ticks[tchk] - maxYears) <= Math.max(1, maxYears * 0.06)) nearFinal = true;
+    }
+    if (!nearFinal) ticks.push(maxYears);
+    for (var ti = 0; ti < ticks.length; ti++) {
+      var tYears = ticks[ti];
+      var tx = xFor(tYears);
+      var isMinor = (tYears === 25);
+      svg.appendChild(svgEl('line', { class: 'ladder-tick', x1: tx, y1: axisY - 6, x2: tx, y2: axisY + 6 }));
+      var label = svgEl('text', { class: 'ladder-tick-label' + (isMinor ? ' ladder-tick-label--minor' : ''), x: tx, y: axisY + 22, 'text-anchor': 'middle' });
+      label.textContent = yearsWords(Math.round(tYears));
+      svg.appendChild(label);
+    }
+
+    /* marks: one hairline ring per waiting letter, tinted by occasion group,
+       staggered a little if two land close together */
+    var lastX = null, stagger = 1;
+    for (var wi = 0; wi < waiting.length; wi++) {
+      var lt = waiting[wi];
+      var mx = xFor(years[wi]);
+      var dy = 0;
+      if (lastX !== null && Math.abs(mx - lastX) < 8) { dy = stagger * 7; stagger = -stagger; }
+      else stagger = 1;
+      lastX = mx;
+      var g = bySlug(lt.occasion || 'custom').group || 'custom';
+      var mark = svgEl('circle', {
+        class: 'ladder-mark', cx: mx, cy: axisY + dy, r: 5,
+        stroke: GROUP_TINT[g] || GROUP_TINT.custom,
+        'data-letter-id': lt.id
+      });
+      var title = svgEl('title', {});
+      title.textContent = 'for ' + lt.to + ' · opens ' + dateInWords(lt.openOn) + ' · ' + lt.id;
+      mark.appendChild(title);
+      mark.addEventListener('mouseenter', function (id) {
+        return function () {
+          var cards = document.querySelectorAll('[data-letter-id="' + id + '"]');
+          for (var c = 0; c < cards.length; c++) cards[c].classList.add('ladder-hi');
+        };
+      }(lt.id));
+      mark.addEventListener('mouseleave', function (id) {
+        return function () {
+          var cards = document.querySelectorAll('[data-letter-id="' + id + '"]');
+          for (var c = 0; c < cards.length; c++) cards[c].classList.remove('ladder-hi');
+        };
+      }(lt.id));
+      svg.appendChild(mark);
+    }
+    refs.letterLadder.appendChild(svg);
+    if (data.undatedCount > 0) {
+      var note = el('p', 'ladder-note', 'and ' + data.undatedCount + (data.undatedCount === 1 ? ' kept for when it’s needed' : ' kept for when they’re needed'));
+      refs.letterLadder.appendChild(note);
+    }
+  }
   function renderShelf() {
+    renderLadder();
     var style = shelfStyle();
     var letters = shelfLetters();
     var rail = isMobile(); /* one swipeable shelf row on phones, rows of 3 above */
@@ -975,6 +1095,7 @@
     refs.sealedKeycard = $('sealed-keycard');
     refs.storyToken = $('story-token');
     refs.shelfTabs = $('shelf-tabs');
+    refs.letterLadder = $('letter-ladder');
     refs.shelfEmpty = $('shelf-empty');
     refs.shelfShelves = $('shelf-shelves');
     refs.shelfPigeon = $('shelf-pigeon');

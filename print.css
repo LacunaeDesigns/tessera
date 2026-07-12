@@ -34,6 +34,18 @@
 .register-table td, .register-table th { border-bottom: 1px solid rgba(33,29,22,0.25);
                   padding: 0.35rem 0.5rem; text-align: left; }
 
+/* the letter ladder, printed: a static hairline timeline of waiting letters
+   above the register table (features/reminders.md). Ink-light, no fills. */
+.ladder-holder { margin: 0 0 1rem; }
+.ladder-svg { display: block; width: 100%; height: auto; }
+.ladder-axis, .ladder-tick { stroke: rgba(33,29,22,0.35); stroke-width: 1; }
+.ladder-now, .ladder-tick-label { font-family: var(--typewriter); font-size: 7pt; fill: rgba(33,29,22,0.6); }
+.ladder-mark { fill: none; stroke-width: 0.9; stroke: rgba(33,29,22,0.55); }
+.ladder-mark--open-when { stroke: #9DBBA6; }
+.ladder-mark--milestone { stroke: #CDB878; }
+.ladder-mark--far { stroke: #D9A088; }
+.ladder-mark--custom { stroke: #A8B4B8; }
+
 /* the envelope fold-and-glue template — a letter sheet folded in thirds
    becomes its own envelope (features/print-kit.md). Dashed hairlines only,
    no filled areas (ink-light rule); screen preview shows it as a card,

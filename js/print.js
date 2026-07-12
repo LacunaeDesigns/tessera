@@ -237,10 +237,90 @@
     return sheets;
   }
 
+  /* ---------- the letter ladder (print variant): same waiting-letters
+     timeline as the landing page's hairline SVG, static (no hover). ---------- */
+  var MS_PER_YEAR = 365.25 * 24 * 3600 * 1000;
+  function ladderYearsWords(n) {
+    if (n === 100) return 'a hundred years';
+    var ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    var TEENS = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    var TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    var w;
+    if (n < 10) w = ONES[n] || 'no';
+    else if (n < 20) w = TEENS[n - 10];
+    else if (n < 100) w = TENS[Math.floor(n / 10)] + (n % 10 ? '-' + ONES[n % 10] : '');
+    else w = String(n);
+    return w + (n === 1 ? ' year' : ' years');
+  }
+  function svgEl(tag, attrs) {
+    var n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    if (attrs) for (var k in attrs) if (attrs.hasOwnProperty(k)) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+  function ladderSheet(entries) {
+    var today = new Date();
+    var todayIso = today.getFullYear() + '-' + (today.getMonth() + 1 < 10 ? '0' : '') + (today.getMonth() + 1) +
+      '-' + (today.getDate() < 10 ? '0' : '') + today.getDate();
+    var todayMs = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    var waiting = [];
+    entries.forEach(function (e) {
+      if (e.openWhenNeeded || !e.openOn || e.openOn <= todayIso) return;
+      waiting.push(e);
+    });
+    if (!waiting.length) return null;
+
+    var occ = root.TesseraOccasions;
+    var W = 640, H = 100, leftPad = 32, rightPad = 22, axisY = 48, axisWidth = W - leftPad - rightPad;
+    var years = [], maxYears = 0, i;
+    for (i = 0; i < waiting.length; i++) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(waiting[i].openOn);
+      var y = (Date.UTC(+m[1], +m[2] - 1, +m[3]) - todayMs) / MS_PER_YEAR;
+      years.push(y);
+      if (y > maxYears) maxYears = y;
+    }
+    if (maxYears <= 0) maxYears = 1 / 365.25;
+    function xFor(y) { return leftPad + (Math.sqrt(Math.max(y, 0)) / Math.sqrt(maxYears)) * axisWidth; }
+
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'ladder-svg', role: 'img', 'aria-label': 'A timeline of letters waiting to be opened.' });
+    svg.appendChild(svgEl('line', { class: 'ladder-axis', x1: leftPad, y1: axisY, x2: W - rightPad, y2: axisY }));
+    svg.appendChild(svgEl('text', { class: 'ladder-now', x: leftPad, y: axisY - 12, 'text-anchor': 'middle' })).textContent = 'now';
+
+    var STANDARD = [10, 25, 50, 100], ticks = [];
+    for (var s = 0; s < STANDARD.length; s++) if (STANDARD[s] <= maxYears) ticks.push(STANDARD[s]);
+    var nearFinal = false;
+    for (var tchk = 0; tchk < ticks.length; tchk++) {
+      if (Math.abs(ticks[tchk] - maxYears) <= Math.max(1, maxYears * 0.06)) nearFinal = true;
+    }
+    if (!nearFinal) ticks.push(maxYears);
+    for (var ti = 0; ti < ticks.length; ti++) {
+      var tYears = ticks[ti], tx = xFor(tYears), isMinor = (tYears === 25);
+      svg.appendChild(svgEl('line', { class: 'ladder-tick', x1: tx, y1: axisY - 6, x2: tx, y2: axisY + 6 }));
+      var label = svgEl('text', { class: 'ladder-tick-label' + (isMinor ? ' ladder-tick-label--minor' : ''), x: tx, y: axisY + 22, 'text-anchor': 'middle' });
+      label.textContent = ladderYearsWords(Math.round(tYears));
+      svg.appendChild(label);
+    }
+
+    var lastX = null, stagger = 1;
+    for (var wi = 0; wi < waiting.length; wi++) {
+      var lt = waiting[wi], mx = xFor(years[wi]), dy = 0;
+      if (lastX !== null && Math.abs(mx - lastX) < 8) { dy = stagger * 7; stagger = -stagger; }
+      else stagger = 1;
+      lastX = mx;
+      var g = (occ && occ.bySlug(lt.occasion || 'custom').group) || 'custom';
+      var mark = svgEl('circle', { class: 'ladder-mark ladder-mark--' + g, cx: mx, cy: axisY + dy, r: 5 });
+      svg.appendChild(mark);
+    }
+    var holder = el('div', 'ladder-holder');
+    holder.appendChild(svg);
+    return holder;
+  }
+
   function registerSheet(entries) {
     var M = root.TesseraManifest;
     var sheet = el('section', 'sheet sheet-register');
     sheet.appendChild(el('h2', 'sheet-heading', 'Letters in this house, waiting.'));
+    var ladder = ladderSheet(entries);
+    if (ladder) sheet.appendChild(ladder);
     var table = el('table', 'register-table');
     var head = el('tr', '');
     ['Letter', 'For', 'Sealed', 'Opens', 'Kept by'].forEach(function (h) { head.appendChild(el('th', '', h)); });

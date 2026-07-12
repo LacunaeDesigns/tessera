@@ -1509,3 +1509,34 @@ body.open-mode { overflow: hidden; }
 
 /* whole-shelf reminder actions */
 .letters-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 18px 0 6px; }
+
+/* the letter ladder: a hairline timeline of waiting letters, above the shelf */
+.letter-ladder { margin: 0 0 32px; }
+.ladder-svg { display: block; width: 100%; height: auto; }
+.ladder-axis { stroke: rgba(57,46,31,0.3); stroke-width: 1; }
+.ladder-tick { stroke: rgba(57,46,31,0.3); stroke-width: 1; }
+.ladder-now, .ladder-tick-label {
+  font-family: var(--ui);
+  font-size: 9px;
+  fill: rgba(57,46,31,0.55);
+}
+.ladder-mark {
+  fill: none;
+  stroke-width: 0.9;
+  transition: r 0.15s;
+}
+.ladder-note { font-family: var(--ui); font-size: 11.5px; color: rgba(57,46,31,0.5); margin: 6px 0 0; }
+
+.env-card.ladder-hi {
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+  transition: outline-color 0.15s;
+}
+
+@media (max-width: 560px) {
+  .ladder-tick-label--minor { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ladder-mark { transition: none; }
+  .env-card.ladder-hi { transition: none; }
+}
