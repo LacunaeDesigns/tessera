@@ -53,7 +53,8 @@
     sealed: null, freshId: '', sealing: false, soundOnU: null, shelfStyleU: null,
     sealChoice: 'blue', sealPickerOpen: false, writeback: null,
     deckAnswers: null, stitchedText: '', ivIndex: 0, ivStitch: false, keepInterview: false,
-    series: null /* the active milestone-series wizard draft, or null */
+    series: null, /* the active milestone-series wizard draft, or null */
+    booklet: null /* the active booklet-composer session, or null */
   };
 
   /* ---------- draft autosave (localStorage, single "desk" slot) ----------
@@ -1443,6 +1444,129 @@
       refs.letterLadder.appendChild(note);
     }
   }
+  /* ---------- the booklet composer ----------
+     Bind kept letters into a home-bindable booklet. Only letters whose text
+     was kept (keptText) can be bound; the rest are listed but disabled. This
+     chunk composes the logical page model + preview; the imposed printable
+     render is the next chunk. */
+  function bkDateKey(r) { return (r.openWhenNeeded ? r.written : r.openOn) || r.written || ''; }
+  function openBooklet() {
+    if (!window.TesseraState) return;
+    var reg = TesseraState.getRegistry();
+    var cands = reg.map(function (l) {
+      var text = (l.keptText && String(l.keptText).trim()) ? String(l.keptText) : '';
+      return {
+        id: l.id, to: l.to, from: l.from, written: l.written, openOn: l.openOn,
+        openWhenNeeded: !!l.openWhenNeeded, text: text, hasText: !!text
+      };
+    });
+    cands.sort(function (a, b) { var ka = bkDateKey(a), kb = bkDateKey(b); return ka < kb ? -1 : ka > kb ? 1 : 0; });
+    var sel = cands.filter(function (c) { return c.hasText; }).map(function (c) { return c.id; });
+    state.booklet = { phase: 'select', cands: cands, sel: sel, model: null };
+    renderBooklet();
+  }
+  function closeBooklet() { state.booklet = null; refs.bkOverlay.hidden = true; }
+  function bkCand(id) {
+    var c = state.booklet.cands;
+    for (var i = 0; i < c.length; i++) if (c[i].id === id) return c[i];
+    return null;
+  }
+  function renderBooklet() {
+    var b = state.booklet;
+    refs.bkOverlay.hidden = !b;
+    if (!b) return;
+    refs.bkSelect.hidden = b.phase !== 'select';
+    refs.bkPreview.hidden = b.phase !== 'preview';
+    if (b.phase === 'select') renderBkSelect();
+    else renderBkPreview();
+  }
+  function renderBkSelect() {
+    var b = state.booklet, holder = refs.bkList;
+    while (holder.firstChild) holder.removeChild(holder.firstChild);
+    /* display order: selected (in chosen order), then unselected with text, then textless */
+    var selSet = {}; b.sel.forEach(function (id) { selSet[id] = true; });
+    var order = b.sel.map(bkCand)
+      .concat(b.cands.filter(function (c) { return !selSet[c.id] && c.hasText; }))
+      .concat(b.cands.filter(function (c) { return !c.hasText; }));
+    order.forEach(function (c) {
+      var selIdx = b.sel.indexOf(c.id);
+      var row = el('div', 'bk-row' + (c.hasText ? '' : ' bk-row--disabled'));
+      var cb = el('input'); cb.type = 'checkbox'; cb.checked = selIdx >= 0; cb.disabled = !c.hasText;
+      cb.addEventListener('change', function () { bkToggle(c.id); });
+      row.appendChild(cb);
+      var main = el('div', 'bk-row-main');
+      main.appendChild(el('span', 'bk-row-to', c.to));
+      var meta = c.hasText
+        ? 'from ' + (c.from || '—') + ' · opens ' + (c.openWhenNeeded ? 'when needed' : shortDate(c.openOn)) + ' · ' + c.id
+        : 'no kept copy — its text wasn’t saved · ' + c.id;
+      main.appendChild(el('span', 'bk-row-meta', meta));
+      row.appendChild(main);
+      if (selIdx >= 0) {
+        row.appendChild(el('span', 'bk-row-ord', String(selIdx + 1)));
+        var mv = el('div', 'bk-move');
+        var up = el('button', null, '↑'); up.title = 'Move up'; up.disabled = selIdx === 0;
+        up.addEventListener('click', function () { bkMove(c.id, -1); });
+        var dn = el('button', null, '↓'); dn.title = 'Move down'; dn.disabled = selIdx === b.sel.length - 1;
+        dn.addEventListener('click', function () { bkMove(c.id, 1); });
+        mv.appendChild(up); mv.appendChild(dn);
+        row.appendChild(mv);
+      }
+      holder.appendChild(row);
+    });
+    var textCount = b.cands.filter(function (c) { return c.hasText; }).length;
+    refs.bkSelectHint.textContent = textCount === 0
+      ? 'None of your letters kept a copy of their text, so there is nothing to bind yet. Keep a copy at sealing time to bind it later.'
+      : b.sel.length + ' of ' + textCount + ' selected, in reading order.';
+    refs.bkCompose.disabled = b.sel.length === 0;
+    refs.bkCompose.style.opacity = b.sel.length === 0 ? 0.45 : 1;
+  }
+  function bkToggle(id) {
+    var b = state.booklet, i = b.sel.indexOf(id);
+    if (i >= 0) b.sel.splice(i, 1); else b.sel.push(id);
+    renderBkSelect();
+  }
+  function bkMove(id, dir) {
+    var b = state.booklet, i = b.sel.indexOf(id), j = i + dir;
+    if (i < 0 || j < 0 || j >= b.sel.length) return;
+    var t = b.sel[i]; b.sel[i] = b.sel[j]; b.sel[j] = t;
+    renderBkSelect();
+  }
+  function composeBooklet() {
+    var b = state.booklet;
+    if (!b.sel.length) return;
+    var rows = b.sel.map(bkCand);
+    var tos = [];
+    rows.forEach(function (r) { if (tos.indexOf(r.to) < 0) tos.push(r.to); });
+    var to = tos.length === 1 ? tos[0] : null;
+    var years = rows.map(function (r) { return String(bkDateKey(r)).slice(0, 4); }).filter(Boolean).sort();
+    var span = years.length ? years[0] + (years[years.length - 1] !== years[0] ? '–' + years[years.length - 1] : '') : '';
+    var title = (to ? 'Letters to ' + to : 'Letters') + (span ? ', ' + span : '');
+    var pages = [{ kind: 'title', desc: title }];
+    rows.forEach(function (r) {
+      pages.push({ kind: 'facts', desc: 'For ' + r.to + ' · from ' + (r.from || '—') + ' · opens ' + (r.openWhenNeeded ? 'when needed' : shortDate(r.openOn)) + ' · ' + r.id });
+      var words = r.text.trim() ? r.text.trim().split(/\s+/).length : 0;
+      pages.push({ kind: 'letter', desc: 'The letter, ' + words + ' word' + (words === 1 ? '' : 's') + ' · ' + r.id });
+    });
+    pages.push({ kind: 'plates', desc: rows.length + ' token' + (rows.length === 1 ? '' : 's') + ', gathered on one leaf' });
+    pages.push({ kind: 'colophon', desc: 'The Tessera format note and the list of letter IDs' });
+    b.model = { title: title, count: rows.length, pages: pages };
+    b.phase = 'preview';
+    renderBooklet();
+  }
+  function renderBkPreview() {
+    var m = state.booklet.model;
+    refs.bkPreviewTitle.textContent = m.title;
+    refs.bkPreviewSub.textContent = m.count + ' letter' + (m.count === 1 ? '' : 's') + ' · ' + m.pages.length + ' sections, laid out in reading order';
+    var holder = refs.bkPages;
+    while (holder.firstChild) holder.removeChild(holder.firstChild);
+    m.pages.forEach(function (p) {
+      var row = el('div', 'bk-page');
+      row.appendChild(el('span', 'bk-page-kind', p.kind));
+      row.appendChild(el('span', 'bk-page-desc', p.desc));
+      holder.appendChild(row);
+    });
+  }
+
   function renderShelf() {
     renderLadder();
     var style = shelfStyle();
@@ -1595,6 +1719,15 @@
     refs.swSealGo = $('sw-seal-go');
     refs.swDoneTitle = $('sw-done-title');
     refs.swDoneList = $('sw-done-list');
+    refs.bkOverlay = $('booklet-overlay');
+    refs.bkSelect = $('bk-select');
+    refs.bkPreview = $('bk-preview');
+    refs.bkList = $('bk-list');
+    refs.bkSelectHint = $('bk-select-hint');
+    refs.bkCompose = $('bk-compose');
+    refs.bkPages = $('bk-pages');
+    refs.bkPreviewTitle = $('bk-preview-title');
+    refs.bkPreviewSub = $('bk-preview-sub');
     refs.interviewOverlay = $('interview-overlay');
     refs.ivAsk = $('iv-ask');
     refs.ivStitch = $('iv-stitch');
@@ -1816,6 +1949,11 @@
     $('wallet-card').addEventListener('click', function () {
       TesseraReminders.printCard(TesseraState.getRegistry());
     });
+    $('booklet-open').addEventListener('click', openBooklet);
+    $('bk-x').addEventListener('click', closeBooklet);
+    $('bk-cancel').addEventListener('click', closeBooklet);
+    refs.bkCompose.addEventListener('click', composeBooklet);
+    $('bk-back').addEventListener('click', function () { state.booklet.phase = 'select'; renderBooklet(); });
     $('print-close').addEventListener('click', TesseraPrint.hide);
     $('print-go').addEventListener('click', function () { window.print(); });
     $('print-envelope').addEventListener('change', function (e) {

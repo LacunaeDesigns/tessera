@@ -481,10 +481,43 @@
     <div class="letters-actions" id="letters-actions" hidden>
       <button class="btn-quiet" id="cal-all">Calendar file (all dates)</button>
       <button class="btn-quiet" id="wallet-card">Print a wallet card</button>
+      <button class="btn-quiet" id="booklet-open">Bind into a booklet</button>
     </div>
     <p class="letters-note">Letters sealed at the desk above join the shelf. Stored on this device only.</p>
   </div>
 </section>
+
+<!-- the booklet composer: bind kept letters into a home-bindable booklet.
+     Own fixed overlay (launched from the letters section, not the desk). -->
+<div class="setup-overlay booklet-overlay" id="booklet-overlay" hidden>
+  <div class="setup-card series-card" role="dialog" aria-modal="true" aria-label="Bind a booklet">
+    <button class="setup-x" id="bk-x" aria-label="Close">×</button>
+
+    <div id="bk-select" hidden>
+      <div class="setup-eyebrow">A booklet</div>
+      <h3 class="setup-title">Bind your letters into a booklet</h3>
+      <p class="setup-copy">Choose the letters to gather, in the order they should read. Only letters whose text you kept can be bound.</p>
+      <div class="bk-list" id="bk-list"></div>
+      <p class="setup-helper" id="bk-select-hint"></p>
+      <div class="setup-footer">
+        <button class="setup-skip" id="bk-cancel">← Not now</button>
+        <button class="btn-cta setup-go" id="bk-compose">Compose the booklet →</button>
+      </div>
+    </div>
+
+    <div id="bk-preview" hidden>
+      <div class="setup-eyebrow" id="bk-preview-eyebrow">Your booklet</div>
+      <h3 class="setup-title" id="bk-preview-title"></h3>
+      <p class="setup-copy" id="bk-preview-sub"></p>
+      <div class="bk-pages" id="bk-pages"></div>
+      <p class="setup-helper">This is what the booklet will contain, in order. The printable, foldable layout is the next piece.</p>
+      <div class="setup-footer">
+        <button class="setup-skip setup-back" id="bk-back">← Back to the list</button>
+        <button class="btn-cta setup-go" id="bk-print" disabled>Print the booklet →</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ================= FOOTER ================= -->
 <footer class="ld-footer">
