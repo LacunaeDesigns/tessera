@@ -159,6 +159,24 @@
         'Name one ordinary joy that will still be waiting when the worst of it passes. Be specific.'
       ]
     },
+    /* ---- the grief set (v0.3 Task 6) ----
+       PENDING OUTSIDE-READER SIGN-OFF before it may ship to main (see
+       docs/decisions.md and docs/features/occasions.md). Drafted in the house
+       voice against the open-when corpus; outside reading with lived experience
+       is required by the spec. Do not release without the sign-off recorded. */
+    {
+      slug: 'open-when-grieving',
+      group: 'open-when',
+      title: 'Open when you lose someone',
+      coverLine: 'To be opened on the day someone is gone.',
+      canBeUndated: true,
+      prompts: [
+        'You will not know who they have lost. Do not try to mend it; grief is not a thing that gets mended. Tell them you are here, in the plainest words you have.',
+        'Tell them there is no wrong way to do this. To weep, to feel nothing, to laugh at something and forget for an hour why the day is heavy. Say it so they believe it.',
+        'Give them one small thing to do when they set the letter down. Drink a glass of water; stand outside for a minute. Something a body can manage when the rest is too much.',
+        'Remind them the person is not gone from them, only from the room. Point at one way they will keep meeting them: a turn of phrase they’ll catch in their own mouth, a way of doing some small ordinary thing.'
+      ]
+    },
     {
       slug: 'marrying-my-child',
       group: 'milestone',
