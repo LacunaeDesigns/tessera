@@ -732,6 +732,8 @@ a:hover { color: #8A4B2D; }
   resize: vertical;
   line-height: 1.5;
 }
+.iv-keep { display: flex; align-items: center; gap: 8px; margin: 0 0 18px;
+           font-family: var(--ui); font-size: 13px; color: rgba(57,46,31,0.75); }
 .setup-footer { display: flex; justify-content: space-between; align-items: center; }
 .setup-skip {
   font-family: var(--ui);

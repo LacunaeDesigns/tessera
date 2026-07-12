@@ -55,6 +55,13 @@
           writeback: fields.writeback || null
         };
         if (letterFile.encryption) f.encryption = letterFile.encryption;
+        /* optional media files (e.g. the interview answers). media/ is legal
+           per SPEC; manifest + README already emit f.media conditionally, so
+           setting it here (before they render) documents the files. Letters
+           without media are byte-identical to before. */
+        if (fields.media && fields.media.length) {
+          f.media = fields.media.map(function (m) { return { file: m.name, note: m.note }; });
+        }
         var readme = M.renderReadme(f);
         var manifest = M.manifestJson(f);
         var token = root.TesseraToken.renderTokenSvg(seedHex, id);
@@ -66,6 +73,11 @@
           { name: 'manifest.json', data: manifest },
           { name: 'token.svg', data: tokenSvg }
         ];
+        if (fields.media && fields.media.length) {
+          for (var mi = 0; mi < fields.media.length; mi++) {
+            files.push({ name: fields.media[mi].name, data: fields.media[mi].data });
+          }
+        }
 
         return Promise.all(files.map(function (file) {
           return sha256Hex(file.data);

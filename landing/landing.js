@@ -51,7 +51,7 @@
     passphrase: '', passConfirm: '', passHint: '',
     sealed: null, freshId: '', sealing: false, soundOnU: null, shelfStyleU: null,
     sealChoice: 'blue', sealPickerOpen: false, writeback: null,
-    deckAnswers: null, stitchedText: '', ivIndex: 0, ivStitch: false
+    deckAnswers: null, stitchedText: '', ivIndex: 0, ivStitch: false, keepInterview: false
   };
 
   /* ---------- draft autosave (localStorage, single "desk" slot) ----------
@@ -549,7 +549,8 @@
       openWhenNeeded: d.openWhenNeeded,
       writeback: d.writeback || null,
       passphrase: d.passphrase || '',
-      hint: d.passHint.trim() || ''
+      hint: d.passHint.trim() || '',
+      media: keepInterviewMedia()
     };
     TesseraExport.seal(fields).then(function (sealed) {
       TesseraState.addRegistryEntry({
@@ -596,7 +597,7 @@
     state.sealed = null; state.openOn = ''; state.openWhenNeeded = false;
     state.custodyHolder = ''; state.custodyNote = ''; state.keepCopy = false;
     state.passphrase = ''; state.passConfirm = ''; state.passHint = '';
-    state.deckAnswers = null; state.stitchedText = ''; state.ivIndex = 0; state.ivStitch = false;
+    state.deckAnswers = null; state.stitchedText = ''; state.ivIndex = 0; state.ivStitch = false; state.keepInterview = false;
     renderPaper(); renderCaret(); renderSealSection(); renderHero();
     setSetupStep(1);
     updateCarriage(false);
@@ -619,6 +620,7 @@
     }
     state.ivIndex = 0;
     state.ivStitch = false;
+    if (refs.ivKeep) refs.ivKeep.checked = state.keepInterview;
     renderInterview();
   }
   function closeInterview() {
@@ -665,6 +667,25 @@
     closeInterview();
     focusTa();
     scrollToEl(refs.sceneWrap, -20);
+  }
+  /* the raw interview as a keepsake file (opt-in, media/interview.txt): each
+     answered question and its answer, so a finder sees the questions the
+     letter grew from. In-memory answers only, built at seal time. */
+  function interviewText() {
+    var deck = currentDeck() || [];
+    var out = [];
+    for (var i = 0; i < deck.length; i++) {
+      var a = (state.deckAnswers && state.deckAnswers[i] || '').trim();
+      if (a) out.push(deck[i].q + '\n' + a);
+    }
+    return out.join('\n\n') + '\n';
+  }
+  function keepInterviewMedia() {
+    if (!state.keepInterview || !state.deckAnswers) return null;
+    var any = false;
+    for (var i = 0; i < state.deckAnswers.length; i++) if (state.deckAnswers[i] && state.deckAnswers[i].trim()) { any = true; break; }
+    if (!any) return null;
+    return [{ name: 'media/interview.txt', data: interviewText(), note: 'the interview answers, before they were made into the letter' }];
   }
 
   /* ---------- render: hero + writing bar ---------- */
@@ -1215,6 +1236,7 @@
     refs.ivBack = $('iv-back');
     refs.ivNext = $('iv-next');
     refs.ivPut = $('iv-put');
+    refs.ivKeep = $('iv-keep');
     refs.deckNote = $('deck-note');
     refs.reopenRow = $('reopen-row');
     refs.finishRow = $('finish-row');
@@ -1276,6 +1298,7 @@
     refs.ivNext.addEventListener('click', ivGoNext);
     $('iv-stitch-back').addEventListener('click', ivGoBack);
     refs.ivPut.addEventListener('click', stitchIntoLetter);
+    refs.ivKeep.addEventListener('change', function (e) { state.keepInterview = e.target.checked; });
     refs.ivAnswer.addEventListener('input', function (e) {
       if (state.deckAnswers) state.deckAnswers[state.ivIndex] = e.target.value;
     });
@@ -1320,7 +1343,7 @@
     refs.setupOcc.addEventListener('change', function (e) {
       state.occasion = e.target.value || null;
       /* answers are indexed to a specific deck; a new occasion starts fresh */
-      state.deckAnswers = null; state.ivIndex = 0; state.ivStitch = false;
+      state.deckAnswers = null; state.ivIndex = 0; state.ivStitch = false; state.keepInterview = false;
       renderSetup();
       scheduleSave();
     });
