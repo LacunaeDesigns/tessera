@@ -48,6 +48,7 @@
     phase: 'idle', value: '', lines: [''], col: 0, focused: false, autotyping: false, demoActive: true,
     to: '', occasion: null, customOccasion: '', showPrompts: true, setupStep: null, machineColorU: null,
     openOn: '', openWhenNeeded: false, fromWho: '', custodyHolder: '', custodyNote: '', keepCopy: false,
+    coWrite: false, secondWriter: '',
     passphrase: '', passConfirm: '', passHint: '',
     sealed: null, freshId: '', sealing: false, soundOnU: null, shelfStyleU: null,
     sealChoice: 'blue', sealPickerOpen: false, writeback: null,
@@ -69,6 +70,7 @@
       to: state.to, fromWho: state.fromWho, occasion: state.occasion, customOccasion: state.customOccasion,
       openOn: state.openOn, openWhenNeeded: state.openWhenNeeded,
       custodyHolder: state.custodyHolder, custodyNote: state.custodyNote, keepCopy: state.keepCopy,
+      coWrite: state.coWrite, secondWriter: state.secondWriter,
       sealChoice: state.sealChoice, writeback: state.writeback,
       value: state.value
       /* deck answers stay in-memory only (deck mode's decision); the stitched
@@ -109,6 +111,8 @@
     state.custodyHolder = d.custodyHolder || '';
     state.custodyNote = d.custodyNote || '';
     state.keepCopy = !!d.keepCopy;
+    state.coWrite = !!d.coWrite;
+    state.secondWriter = d.secondWriter || '';
     state.sealChoice = d.sealChoice || 'blue';
     state.writeback = d.writeback || null;
     state.demoActive = false;
@@ -156,6 +160,12 @@
     return { title: 'Something else', prompts: [], group: 'custom', canBeUndated: false };
   }
   function currentOcc() { return state.occasion ? bySlug(state.occasion) : null; }
+  /* co-written letters: `from` stays the single string that feeds the token
+     seed; both names are also carried as writers[]. Both apply only when the
+     writer opted in and named a second person. */
+  function bothWriters() { return state.coWrite && !!state.fromWho.trim() && !!state.secondWriter.trim(); }
+  function effectiveFrom() { return bothWriters() ? (state.fromWho.trim() + ' and ' + state.secondWriter.trim()) : state.fromWho.trim(); }
+  function writersList() { return bothWriters() ? [state.fromWho.trim(), state.secondWriter.trim()] : null; }
   function sealMeta(key) {
     for (var i = 0; i < SEAL_LIB.length; i++) if (SEAL_LIB[i].key === key) return SEAL_LIB[i];
     return SEAL_LIB[0];
@@ -538,7 +548,8 @@
     renderSealSection();
     var fields = {
       to: d.to.trim(),
-      from: d.fromWho.trim(),
+      from: effectiveFrom(),
+      writers: writersList(),
       written: todayIso(),
       openOn: d.openWhenNeeded ? todayIso() : d.openOn,
       occasion: d.occasion || 'custom',
@@ -597,6 +608,7 @@
     state.phase = 'idle'; state.value = ''; state.lines = ['']; state.col = 0;
     state.sealed = null; state.openOn = ''; state.openWhenNeeded = false;
     state.custodyHolder = ''; state.custodyNote = ''; state.keepCopy = false;
+    state.coWrite = false; state.secondWriter = '';
     state.passphrase = ''; state.passConfirm = ''; state.passHint = '';
     state.deckAnswers = null; state.stitchedText = ''; state.ivIndex = 0; state.ivStitch = false; state.keepInterview = false;
     renderPaper(); renderCaret(); renderSealSection(); renderHero();
@@ -987,6 +999,17 @@
     }
   }
 
+  /* drop a labelled turn ("Maria:") at the end of the letter, then re-sync
+     caret/wrap/draft exactly like the stitch path */
+  function insertTurn(name) {
+    var cur = state.value;
+    var sep = !cur ? '' : (/\n\n$/.test(cur) ? '' : (/\n$/.test(cur) ? '\n' : '\n\n'));
+    var next = cur + sep + name + ':\n';
+    refs.ta.value = next;
+    handleValue(next, null, true);
+    focusTa();
+  }
+
   /* ---------- render: hero + writing bar ---------- */
   function hasLetter() { return state.phase === 'writing' && state.value.trim().length > 0; }
 
@@ -1017,6 +1040,18 @@
     var prompts = occ ? occ.prompts : [];
     refs.hwPromptsToggle.hidden = !(occ && prompts.length);
     refs.hwDeck.hidden = !currentDeck();
+    /* co-written: quiet buttons to drop a labelled turn into the letter
+       (the "alternating" mode; merged is just writing normally) */
+    var co = bothWriters();
+    refs.hwTurns.hidden = !co;
+    if (co) {
+      while (refs.hwTurns.firstChild) refs.hwTurns.removeChild(refs.hwTurns.firstChild);
+      [state.fromWho.trim(), state.secondWriter.trim()].forEach(function (nm) {
+        var b = el('button', null, nm + '’s turn');
+        b.addEventListener('click', function () { insertTurn(nm); });
+        refs.hwTurns.appendChild(b);
+      });
+    }
     if (occ && prompts.length) refs.hwPromptsToggle.textContent = state.showPrompts ? 'hide prompts' : 'show prompts';
     var showPrompts = state.showPrompts && !!occ && prompts.length > 0;
     refs.hwPrompts.hidden = !showPrompts;
@@ -1125,6 +1160,10 @@
         ? 'It opens when it’s needed. The title on the envelope decides.'
         : (validDate ? 'It opens ' + dateInWords(state.openOn) + '.' : '');
       if (refs.fromWho.value !== state.fromWho) refs.fromWho.value = state.fromWho;
+      refs.cowriteToggle.checked = state.coWrite;
+      refs.cowriteSecond.hidden = !state.coWrite;
+      refs.cowriteHelper.hidden = !state.coWrite;
+      if (refs.cowriteSecond.value !== state.secondWriter) refs.cowriteSecond.value = state.secondWriter;
       if (refs.custodyHolder.value !== state.custodyHolder) refs.custodyHolder.value = state.custodyHolder;
       if (refs.custodyNote.value !== state.custodyNote) refs.custodyNote.value = state.custodyNote;
       if (refs.passPhrase.value !== state.passphrase) refs.passPhrase.value = state.passphrase;
@@ -1142,7 +1181,7 @@
       }
 
       refs.pvTo.textContent = state.to;
-      refs.pvFrom.textContent = state.fromWho.trim() || '—';
+      refs.pvFrom.textContent = effectiveFrom() || '—';
       refs.pvOpens.textContent = state.openWhenNeeded ? 'when it’s needed' : (validDate ? dateInWords(state.openOn) : '—');
       refs.pvKept.textContent = state.custodyHolder.trim() || 'you';
       refs.pvText.textContent = state.value;
@@ -1579,6 +1618,10 @@
     refs.undated = $('undated');
     refs.dateWords = $('date-words');
     refs.fromWho = $('from-who');
+    refs.cowriteToggle = $('cowrite-toggle');
+    refs.cowriteSecond = $('cowrite-second');
+    refs.cowriteHelper = $('cowrite-helper');
+    refs.hwTurns = $('hw-turns');
     refs.custodyHolder = $('custody-holder');
     refs.custodyNote = $('custody-note');
     refs.passPhrase = $('pass-phrase');
@@ -1736,7 +1779,9 @@
       renderSealSection();
       scheduleSave();
     });
-    refs.fromWho.addEventListener('input', function (e) { state.fromWho = e.target.value; renderSealSection(); scheduleSave(); });
+    refs.fromWho.addEventListener('input', function (e) { state.fromWho = e.target.value; renderSealSection(); renderWriting(); scheduleSave(); });
+    refs.cowriteToggle.addEventListener('change', function (e) { state.coWrite = e.target.checked; renderSealSection(); renderWriting(); scheduleSave(); });
+    refs.cowriteSecond.addEventListener('input', function (e) { state.secondWriter = e.target.value; renderSealSection(); renderWriting(); scheduleSave(); });
     refs.custodyHolder.addEventListener('input', function (e) { state.custodyHolder = e.target.value; renderSealSection(); scheduleSave(); });
     refs.custodyNote.addEventListener('input', function (e) { state.custodyNote = e.target.value; renderSealSection(); scheduleSave(); });
     refs.passPhrase.addEventListener('input', function (e) { state.passphrase = e.target.value; renderSealSection(); });

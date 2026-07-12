@@ -57,6 +57,7 @@
           <span class="hw-wordline" id="hw-wordline"></span>
           <button class="hw-link" id="hw-prompts-toggle" hidden></button>
           <button class="hw-link" id="hw-deck" hidden>Answer a few questions instead</button>
+          <span class="hw-turns" id="hw-turns" hidden></span>
           <button class="hw-link hw-link--muted" id="hw-change">change recipient</button>
           <button class="btn-cta hw-seal" id="hw-seal">Seal this letter ↓</button>
         </div>
@@ -313,6 +314,9 @@
         <h3 class="seal-q">Who is it from?</h3>
         <input class="seal-input" id="from-who" placeholder="Your mother">
         <p class="seal-helper">“Your mother” can outlive a name. Sign it the way you want to be met.</p>
+        <label class="cowrite-toggle"><input type="checkbox" id="cowrite-toggle"> We are writing this together</label>
+        <input class="seal-input" id="cowrite-second" placeholder="The other writer’s name" hidden>
+        <p class="seal-helper seal-helper--tight" id="cowrite-helper" hidden>The letter is signed with both names, and records you both.</p>
 
         <h3 class="seal-q">Who will keep it?</h3>
         <input class="seal-input seal-input--stack" id="custody-holder" placeholder="Gustav · the family papers · whoever keeps the albums">

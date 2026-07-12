@@ -837,6 +837,30 @@ a:hover { color: #8A4B2D; }
 .sw-summary-row .sw-sum-when { color: rgba(57,46,31,0.6); white-space: nowrap; }
 .sw-summary-row .mono { font-family: var(--mono, monospace); font-size: 12px; color: rgba(57,46,31,0.5); }
 
+/* co-written letters */
+.cowrite-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 4px;
+  font-family: var(--ui);
+  font-size: 13.5px;
+  color: rgba(57,46,31,0.8);
+  cursor: pointer;
+}
+.hw-turns { display: inline-flex; gap: 6px; }
+.hw-turns button {
+  font-family: var(--ui);
+  font-size: 12px;
+  background: rgba(221,143,134,0.12);
+  border: 1px solid rgba(221,143,134,0.45);
+  border-radius: 4px;
+  color: #B15A4E;
+  cursor: pointer;
+  padding: 3px 9px;
+}
+.hw-turns button:hover { background: rgba(221,143,134,0.2); }
+
 .cta-row { display: flex; justify-content: center; margin-top: 26px; }
 
 .mc-block {

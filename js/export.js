@@ -15,8 +15,10 @@
     return crypto.subtle.digest('SHA-256', bytes).then(toHex);
   }
 
-  /* fields: { to, from, written, openOn, occasion, language, custody[],
-     letter, openWhenNeeded, writeback } → resolves to the sealed letter object */
+  /* fields: { to, from, writers[]?, written, openOn, occasion, language,
+     custody[], letter, openWhenNeeded, writeback } → resolves to the sealed
+     letter object. writers[] is optional (co-written letters); from stays the
+     single seed-bearing string. */
   function seal(fields) {
     var M = root.TesseraManifest;
     var letterText = M.canonLetterText(fields.letter) + '\n';
@@ -47,6 +49,7 @@
           openOn: fields.openOn,
           from: fields.from,
           to: fields.to,
+          writers: (fields.writers && fields.writers.length) ? fields.writers : undefined,
           occasion: fields.occasion,
           language: fields.language || 'en',
           custody: fields.custody || [],
