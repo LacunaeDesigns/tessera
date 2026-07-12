@@ -242,21 +242,21 @@ a:hover { color: #8A4B2D; }
   border-radius: 100px;
   border: 1px solid rgba(57,46,31,0.14);
 }
-.hw-wordline { color: rgba(57,46,31,0.45); }
+.hw-wordline { color: rgba(57,46,31,0.6); }
 .hw-link {
   font-family: var(--ui);
-  font-size: 12.5px;
+  font-size: 13px;
   background: none;
-  border: 1px solid rgba(57,46,31,0.22);
+  border: 1px solid rgba(57,46,31,0.32);
   border-radius: 100px;
   color: #B65432;
   cursor: pointer;
-  padding: 5px 13px;
+  padding: 7px 15px;
   transition: border-color 0.15s, background-color 0.15s;
 }
-.hw-link:hover { border-color: #B65432; background-color: rgba(182,84,50,0.06); }
-.hw-link--muted { color: rgba(57,46,31,0.6); }
-.hw-link--muted:hover { border-color: rgba(57,46,31,0.4); background-color: rgba(57,46,31,0.04); }
+.hw-link:hover { border-color: #B65432; background-color: rgba(182,84,50,0.08); }
+.hw-link--muted { color: rgba(57,46,31,0.74); }
+.hw-link--muted:hover { border-color: rgba(57,46,31,0.5); background-color: rgba(57,46,31,0.05); }
 .hw-seal { font-size: 13.5px; padding: 8px 18px; }
 .hw-seal:disabled { cursor: default; }
 .hw-prompts {
@@ -1166,7 +1166,7 @@ a:hover { color: #8A4B2D; }
   justify-content: space-between;
   font-family: var(--ui);
   font-size: 9.5px;
-  color: rgba(57,46,31,0.5);
+  color: rgba(57,46,31,0.7);
 }
 .env-foot .env-id { font-family: var(--mono); }
 
@@ -1424,7 +1424,7 @@ select:focus-visible, textarea:focus-visible {
   /* comfortable touch sizes */
   .date-chip { padding: 10px 15px; }
   .shelf-tabs button { padding: 11px 14px; }
-  .hw-link { padding: 8px 6px; }
+  .hw-link { padding: 9px 15px; }
   .hw-seal { padding: 11px 18px; }
 
   /* the shelf becomes a swipeable rail; the next card peeks at the edge */
