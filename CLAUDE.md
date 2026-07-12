@@ -29,6 +29,6 @@ Letters across time: write, seal, print, keep. The docs are canon; when code and
 ## Commands
 
 - Dev server: `node tools/serve.js` → http://localhost:8137/ (also `.claude/launch.json`, name "tessera").
-- Gate 1: `node --check <file>` on touched JS, then `node tools/test-manifest.js`, `node tools/test-zip.js`, `node tools/test-token.js`, `node tools/test-state.js`, `node tools/test-open.js`, `node tools/test-ics.js`.
+- Gate 1: `node --check <file>` on touched JS, then `node tools/test-manifest.js`, `node tools/test-zip.js`, `node tools/test-token.js`, `node tools/test-state.js`, `node tools/test-open.js`, `node tools/test-ics.js`, `node tools/test-booklet.js`.
 - Gate 2 (copy changes): `node tools/prose-check.js`.
 - Skills: `/qa` · `/century-audit` · `/spec-sync` · `/occasion` · `/token-lab` · `/release`.
