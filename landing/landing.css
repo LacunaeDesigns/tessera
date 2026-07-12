@@ -748,6 +748,95 @@ a:hover { color: #8A4B2D; }
 .setup-back { text-decoration: none; }
 .setup-go { font-size: 14.5px; padding: 11px 22px; }
 
+/* ---------- the milestone series wizard ---------- */
+.sw-offer {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  font-family: var(--ui);
+  font-size: 13.5px;
+  color: #B15A4E;
+  background: rgba(221,143,134,0.09);
+  border: 1px dashed rgba(221,143,134,0.6);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+.sw-offer:hover { background: rgba(221,143,134,0.16); }
+#series-overlay { padding-top: 120px; align-items: flex-start; }
+.series-card { width: min(680px, 90%); max-height: calc(100% - 150px); overflow-y: auto; }
+.sw-field { display: block; margin: 0 0 16px; }
+.sw-label {
+  display: block;
+  font-family: var(--ui);
+  font-size: 12.5px;
+  color: rgba(57,46,31,0.6);
+  margin-bottom: 6px;
+}
+.sw-date { font-family: var(--ui); font-size: 15px; }
+.sw-rungs { margin: 4px 0 6px; border-top: 1px solid rgba(57,46,31,0.12); }
+.sw-rung {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(57,46,31,0.12);
+}
+.sw-rung-name { font-family: var(--serif-body); font-size: 15px; color: var(--ink); flex: 1 1 auto; }
+.sw-rung .sw-date { flex: 0 0 auto; width: 150px; padding: 8px 10px; }
+.sw-rung-drop {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: rgba(57,46,31,0.4);
+  font-size: 17px;
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+}
+.sw-rung-drop:hover { color: #B15A4E; }
+.sw-rung--past .sw-rung-name { color: rgba(57,46,31,0.45); }
+.sw-write-grid { display: grid; grid-template-columns: 170px 1fr; gap: 22px; align-items: start; }
+.sw-ladder { font-family: var(--ui); font-size: 12.5px; border-right: 1px solid rgba(57,46,31,0.12); padding-right: 16px; }
+.sw-rung-item {
+  display: block;
+  padding: 7px 0;
+  color: rgba(57,46,31,0.55);
+  border-left: 2px solid transparent;
+  padding-left: 10px;
+}
+.sw-rung-item--done { color: rgba(57,46,31,0.75); }
+.sw-rung-item--done::before { content: '✓ '; color: #7A9A6B; }
+.sw-rung-item--current { color: var(--ink); border-left-color: #DD8F86; font-weight: 500; }
+.sw-rung-item small { display: block; font-size: 11px; color: rgba(57,46,31,0.45); }
+.sw-rung-when { font-family: var(--ui); font-size: 12.5px; color: rgba(57,46,31,0.55); margin: 0 0 12px; }
+.sw-prompts { margin: 0 0 14px; }
+.sw-prompts p {
+  font-family: var(--serif-body);
+  font-style: italic;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: rgba(57,46,31,0.6);
+  margin: 0 0 7px;
+  padding-left: 12px;
+  border-left: 2px solid rgba(221,143,134,0.4);
+}
+.sw-text { min-height: 160px; resize: vertical; line-height: 1.55; }
+.sw-summary { margin: 0 0 18px; }
+.sw-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(57,46,31,0.1);
+  font-family: var(--ui);
+  font-size: 13px;
+}
+.sw-summary-row .sw-sum-when { color: rgba(57,46,31,0.6); white-space: nowrap; }
+.sw-summary-row .mono { font-family: var(--mono, monospace); font-size: 12px; color: rgba(57,46,31,0.5); }
+
 .cta-row { display: flex; justify-content: center; margin-top: 26px; }
 
 .mc-block {
@@ -1393,6 +1482,10 @@ select:focus-visible, textarea:focus-visible {
   .setup-skip, .setup-go { white-space: nowrap; min-height: 44px; }
   .setup-x { padding: 10px; top: 4px; right: 6px; }
   .setup-select, .setup-custom { font-size: 16px; }
+  .series-card { width: min(560px, 100%); }
+  .sw-write-grid { grid-template-columns: 1fr; gap: 14px; }
+  .sw-ladder { border-right: none; border-bottom: 1px solid rgba(57,46,31,0.12); padding-right: 0; padding-bottom: 10px; }
+  .sw-rung .sw-date { width: 44%; }
 
   /* the sound pill sits above the machine instead of colliding with it;
      justify-content must reset because it acts on the vertical axis once

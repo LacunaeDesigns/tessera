@@ -174,6 +174,7 @@
             </select>
             <input class="setup-input setup-custom" id="setup-custom" placeholder="Describe the occasion" hidden>
             <p class="setup-helper">Not every letter needs one. Leave it blank if it doesn't fit.</p>
+            <button class="sw-offer" id="setup-series" hidden>Write the whole ladder in one sitting →</button>
             <div class="setup-footer">
               <button class="setup-skip setup-back" id="setup-back">← Back</button>
               <button class="btn-cta setup-go" id="setup-done">Start writing →</button>
@@ -204,6 +205,72 @@
             <div class="setup-footer">
               <button class="setup-skip setup-back" id="iv-stitch-back">← Back</button>
               <button class="btn-cta setup-go" id="iv-put">Put it in the letter →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- the milestone series wizard: a whole ladder of letters in one
+           sitting. Reuses the setup-overlay pattern with its own wider card. -->
+      <div class="setup-overlay" id="series-overlay" hidden>
+        <div class="setup-card series-card" role="dialog" aria-modal="true" aria-label="Write a ladder of letters">
+          <button class="setup-x" id="sw-x" aria-label="Close">×</button>
+
+          <div id="sw-setup" hidden>
+            <div class="setup-eyebrow">The whole ladder</div>
+            <h3 class="setup-title" id="sw-setup-title">Write the whole ladder</h3>
+            <p class="setup-copy" id="sw-setup-copy"></p>
+            <label class="sw-field"><span class="sw-label" id="sw-anchor-q">From what date?</span>
+              <input class="setup-input sw-date" id="sw-anchor" type="date"></label>
+            <label class="sw-field"><span class="sw-label">Who are they from?</span>
+              <input class="setup-input" id="sw-from" placeholder="Your name, or “Mum and Dad”"></label>
+            <div class="sw-rungs" id="sw-rungs"></div>
+            <p class="setup-helper" id="sw-setup-hint">Set the date once; each letter’s open date fills in from it, and you can nudge any of them.</p>
+            <div class="setup-footer">
+              <button class="setup-skip" id="sw-setup-cancel">← Not now</button>
+              <button class="btn-cta setup-go" id="sw-begin">Begin the letters →</button>
+            </div>
+          </div>
+
+          <div id="sw-write" hidden>
+            <div class="sw-write-grid">
+              <aside class="sw-ladder" id="sw-ladder" aria-label="The ladder so far"></aside>
+              <div class="sw-compose">
+                <div class="setup-eyebrow" id="sw-write-progress"></div>
+                <h3 class="setup-title" id="sw-rung-title"></h3>
+                <p class="sw-rung-when" id="sw-rung-when"></p>
+                <div class="sw-prompts" id="sw-prompts"></div>
+                <textarea class="setup-input sw-text" id="sw-text" rows="8" aria-label="This letter"></textarea>
+                <div class="setup-footer">
+                  <button class="setup-skip setup-back" id="sw-prev">← Back</button>
+                  <button class="btn-cta setup-go" id="sw-next">Next →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="sw-seal" hidden>
+            <div class="setup-eyebrow">One sitting, done</div>
+            <h3 class="setup-title">Seal the ladder</h3>
+            <p class="setup-copy">Each letter becomes its own sealed folder, downloaded one after another. They share nothing but the hand that wrote them.</p>
+            <div class="sw-summary" id="sw-summary"></div>
+            <label class="sw-field"><span class="sw-label">Left with whom? (optional)</span>
+              <input class="setup-input" id="sw-custody" placeholder="A name, or leave blank to keep them yourself"></label>
+            <p class="setup-helper" id="sw-seal-hint"></p>
+            <div class="setup-footer">
+              <button class="setup-skip setup-back" id="sw-seal-back">← Back to the letters</button>
+              <button class="btn-cta setup-go" id="sw-seal-go">Seal all of them →</button>
+            </div>
+          </div>
+
+          <div id="sw-done" hidden>
+            <div class="setup-eyebrow">Sealed</div>
+            <h3 class="setup-title" id="sw-done-title">The ladder is sealed</h3>
+            <p class="setup-copy">Each folder has downloaded on its own. Keep them where you keep the papers that matter.</p>
+            <div class="sw-summary" id="sw-done-list"></div>
+            <div class="setup-footer">
+              <button class="setup-skip" id="sw-done-close">Close</button>
+              <button class="btn-cta setup-go" id="sw-print-all">Print every kit →</button>
             </div>
           </div>
         </div>

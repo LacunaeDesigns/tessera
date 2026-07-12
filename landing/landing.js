@@ -51,7 +51,8 @@
     passphrase: '', passConfirm: '', passHint: '',
     sealed: null, freshId: '', sealing: false, soundOnU: null, shelfStyleU: null,
     sealChoice: 'blue', sealPickerOpen: false, writeback: null,
-    deckAnswers: null, stitchedText: '', ivIndex: 0, ivStitch: false, keepInterview: false
+    deckAnswers: null, stitchedText: '', ivIndex: 0, ivStitch: false, keepInterview: false,
+    series: null /* the active milestone-series wizard draft, or null */
   };
 
   /* ---------- draft autosave (localStorage, single "desk" slot) ----------
@@ -688,6 +689,304 @@
     return [{ name: 'media/interview.txt', data: interviewText(), note: 'the interview answers, before they were made into the letter' }];
   }
 
+  /* ---------- the milestone series wizard ----------
+     A whole ladder of letters in one sitting: shared to/from/custody, one
+     anchor date, N per-rung letters. Each rung seals through the ONE seal
+     path (TesseraExport.seal) and downloads as its own self-contained zip —
+     there is no batch seal. Progress persists to its own draft slot; the
+     passphrase is never involved (a series is not encrypted here). */
+  var SERIES_SLOT = 'series';
+  var seriesTimer = null;
+
+  function seriesRungsFrom(occ) {
+    return occ.series.rungs.map(function (r) {
+      return {
+        years: r.years, title: r.title,
+        prompts: (r.prompts && r.prompts.length) ? r.prompts : (occ.prompts || []),
+        openOn: '', text: ''
+      };
+    });
+  }
+  function seriesSnapshot() {
+    var s = state.series;
+    return {
+      occ: s.occ, to: s.to, from: s.from,
+      custodyHolder: s.custodyHolder, custodyNote: s.custodyNote,
+      anchor: s.anchor, phase: s.phase, index: s.index,
+      rungs: s.rungs.map(function (r) {
+        return { years: r.years, title: r.title, openOn: r.openOn, text: r.text };
+      })
+    };
+  }
+  function canSaveSeries() {
+    return !!window.TesseraState && !!state.series && state.series.phase !== 'done' && !state.series.sealing;
+  }
+  function saveSeriesNow() { if (canSaveSeries()) TesseraState.setDraft(SERIES_SLOT, seriesSnapshot()); }
+  function scheduleSeriesSave() {
+    if (!canSaveSeries()) return;
+    if (seriesTimer) clearTimeout(seriesTimer);
+    seriesTimer = setTimeout(function () { seriesTimer = null; saveSeriesNow(); }, 600);
+  }
+  function clearSeriesDraft() {
+    if (seriesTimer) { clearTimeout(seriesTimer); seriesTimer = null; }
+    if (window.TesseraState) TesseraState.clearDraft(SERIES_SLOT);
+  }
+  function hasResumableSeries() {
+    if (!window.TesseraState) return false;
+    var d = TesseraState.getDraft(SERIES_SLOT);
+    if (!d || !d.occ) return false;
+    var occ = bySlug(d.occ);
+    if (!occ || !occ.series) return false;
+    for (var i = 0; d.rungs && i < d.rungs.length; i++) if (d.rungs[i].text && d.rungs[i].text.trim()) return true;
+    return !!(d.anchor || d.from);
+  }
+
+  function openSeriesWizard() {
+    var occ = currentOcc();
+    if (!occ || !occ.series || !state.to.trim()) return;
+    setSetupStep(null);
+    state.series = {
+      occ: occ.slug, to: state.to.trim(), from: state.fromWho || '',
+      custodyHolder: '', custodyNote: '',
+      anchorQ: occ.series.anchor || 'From what date?', anchor: '',
+      rungs: seriesRungsFrom(occ),
+      phase: 'setup', index: 0, sealing: false, done: []
+    };
+    renderSeries();
+  }
+  function closeSeriesWizard() {
+    var s = state.series;
+    if (s) {
+      if (s.phase === 'done') clearSeriesDraft();
+      else saveSeriesNow();
+    }
+    state.series = null;
+    refs.seriesOverlay.hidden = true;
+    renderShelf();
+  }
+  function restoreSeriesWizard() {
+    if (!hasResumableSeries()) return false;
+    var d = TesseraState.getDraft(SERIES_SLOT);
+    var occ = bySlug(d.occ);
+    var rungs = seriesRungsFrom(occ); /* fresh prompts from data */
+    for (var i = 0; i < rungs.length && d.rungs && i < d.rungs.length; i++) {
+      rungs[i].openOn = d.rungs[i].openOn || '';
+      rungs[i].text = d.rungs[i].text || '';
+    }
+    state.series = {
+      occ: d.occ, to: d.to || state.to || '', from: d.from || '',
+      custodyHolder: d.custodyHolder || '', custodyNote: d.custodyNote || '',
+      anchorQ: occ.series.anchor || 'From what date?', anchor: d.anchor || '',
+      rungs: rungs, phase: (d.phase && d.phase !== 'done') ? d.phase : 'setup',
+      index: d.index || 0, sealing: false, done: []
+    };
+    if (state.series.index >= rungs.length) state.series.index = 0;
+    renderSeries();
+    return true;
+  }
+
+  function recomputeRungDates() {
+    var s = state.series;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s.anchor)) return;
+    for (var i = 0; i < s.rungs.length; i++) s.rungs[i].openOn = plusYears(s.anchor, s.rungs[i].years);
+  }
+  function seriesSortRungs() {
+    state.series.rungs.sort(function (a, b) { return a.openOn < b.openOn ? -1 : a.openOn > b.openOn ? 1 : 0; });
+  }
+  function seriesDatesReady() {
+    var s = state.series;
+    if (!s.rungs.length) return false;
+    for (var i = 0; i < s.rungs.length; i++) if (!/^\d{4}-\d{2}-\d{2}$/.test(s.rungs[i].openOn)) return false;
+    return true;
+  }
+  function seriesReady() { return !!state.series.from.trim() && seriesDatesReady(); }
+  function seriesRefreshReady() {
+    var ready = seriesReady();
+    refs.swBegin.disabled = !ready;
+    refs.swBegin.style.opacity = ready ? 1 : 0.45;
+    refs.swSetupHint.textContent = ready
+      ? 'Set the date once; each letter’s open date fills in from it, and you can nudge any of them.'
+      : 'Add the date each letter should open, and who they are from.';
+  }
+
+  function renderSeries() {
+    var s = state.series;
+    refs.seriesOverlay.hidden = !s;
+    if (!s) return;
+    refs.swSetup.hidden = s.phase !== 'setup';
+    refs.swWrite.hidden = s.phase !== 'write';
+    refs.swSeal.hidden = s.phase !== 'seal';
+    refs.swDone.hidden = s.phase !== 'done';
+    if (s.phase === 'setup') renderSeriesSetup();
+    else if (s.phase === 'write') renderSeriesWrite();
+    else if (s.phase === 'seal') renderSeriesSeal();
+    else if (s.phase === 'done') renderSeriesDone();
+  }
+  function renderSeriesSetup() {
+    var s = state.series, occ = bySlug(s.occ);
+    refs.swSetupTitle.textContent = occ.title;
+    refs.swSetupCopy.textContent = 'A letter for ' + (s.to || 'them') + ' at each step, all in one sitting.';
+    refs.swAnchorQ.textContent = s.anchorQ;
+    if (refs.swAnchor.value !== s.anchor) refs.swAnchor.value = s.anchor;
+    if (refs.swFrom.value !== s.from) refs.swFrom.value = s.from;
+    var holder = refs.swRungs, today = todayIso();
+    while (holder.firstChild) holder.removeChild(holder.firstChild);
+    for (var i = 0; i < s.rungs.length; i++) {
+      (function (idx) {
+        var r = s.rungs[idx];
+        var row = el('div', 'sw-rung' + (r.openOn && r.openOn <= today ? ' sw-rung--past' : ''));
+        row.appendChild(el('span', 'sw-rung-name', r.title));
+        var date = el('input', 'setup-input sw-date');
+        date.type = 'date'; date.value = r.openOn || '';
+        date.addEventListener('input', function (e) {
+          s.rungs[idx].openOn = e.target.value;
+          row.classList.toggle('sw-rung--past', !!e.target.value && e.target.value <= todayIso());
+          scheduleSeriesSave();
+          seriesRefreshReady();
+        });
+        row.appendChild(date);
+        if (s.rungs.length > 1) {
+          var drop = el('button', 'sw-rung-drop', '×');
+          drop.title = 'Remove this letter';
+          drop.addEventListener('click', function () {
+            s.rungs.splice(idx, 1);
+            if (s.index >= s.rungs.length) s.index = s.rungs.length - 1;
+            scheduleSeriesSave();
+            renderSeriesSetup();
+          });
+          row.appendChild(drop);
+        }
+        holder.appendChild(row);
+      })(i);
+    }
+    seriesRefreshReady();
+  }
+  function renderSeriesWrite() {
+    var s = state.series, r = s.rungs[s.index];
+    if (!r) { s.phase = 'seal'; renderSeries(); return; }
+    var lad = refs.swLadder;
+    while (lad.firstChild) lad.removeChild(lad.firstChild);
+    for (var i = 0; i < s.rungs.length; i++) {
+      var written = s.rungs[i].text && s.rungs[i].text.trim();
+      var cls = 'sw-rung-item' + (i === s.index ? ' sw-rung-item--current' : (written ? ' sw-rung-item--done' : ''));
+      var item = el('div', cls);
+      item.appendChild(document.createTextNode(s.rungs[i].title));
+      item.appendChild(el('small', null, shortDate(s.rungs[i].openOn) || '—'));
+      lad.appendChild(item);
+    }
+    refs.swWriteProgress.textContent = 'Letter ' + (s.index + 1) + ' of ' + s.rungs.length;
+    refs.swRungTitle.textContent = s.to + ', ' + r.title;
+    refs.swRungWhen.textContent = r.openOn ? 'Opens ' + dateInWords(r.openOn) + '.' : '';
+    var pr = refs.swPrompts;
+    while (pr.firstChild) pr.removeChild(pr.firstChild);
+    for (var p = 0; p < r.prompts.length; p++) pr.appendChild(el('p', null, r.prompts[p]));
+    if (refs.swText.value !== (r.text || '')) refs.swText.value = r.text || '';
+    refs.swPrev.textContent = s.index === 0 ? '← Set-up' : '← Previous';
+    refs.swNext.textContent = (s.index === s.rungs.length - 1) ? 'Review & seal →' : 'Next letter →';
+    if (!isMobile()) setTimeout(function () { refs.swText.focus({ preventScroll: true }); }, 30);
+  }
+  function swGoNext() {
+    var s = state.series;
+    if (s.index < s.rungs.length - 1) s.index++;
+    else s.phase = 'seal';
+    scheduleSeriesSave();
+    renderSeries();
+  }
+  function swGoPrev() {
+    var s = state.series;
+    if (s.index > 0) s.index--;
+    else s.phase = 'setup';
+    scheduleSeriesSave();
+    renderSeries();
+  }
+  function renderSeriesSeal() {
+    var s = state.series;
+    if (refs.swCustody.value !== s.custodyHolder) refs.swCustody.value = s.custodyHolder;
+    var holder = refs.swSummary, written = 0;
+    while (holder.firstChild) holder.removeChild(holder.firstChild);
+    for (var i = 0; i < s.rungs.length; i++) {
+      var r = s.rungs[i];
+      var row = el('div', 'sw-summary-row');
+      row.appendChild(el('span', null, s.to + ', ' + r.title));
+      row.appendChild(el('span', 'sw-sum-when', shortDate(r.openOn)));
+      holder.appendChild(row);
+      if (r.text && r.text.trim()) written++;
+    }
+    var ready = !s.sealing && written === s.rungs.length && seriesReady();
+    refs.swSealGo.disabled = !ready;
+    refs.swSealGo.style.opacity = ready ? 1 : 0.45;
+    refs.swSealGo.textContent = s.sealing ? 'Sealing…' : ('Seal all ' + s.rungs.length + ' of them →');
+    refs.swSealHint.textContent = s.sealing ? 'One folder downloads for each letter.'
+      : (written < s.rungs.length ? ((s.rungs.length - written) + ' of the letters are still empty. Fill or remove them first.') : '');
+  }
+  function sealSeries() {
+    var s = state.series;
+    if (s.sealing) return;
+    var written = 0, i;
+    for (i = 0; i < s.rungs.length; i++) if (s.rungs[i].text && s.rungs[i].text.trim()) written++;
+    if (written !== s.rungs.length || !seriesReady()) return;
+    s.sealing = true;
+    renderSeriesSeal();
+    var custody = s.custodyHolder.trim()
+      ? [{ holder: s.custodyHolder.trim(), instructions: 'Keep it safe; pass it on with its story.' }]
+      : [];
+    /* chronological order, one at a time (each download fires after its seal;
+       a small gap keeps browsers from collapsing rapid multi-file downloads) */
+    var order = s.rungs.slice().sort(function (a, b) { return a.openOn < b.openOn ? -1 : a.openOn > b.openOn ? 1 : 0; });
+    var sealedList = [];
+    var chain = Promise.resolve();
+    order.forEach(function (r, k) {
+      chain = chain.then(function () {
+        var fields = {
+          to: s.to, from: s.from.trim(), written: todayIso(),
+          openOn: r.openOn, occasion: s.occ, language: 'en',
+          custody: custody, letter: r.text, openWhenNeeded: false,
+          writeback: null, passphrase: '', hint: '', media: null
+        };
+        return TesseraExport.seal(fields).then(function (sealed) {
+          TesseraState.addRegistryEntry({
+            id: sealed.fields.id, to: sealed.fields.to, from: sealed.fields.from,
+            written: sealed.fields.written, openOn: sealed.fields.openOn,
+            openWhenNeeded: false, occasion: sealed.fields.occasion,
+            custodyHolder: s.custodyHolder.trim(), custodyNote: '',
+            keptText: null, status: 'sealed', sealKey: 'blue', role: 'writer'
+          });
+          TesseraExport.download(sealed);
+          sealedList.push(sealed);
+          if (k < order.length - 1) return new Promise(function (res) { setTimeout(res, 350); });
+        });
+      });
+    });
+    chain.then(function () {
+      s.sealing = false;
+      s.done = sealedList;
+      s.phase = 'done';
+      clearSeriesDraft();
+      lastShelfKey = '';
+      renderShelf();
+      renderSeries();
+      ensureCtx(); sDing();
+    }).catch(function (err) {
+      s.sealing = false;
+      renderSeriesSeal();
+      alert('Sealing the ladder failed: ' + err.message);
+    });
+  }
+  function renderSeriesDone() {
+    var s = state.series;
+    refs.swDoneTitle.textContent = s.done.length + (s.done.length === 1 ? ' letter, sealed.' : ' letters, sealed.');
+    var holder = refs.swDoneList;
+    while (holder.firstChild) holder.removeChild(holder.firstChild);
+    for (var i = 0; i < s.done.length; i++) {
+      var f = s.done[i].fields;
+      var row = el('div', 'sw-summary-row');
+      row.appendChild(el('span', null, f.to));
+      row.appendChild(el('span', 'mono', f.id));
+      row.appendChild(el('span', 'sw-sum-when', 'opens ' + shortDate(f.openOn)));
+      holder.appendChild(row);
+    }
+  }
+
   /* ---------- render: hero + writing bar ---------- */
   function hasLetter() { return state.phase === 'writing' && state.value.trim().length > 0; }
 
@@ -787,6 +1086,8 @@
     refs.setupOcc.value = state.occasion || '';
     refs.setupCustom.hidden = state.occasion !== 'custom';
     if (refs.setupCustom.value !== state.customOccasion) refs.setupCustom.value = state.customOccasion;
+    var occ = currentOcc();
+    refs.setupSeries.hidden = !(step === 2 && occ && occ.series);
   }
   function buildOccasionSelect() {
     var groupsDef = [['For a hard day', 'open-when'], ['For a milestone', 'milestone'], ['For the far future', 'far'], ['Or something else', 'custom']];
@@ -1227,6 +1528,34 @@
     refs.setupOcc = $('setup-occ');
     refs.setupCustom = $('setup-custom');
     refs.setupNext = $('setup-next');
+    refs.setupSeries = $('setup-series');
+    refs.seriesOverlay = $('series-overlay');
+    refs.swSetup = $('sw-setup');
+    refs.swWrite = $('sw-write');
+    refs.swSeal = $('sw-seal');
+    refs.swDone = $('sw-done');
+    refs.swSetupTitle = $('sw-setup-title');
+    refs.swSetupCopy = $('sw-setup-copy');
+    refs.swSetupHint = $('sw-setup-hint');
+    refs.swAnchorQ = $('sw-anchor-q');
+    refs.swAnchor = $('sw-anchor');
+    refs.swFrom = $('sw-from');
+    refs.swRungs = $('sw-rungs');
+    refs.swBegin = $('sw-begin');
+    refs.swLadder = $('sw-ladder');
+    refs.swWriteProgress = $('sw-write-progress');
+    refs.swRungTitle = $('sw-rung-title');
+    refs.swRungWhen = $('sw-rung-when');
+    refs.swPrompts = $('sw-prompts');
+    refs.swText = $('sw-text');
+    refs.swPrev = $('sw-prev');
+    refs.swNext = $('sw-next');
+    refs.swSummary = $('sw-summary');
+    refs.swCustody = $('sw-custody');
+    refs.swSealHint = $('sw-seal-hint');
+    refs.swSealGo = $('sw-seal-go');
+    refs.swDoneTitle = $('sw-done-title');
+    refs.swDoneList = $('sw-done-list');
     refs.interviewOverlay = $('interview-overlay');
     refs.ivAsk = $('iv-ask');
     refs.ivStitch = $('iv-stitch');
@@ -1303,6 +1632,51 @@
       if (state.deckAnswers) state.deckAnswers[state.ivIndex] = e.target.value;
     });
 
+    /* the milestone series wizard */
+    refs.setupSeries.addEventListener('click', openSeriesWizard);
+    $('sw-x').addEventListener('click', closeSeriesWizard);
+    $('sw-setup-cancel').addEventListener('click', closeSeriesWizard);
+    refs.swAnchor.addEventListener('input', function (e) {
+      state.series.anchor = e.target.value;
+      recomputeRungDates();
+      scheduleSeriesSave();
+      renderSeriesSetup();
+    });
+    refs.swFrom.addEventListener('input', function (e) {
+      state.series.from = e.target.value;
+      scheduleSeriesSave();
+      seriesRefreshReady();
+    });
+    refs.swBegin.addEventListener('click', function () {
+      if (!seriesReady()) return;
+      seriesSortRungs();
+      state.series.phase = 'write';
+      state.series.index = 0;
+      scheduleSeriesSave();
+      renderSeries();
+    });
+    refs.swPrev.addEventListener('click', swGoPrev);
+    refs.swNext.addEventListener('click', swGoNext);
+    refs.swText.addEventListener('input', function (e) {
+      var s = state.series;
+      if (s && s.rungs[s.index]) { s.rungs[s.index].text = e.target.value; scheduleSeriesSave(); }
+    });
+    $('sw-seal-back').addEventListener('click', function () {
+      var s = state.series;
+      s.phase = 'write';
+      s.index = s.rungs.length - 1;
+      renderSeries();
+    });
+    refs.swCustody.addEventListener('input', function (e) {
+      state.series.custodyHolder = e.target.value;
+      scheduleSeriesSave();
+    });
+    refs.swSealGo.addEventListener('click', sealSeries);
+    $('sw-done-close').addEventListener('click', closeSeriesWizard);
+    $('sw-print-all').addEventListener('click', function () {
+      if (state.series && state.series.done.length) TesseraPrint.printKits(state.series.done);
+    });
+
     refs.sceneWrap.addEventListener('click', function (e) {
       /* the setup dialog lives inside scene-wrap, so its own button clicks
          (which can flip setupStep to null before this bubbles up) must not
@@ -1311,6 +1685,8 @@
       /* the deck interview is also an in-scene overlay; its clicks must not
          fall through to the focus grab either */
       if (!refs.interviewOverlay.hidden || refs.interviewOverlay.contains(e.target)) return;
+      /* the series wizard is likewise an in-scene overlay */
+      if (!refs.seriesOverlay.hidden || refs.seriesOverlay.contains(e.target)) return;
       /* phones: if focus lingers from a non-gesture path the keypad may be
          down even though the field is focused; a blur inside this real tap
          lets the re-focus summon it again */
@@ -1453,6 +1829,8 @@
       paintStoryToken();
       renderShelf();
       resumedDraft = restoreDraft();
+      /* a ladder left in progress reopens over the desk */
+      restoreSeriesWizard();
     }
     if (window.TesseraOccasions && window.TesseraToken) whenData();
     else {
