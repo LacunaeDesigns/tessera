@@ -498,13 +498,18 @@
     probe.style.left = '-9999px';
     probe.style.top = '0';
     probe.style.visibility = 'hidden';
-    /* pinned to the real printed leaf size (half of the 297mm booklet sheet,
-       full 210mm tall): standalone, the probe sits outside the .booklet-sheet
-       flex/aspect-ratio box that normally gives .bk-leaf its dimensions, so
-       without this it collapses to its empty content size and every word
-       "overflows" a near-zero budget. */
-    probe.style.width = '148.5mm';
-    probe.style.height = '210mm';
+    /* pinned to the safe printed leaf size: standalone, the probe sits
+       outside the .booklet-sheet flex box that normally gives .bk-leaf its
+       dimensions, so without an explicit size it collapses to its empty
+       content size and every word "overflows" a near-zero budget. The
+       numbers are the tighter of A4-landscape and US-Letter-landscape,
+       @page-margin already subtracted (matching print.css's .booklet-sheet
+       rule, which must stay in sync with these): width = half of
+       min(297,279.4)mm content width minus 2x10mm margin ≈ 129mm; height =
+       min(210,215.9)mm minus 2x10mm margin = 190mm. Content sized for the
+       narrower/shorter budget always fits the roomier paper too. */
+    probe.style.width = '129mm';
+    probe.style.height = '190mm';
     document.body.appendChild(probe);
     var body = probe.querySelector('.bk-letter-body');
     var cs = getComputedStyle(probe);
@@ -712,6 +717,18 @@
     return sheets;
   }
 
+  /* a running "N of TOTAL" in the top-right corner of every leaf, including
+     title/plates/colophon/bind (which carry no letter id of their own) —
+     the whole point is reassembling a bound signature that comes apart, so
+     it has to cover every leaf, not just the ones with an id to show. Runs
+     once the final leaf array (bind leaf included) is known. */
+  function bkNumberPages(leaves) {
+    var total = leaves.length;
+    leaves.forEach(function (leaf, i) {
+      leaf.appendChild(el('span', 'bk-pageno mono', (i + 1) + ' of ' + total));
+    });
+  }
+
   function printBooklet(model, rows, opts) {
     var mode = (opts && opts.mode) || 'sequential';
     var duplex = mode === 'signature';
@@ -720,11 +737,11 @@
       if (duplex) {
         var nSheets = Math.ceil((leaves.length + 1) / 4); /* +1 for the bind leaf about to join them */
         leaves.push(bkBindLeafSignature(nSheets));
-        sheets = signatureSheets(leaves);
       } else {
         leaves.push(bkBindLeafSequential());
-        sheets = sequentialSheets(leaves);
       }
+      bkNumberPages(leaves);
+      sheets = duplex ? signatureSheets(leaves) : sequentialSheets(leaves);
       show(sheets, { booklet: true });
       return mode;
     });

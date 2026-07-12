@@ -172,7 +172,10 @@
    centre, then spiral-bind or staple. A named @page keeps this geometry from
    disturbing the portrait A4 kit above (signature/duplex mode is a later
    chunk). Screen preview shows the same landscape card the print job makes. */
-@page booklet { size: 297mm 210mm; margin: 10mm; }
+/* orientation hint only — no forced paper size, matching how the kit above
+   never hardcodes @page size either, and letting the printer's own selected
+   paper (A4 or Letter) stay authoritative rather than fighting it. */
+@page booklet { size: landscape; margin: 10mm; }
 /* screen preview: auto height like .sheet above, so paginated content is
    never visually clipped by a scaled-down card — the print rules below give
    the real fixed A4-landscape geometry the pagination was measured against. */
@@ -193,6 +196,12 @@
 .bk-cut--fold::after { content: 'fold'; }
 .bk-footer { position: absolute; left: 10mm; right: 10mm; bottom: 6mm; font-family: var(--typewriter);
              font-size: 7pt; color: rgba(33,29,22,0.55); display: flex; justify-content: space-between; }
+/* every leaf, including title/plates/colophon/bind (which carry no letter
+   id — they belong to the whole booklet, not one letter): a running page
+   position, so a bound signature that comes apart can be reassembled in
+   order even without an id to go by. */
+.bk-pageno { position: absolute; top: 8mm; right: 10mm; font-family: var(--typewriter);
+             font-size: 7pt; color: rgba(33,29,22,0.45); }
 .bk-title-kicker { font-family: var(--display); font-size: 8pt; letter-spacing: 0.14em; text-transform: uppercase; }
 .bk-title-heading { font-family: var(--display); font-weight: normal; font-size: 1.3rem; margin: 0.6rem 0; }
 .bk-title-sub { color: rgba(33,29,22,0.6); font-size: 0.85rem; }
@@ -228,7 +237,14 @@
      headroom for a flap date that wraps (far-future years render long) */
   .envelope-template { height: 88mm; }
   .envelope-flap-line { font-size: 10pt; }
-  .booklet-sheet { page: booklet; max-width: none; width: 297mm; height: 210mm;
+  /* width fills whatever the @page margin box actually leaves available
+     (277mm content width on A4, 259.4mm on Letter) rather than hardcoding
+     the full 297mm page size, which would overflow the margin on every
+     sheet regardless of paper. Height is pinned to 190mm — the tighter of
+     A4's own margin-reduced height (190mm) and Letter's (195.9mm) — to match
+     what js/print.js's pagination probe measured against; letting height
+     default to 100% wouldn't reliably resolve in this flow. */
+  .booklet-sheet { page: booklet; max-width: none; width: 100%; height: 190mm;
                    border: none; box-shadow: none; margin: 0; break-after: page; }
   .booklet-sheet:last-child { break-after: auto; }
   .bk-leaf { overflow: hidden; }
