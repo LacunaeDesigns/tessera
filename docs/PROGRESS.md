@@ -49,6 +49,33 @@ Every roadmap item through v2.x now has a written plan — index with confidence
 
 ## Log (newest first)
 
+- **2026-07-12 (v0.3 Task 6 grief set drafted + Task 4 webfont specimen scaffolded, on `dev`)** —
+  **Task 6 (grief set) drafted** (`d62358c`): one door `open-when-grieving` ("Open when you lose
+  someone", cover "To be opened on the day someone is gone.") added to `data/occasions.js` as an
+  undated `open-when` entry. Deliberately **one occasion, not a multi-door set** — the spec names a
+  single door and its "full care" rule warns against drafting the adjacent heavy things (anticipatory
+  grief, a death-anniversary, "open when I am gone") casually alongside it. Written as bereavement
+  **company** (writer alive, the reader's loss unknown), so the four prompts hold regardless of who is
+  lost: keep company and fix nothing, permission without instructing the reader how to feel, one
+  ordinary thing a body can manage, continuation ("not gone from them, only from the room"); register
+  calibrated against `open-when-3am`/`open-when-heartbroken`. Bright-door rule stays satisfied at the
+  library level; forcing brightness into a grief door would break the deeper care rule. Data-only, no
+  format change; node --check + prose-check clean (bar the pre-existing header-comment em-dash);
+  browser-verified the chip renders as a labelled `<option>` in the open-when optgroup, `bySlug`
+  fallback intact, zero console errors, 18 occasions total. **Binding ship gate:** no outside-reader
+  sign-off (a reader with lived experience of loss), no ship to `main` — marked with a `PENDING` code
+  comment in the data file, a decisions.md entry, and **standing author gate 7**. Drafting is done;
+  the outside reader is the only remaining step, and it is not the author's or the agent's to supply.
+  **Task 4 (webfont) scaffolded, not decided:** `specimen.html` (repo root, temporary — deleted after
+  the decision, as the 2026-07-10 letter-body specimen was) renders a letter sheet (11.5pt/65ch) + a
+  booklet page (9.5pt) in both the system-serif stack and a vendored EB Garamond, each on its own A4
+  sheet for side-by-side judging, and self-reports whether the EB TTF actually loaded so a missing font
+  can't fake the comparison (verified in-browser: both faces render, body = exactly 11.5pt, no overflow,
+  banner correctly reports the font absent). **Doubly gated on the author:** the decision needs the
+  physical printer (Step 2), and even the prep needs the EB Garamond OFL files, which aren't on this
+  machine or in the repo — obtaining them is a file download that is the author's call. Drop
+  `EBGaramond-Regular.ttf` (+ `-Italic.ttf`) with its OFL licence into `fonts/`, then print both faces.
+
 - **2026-07-12 (v0.3 Task 5 Step 3 — co-written token: Option B, on `dev`)** — The open token
   question resolved on rendered evidence (author's call): **two identical keeper halves, one per
   writer, plus the traveller** — not a three-way break. The token authenticates by pattern-matching by
