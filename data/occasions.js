@@ -160,10 +160,10 @@
       ]
     },
     /* ---- the grief set (v0.3 Task 6) ----
-       PENDING OUTSIDE-READER SIGN-OFF before it may ship to main (see
-       docs/decisions.md and docs/features/occasions.md). Drafted in the house
-       voice against the open-when corpus; outside reading with lived experience
-       is required by the spec. Do not release without the sign-off recorded. */
+       Outside-reader sign-off RECORDED 2026-07-12 (docs/decisions.md): a reader
+       with lived experience of loss read the prompts and approved them as
+       written. Cleared to ship. Drafted in the house voice against the
+       open-when corpus (docs/features/occasions.md). */
     {
       slug: 'open-when-grieving',
       group: 'open-when',
