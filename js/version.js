@@ -4,7 +4,7 @@
    init, guarded to http(s) so file:// stays a first-class home.) */
 (function () {
   'use strict';
-  var LOCAL_VERSION = '0.6.0';
+  var LOCAL_VERSION = '0.7.0';
   function fill() {
     var v = document.getElementById('version-note');
     if (v) v.textContent = 'v' + LOCAL_VERSION;

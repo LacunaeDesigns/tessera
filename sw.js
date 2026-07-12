@@ -2,7 +2,7 @@
    network after first load). CACHE_VERSION is part of the versioning triple. */
 'use strict';
 
-var CACHE_VERSION = 'tessera-v0.6.0';
+var CACHE_VERSION = 'tessera-v0.7.0';
 
 var CORE = [
   './',
