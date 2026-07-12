@@ -1567,12 +1567,16 @@
     });
     refs.bkPrint.disabled = false;
   }
+  function bkSelectedMode() {
+    var checked = document.querySelector('input[name="bk-mode"]:checked');
+    return checked ? checked.value : 'sequential';
+  }
   function printBooklet() {
     var b = state.booklet;
     if (!b || !b.model) return;
     var rows = b.sel.map(bkCand);
     refs.bkPrint.disabled = true;
-    TesseraPrint.printBooklet(b.model, rows, { mode: 'sequential' }).then(function () {
+    TesseraPrint.printBooklet(b.model, rows, { mode: bkSelectedMode() }).then(function () {
       refs.bkPrint.disabled = false;
       closeBooklet();
     });

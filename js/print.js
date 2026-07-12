@@ -443,27 +443,33 @@
      A4-landscape sheets holding two A5 leaves side by side. Sequential mode:
      logical reading order, two leaves per sheet, single-sided, meant to be
      cut down the centre and spiral-bound or stapled. Signature (imposed,
-     duplex) mode is the next chunk — TesseraBooklet.impose() already has the
-     math, unused here. */
+     duplex) mode uses the same leaves, reordered by TesseraBooklet.impose()
+     and printed two-sided, folded and sewn instead of cut. `duplex` (bool)
+     is threaded through every leaf builder — including the pagination
+     probe — so both modes always measure and render against the identical
+     box geometry; a mode-only CSS override would let the two drift apart
+     and risk overflow. */
   function bkFooter(id, label) {
     var f = el('div', 'bk-footer');
     f.appendChild(el('span', 'mono', id));
     f.appendChild(el('span', '', label));
     return f;
   }
-  function bkLeaf(kind) { return el('div', 'bk-leaf bk-leaf--' + kind); }
+  function bkLeaf(kind, duplex) {
+    return el('div', 'bk-leaf bk-leaf--' + kind + (duplex ? ' bk-leaf--duplex' : ''));
+  }
 
-  function bkTitleLeaf(model) {
-    var leaf = bkLeaf('title');
+  function bkTitleLeaf(model, duplex) {
+    var leaf = bkLeaf('title', duplex);
     leaf.appendChild(el('p', 'bk-title-kicker', 'A Tessera booklet'));
     leaf.appendChild(el('h2', 'bk-title-heading', model.title));
     leaf.appendChild(el('p', 'bk-title-sub', model.count + ' letter' + (model.count === 1 ? '' : 's') + ', bound together.'));
     return leaf;
   }
 
-  function bkFactsLeaf(row) {
+  function bkFactsLeaf(row, duplex) {
     var M = root.TesseraManifest;
-    var leaf = bkLeaf('facts');
+    var leaf = bkLeaf('facts', duplex);
     leaf.appendChild(el('p', 'bk-facts-to', 'For ' + row.to));
     leaf.appendChild(el('p', 'bk-facts-line', 'From ' + (row.from || 'someone who loves them')));
     leaf.appendChild(el('p', 'bk-facts-line', 'Sealed ' + M.dateInWords(row.written) + '.'));
@@ -474,8 +480,8 @@
     return leaf;
   }
 
-  function bkLetterLeafShell(row) {
-    var leaf = bkLeaf('letter');
+  function bkLetterLeafShell(row, duplex) {
+    var leaf = bkLeaf('letter', duplex);
     leaf.appendChild(el('div', 'bk-letter-body'));
     leaf.appendChild(bkFooter(row.id, 'the letter'));
     return leaf;
@@ -485,9 +491,9 @@
      note): fills a hidden probe leaf paragraph by paragraph, and word by word
      if a single paragraph alone would overflow, splitting into as many A5
      leaves as the letter needs. */
-  function paginateLetter(row) {
+  function paginateLetter(row, duplex) {
     var paras = String(row.text || '').trim().split(/\n\n+/).map(function (p) { return p.trim(); }).filter(Boolean);
-    var probe = bkLetterLeafShell(row);
+    var probe = bkLetterLeafShell(row, duplex);
     probe.style.position = 'fixed';
     probe.style.left = '-9999px';
     probe.style.top = '0';
@@ -540,7 +546,7 @@
     document.body.removeChild(probe);
     if (!pages.length) pages = [''];
     return pages.map(function (text, idx) {
-      var leaf = bkLetterLeafShell(row);
+      var leaf = bkLetterLeafShell(row, duplex);
       var b = leaf.querySelector('.bk-letter-body');
       text.split(/\n\n+/).forEach(function (para) { if (para.trim()) b.appendChild(el('p', '', para.trim())); });
       leaf.querySelector('.bk-footer').lastChild.textContent = pages.length > 1
@@ -549,8 +555,8 @@
     });
   }
 
-  function bkPlatesLeaf(rows, tokens) {
-    var leaf = bkLeaf('plates');
+  function bkPlatesLeaf(rows, tokens, duplex) {
+    var leaf = bkLeaf('plates', duplex);
     leaf.appendChild(el('h3', 'bk-plates-heading', 'The tokens, gathered.'));
     var grid = el('div', 'bk-plates-grid');
     rows.forEach(function (r, i) {
@@ -565,8 +571,8 @@
     return leaf;
   }
 
-  function bkColophonLeaf(rows) {
-    var leaf = bkLeaf('colophon');
+  function bkColophonLeaf(rows, duplex) {
+    var leaf = bkLeaf('colophon', duplex);
     leaf.appendChild(el('h3', 'bk-colophon-heading', 'A note on the format.'));
     leaf.appendChild(el('p', 'bk-colophon-note',
       'Each letter in this booklet was written, sealed and kept with Tessera — a way of writing letters across time. ' +
@@ -605,6 +611,46 @@
     return leaf;
   }
 
+  /* the pamphlet-stitch diagram: a folded sheet seen from the spine, three
+     holes pierced through every nested layer, one thread in and out of them */
+  function bkBindArtSignature() {
+    var A = 'fill="none" stroke="#211d16" stroke-linecap="round" stroke-linejoin="round"';
+    var svg = '<svg viewBox="0 0 120 90" ' + A + '>' +
+      '<rect x="14" y="4" width="46" height="82" rx="1.5" stroke-width="1"/>' +
+      '<rect x="60" y="4" width="46" height="82" rx="1.5" stroke-width="1"/>' +
+      '<line x1="60" y1="6" x2="60" y2="84" stroke-width="1" stroke-dasharray="3 3"/>' +
+      '<path d="M60 20 L48 32 L60 45 L72 58 L60 70" stroke-width="0.9"/>' +
+      '<circle cx="60" cy="20" r="2" stroke-width="1"/>' +
+      '<circle cx="60" cy="45" r="2" stroke-width="1"/>' +
+      '<circle cx="60" cy="70" r="2" stroke-width="1"/>' +
+      '</svg>';
+    var box = el('div', 'bk-bind-art');
+    box.innerHTML = svg; /* self-generated hairline SVG, no user content */
+    return box;
+  }
+
+  function bkBindLeafSignature(nSheets) {
+    var leaf = bkLeaf('bind', true);
+    leaf.appendChild(el('h3', 'bk-bind-heading', 'Binding this booklet.'));
+    leaf.appendChild(bkBindArtSignature());
+    var ol = el('ol', 'bk-bind-steps');
+    ['Print every sheet of this job duplex, flipped on the short edge, in order.',
+      'Nest the sheets inside one another, in the order they printed.',
+      'Fold the whole nested stack in half along the centre.',
+      'Along the fold, mark three to five evenly spaced points and pierce a hole through every layer at each.',
+      'Sew pamphlet-style: from outside the centre hole, back out through one end hole, across and in through the other end hole, then back through the centre — tie off there, inside the fold.'
+    ].forEach(function (t) { ol.appendChild(el('li', '', t)); });
+    leaf.appendChild(ol);
+    var note = 'This booklet needs ' + nSheets + ' sheet' + (nSheets === 1 ? '' : 's') + ' to fold into one signature.';
+    note += nSheets > 5
+      ? ' That is more than five — hand-sewing gets difficult past this point. Consider splitting into two volumes, or asking a print shop to finish the binding.'
+      : ' More than five sheets in one signature gets hard to fold and sew by hand; a print shop can help beyond that.';
+    leaf.appendChild(el('p', 'bk-bind-note', note));
+    leaf.appendChild(el('p', 'bk-bind-note',
+      'More pages than one signature can hold? Nest a second signature and sew it through the same holes — a kettle stitch links the two — a bookbinding reference can walk you through it.'));
+    return leaf;
+  }
+
   function bkAllTokens(rows) {
     var M = root.TesseraManifest, X = root.TesseraExport, T = root.TesseraToken;
     return Promise.all(rows.map(function (r) {
@@ -615,15 +661,15 @@
     }));
   }
 
-  function buildBookletLeaves(model, rows) {
+  function buildBookletLeaves(model, rows, duplex) {
     return bkAllTokens(rows).then(function (tokens) {
-      var leaves = [bkTitleLeaf(model)];
+      var leaves = [bkTitleLeaf(model, duplex)];
       rows.forEach(function (r) {
-        leaves.push(bkFactsLeaf(r));
-        leaves = leaves.concat(paginateLetter(r));
+        leaves.push(bkFactsLeaf(r, duplex));
+        leaves = leaves.concat(paginateLetter(r, duplex));
       });
-      leaves.push(bkPlatesLeaf(rows, tokens));
-      leaves.push(bkColophonLeaf(rows));
+      leaves.push(bkPlatesLeaf(rows, tokens, duplex));
+      leaves.push(bkColophonLeaf(rows, duplex));
       return leaves;
     });
   }
@@ -642,13 +688,43 @@
     return sheets;
   }
 
-  /* sequential mode only for now (signature/imposed duplex is the next
-     chunk); opts.mode is accepted so callers don't need to change later. */
+  /* signature mode: TesseraBooklet.impose() (pure, fixture-tested) gives each
+     duplex sheet's front/back page numbers (1-indexed, null = blank). Every
+     impose() sheet becomes two consecutive .booklet-sheet print pages — front
+     then back — so a printer's duplex pass lands them on the same physical
+     sheet; the dashed centre divider is a fold, not a cut. */
+  function signatureSheets(leaves) {
+    var imposed = root.TesseraBooklet.impose(leaves.length);
+    function leafAt(pageNum) { return pageNum === null ? bkLeaf('blank', true) : leaves[pageNum - 1]; }
+    var sheets = [];
+    imposed.forEach(function (s) {
+      var front = el('div', 'booklet-sheet');
+      front.appendChild(leafAt(s.front[0]));
+      front.appendChild(el('div', 'bk-cut bk-cut--fold'));
+      front.appendChild(leafAt(s.front[1]));
+      sheets.push(front);
+      var back = el('div', 'booklet-sheet');
+      back.appendChild(leafAt(s.back[0]));
+      back.appendChild(el('div', 'bk-cut bk-cut--fold'));
+      back.appendChild(leafAt(s.back[1]));
+      sheets.push(back);
+    });
+    return sheets;
+  }
+
   function printBooklet(model, rows, opts) {
     var mode = (opts && opts.mode) || 'sequential';
-    return buildBookletLeaves(model, rows).then(function (leaves) {
-      leaves.push(bkBindLeafSequential());
-      var sheets = sequentialSheets(leaves);
+    var duplex = mode === 'signature';
+    return buildBookletLeaves(model, rows, duplex).then(function (leaves) {
+      var sheets;
+      if (duplex) {
+        var nSheets = Math.ceil((leaves.length + 1) / 4); /* +1 for the bind leaf about to join them */
+        leaves.push(bkBindLeafSignature(nSheets));
+        sheets = signatureSheets(leaves);
+      } else {
+        leaves.push(bkBindLeafSequential());
+        sheets = sequentialSheets(leaves);
+      }
       show(sheets);
       return mode;
     });

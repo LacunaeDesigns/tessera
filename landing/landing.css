@@ -905,6 +905,16 @@ a:hover { color: #8A4B2D; }
 .bk-page-kind { flex: 0 0 96px; color: rgba(57,46,31,0.5); text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.08em; padding-top: 2px; }
 .bk-page-desc { flex: 1 1 auto; color: var(--ink); }
 
+.bk-mode-picker { display: grid; gap: 8px; margin: 4px 0 10px; }
+.bk-mode-option {
+  display: grid; grid-template-columns: auto 1fr; gap: 3px 8px;
+  border: 1px solid rgba(57,46,31,0.16); border-radius: 8px; padding: 8px 10px;
+  cursor: pointer; font-family: var(--ui);
+}
+.bk-mode-option input[type=radio] { grid-row: 1 / 3; align-self: center; }
+.bk-mode-label { color: var(--ink); font-size: 13px; }
+.bk-mode-hint { grid-column: 2; color: rgba(57,46,31,0.55); font-size: 11.5px; line-height: 1.4; }
+
 .cta-row { display: flex; justify-content: center; margin-top: 26px; }
 
 .mc-block {

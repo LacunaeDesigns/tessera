@@ -24,6 +24,7 @@ var CORE = [
   'js/export.js',
   'js/ics.js',
   'js/open.js',
+  'js/booklet.js',
   'js/print.js',
   'data/occasions.js',
   'fonts/YoungSerif-Regular.ttf',

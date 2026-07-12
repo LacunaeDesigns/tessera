@@ -178,10 +178,16 @@
 .bk-leaf { flex: 1 1 50%; min-width: 0; box-sizing: border-box; padding: 12mm 10mm 20mm;
            position: relative; color: #211d16; }
 .bk-leaf--blank { visibility: hidden; }
+/* signature (duplex) mode: content inset ±3mm beyond the base margins, a
+   tolerance for front/back registration drift on a home printer. Applied to
+   every leaf builder (not cascaded from .booklet-sheet) so the pagination
+   probe measures the same box the final render uses — see print.js. */
+.bk-leaf--duplex { padding: 15mm 13mm 23mm; }
 .bk-cut { flex: 0 0 auto; width: 0; border-left: 0.5pt dashed rgba(33,29,22,0.45); position: relative; }
 .bk-cut::after { content: 'cut'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(90deg);
                  font-family: var(--typewriter); font-size: 7pt; letter-spacing: 0.1em; color: rgba(33,29,22,0.45);
                  background: #fdfbf5; padding: 0 0.3em; white-space: nowrap; }
+.bk-cut--fold::after { content: 'fold'; }
 .bk-footer { position: absolute; left: 10mm; right: 10mm; bottom: 6mm; font-family: var(--typewriter);
              font-size: 7pt; color: rgba(33,29,22,0.55); display: flex; justify-content: space-between; }
 .bk-title-kicker { font-family: var(--display); font-size: 8pt; letter-spacing: 0.14em; text-transform: uppercase; }

@@ -510,7 +510,19 @@
       <h3 class="setup-title" id="bk-preview-title"></h3>
       <p class="setup-copy" id="bk-preview-sub"></p>
       <div class="bk-pages" id="bk-pages"></div>
-      <p class="setup-helper">This is what the booklet will contain, in order. Printing lays it out two pages to an A4 sheet, ready to cut down the centre and staple or spiral-bind.</p>
+      <p class="setup-helper">This is what the booklet will contain, in order. Choose how you'll bind it — both lay two pages to an A4 sheet.</p>
+      <div class="bk-mode-picker" role="radiogroup" aria-label="How to bind it">
+        <label class="bk-mode-option">
+          <input type="radio" name="bk-mode" id="bk-mode-sequential" value="sequential" checked>
+          <span class="bk-mode-label">Cut and staple</span>
+          <span class="bk-mode-hint">Single-sided. Cut each sheet down the centre, stack in order, staple or spiral-bind.</span>
+        </label>
+        <label class="bk-mode-option">
+          <input type="radio" name="bk-mode" id="bk-mode-signature" value="signature">
+          <span class="bk-mode-label">Fold and sew</span>
+          <span class="bk-mode-hint">Duplex-printed, nested like a real book, pamphlet-stitched along the fold. Needs a printer that can print on both sides.</span>
+        </label>
+      </div>
       <div class="setup-footer">
         <button class="setup-skip setup-back" id="bk-back">← Back to the list</button>
         <button class="btn-cta setup-go" id="bk-print" disabled>Print the booklet →</button>
@@ -562,6 +574,7 @@
 <script src="js/crypt.js"></script>
 <script src="js/state.js"></script>
 <script src="js/export.js"></script>
+<script src="js/booklet.js"></script>
 <script src="js/print.js"></script>
 <script src="js/ics.js"></script>
 <script src="js/open.js"></script>
