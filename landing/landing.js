@@ -54,6 +54,74 @@
     deckAnswers: null, stitchedText: '', ivIndex: 0, ivStitch: false
   };
 
+  /* ---------- draft autosave (localStorage, single "desk" slot) ----------
+     Persists the in-progress letter and its fields so a reload does not lose
+     work. The passphrase is NEVER persisted (encryption.md: it never touches
+     storage). The snapshot below deliberately omits passphrase/passConfirm/
+     passHint. Saving is suppressed once a letter is sealed, so a late debounce
+     cannot resurrect a just-sealed draft (the v0.1 writing-room bug). */
+  var DRAFT_SLOT = 'desk';
+  var saveTimer = null;
+  var resumedDraft = false;
+  function draftSnapshot() {
+    return {
+      to: state.to, fromWho: state.fromWho, occasion: state.occasion, customOccasion: state.customOccasion,
+      openOn: state.openOn, openWhenNeeded: state.openWhenNeeded,
+      custodyHolder: state.custodyHolder, custodyNote: state.custodyNote, keepCopy: state.keepCopy,
+      sealChoice: state.sealChoice, writeback: state.writeback,
+      value: state.value
+      /* deck answers stay in-memory only (deck mode's decision); the stitched
+         text is already captured in `value` once put into the letter */
+    };
+  }
+  function canSaveDraft() {
+    return !!window.TesseraState && state.phase === 'writing' && !state.sealing && !state.sealed && !state.demoActive;
+  }
+  function scheduleSave() {
+    if (!canSaveDraft()) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      saveTimer = null;
+      if (canSaveDraft()) TesseraState.setDraft(DRAFT_SLOT, draftSnapshot());
+    }, 600);
+  }
+  function clearSavedDraft() {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    if (window.TesseraState) TesseraState.clearDraft(DRAFT_SLOT);
+  }
+  function hasResumableDraft() {
+    if (!window.TesseraState) return false;
+    var d = TesseraState.getDraft(DRAFT_SLOT);
+    return !!(d && d.value && d.value.trim());
+  }
+  /* bring the desk back to a saved in-progress letter on load, so a reload
+     resumes instead of starting blank */
+  function restoreDraft() {
+    if (!hasResumableDraft()) return false;
+    var d = TesseraState.getDraft(DRAFT_SLOT);
+    state.to = d.to || '';
+    state.fromWho = d.fromWho || '';
+    state.occasion = d.occasion || null;
+    state.customOccasion = d.customOccasion || '';
+    state.openOn = d.openOn || '';
+    state.openWhenNeeded = !!d.openWhenNeeded;
+    state.custodyHolder = d.custodyHolder || '';
+    state.custodyNote = d.custodyNote || '';
+    state.keepCopy = !!d.keepCopy;
+    state.sealChoice = d.sealChoice || 'blue';
+    state.writeback = d.writeback || null;
+    state.demoActive = false;
+    state.autotyping = false;
+    state.phase = 'writing';
+    introDone = true;
+    setSetupStep(null);
+    if (refs.setupOcc) refs.setupOcc.value = state.occasion || '';
+    refs.ta.value = d.value;
+    handleValue(d.value, null, true);
+    renderHero();
+    return true;
+  }
+
   var refs = {};
   var introDone = false, belled = false, lastKeydown = 0;
   var typerI = null, autoT = null, waitData = null;
@@ -268,6 +336,7 @@
       }
     }
     state.value = v; state.lines = lines; state.col = col;
+    scheduleSave();
     renderPaper();
     updateCarriage(lineJump);
     scrollPaperToBottom();
@@ -503,6 +572,10 @@
       state.writeback = null;
       state.sealing = false;
       lastShelfKey = '';
+      /* the letter is sealed: drop the saved draft and cancel any pending
+         save so a late debounce cannot resurrect it (state.sealed also makes
+         canSaveDraft() false from here on) */
+      clearSavedDraft();
       TesseraExport.download(sealed);
       ensureCtx(); sDing(); tone(1568, 1.1, 0.18, 'sine', 0.12);
       renderSealSection();
@@ -517,6 +590,7 @@
     });
   }
   function writeAnother() {
+    clearSavedDraft();
     refs.ta.value = '';
     state.phase = 'idle'; state.value = ''; state.lines = ['']; state.col = 0;
     state.sealed = null; state.openOn = ''; state.openWhenNeeded = false;
@@ -1248,21 +1322,24 @@
       /* answers are indexed to a specific deck; a new occasion starts fresh */
       state.deckAnswers = null; state.ivIndex = 0; state.ivStitch = false;
       renderSetup();
+      scheduleSave();
     });
-    refs.setupCustom.addEventListener('input', function (e) { state.customOccasion = e.target.value; });
+    refs.setupCustom.addEventListener('input', function (e) { state.customOccasion = e.target.value; scheduleSave(); });
 
     refs.openDate.addEventListener('input', function (e) {
       state.openOn = e.target.value;
       state.openWhenNeeded = false;
       renderSealSection();
+      scheduleSave();
     });
     refs.undated.addEventListener('change', function (e) {
       state.openWhenNeeded = e.target.checked;
       renderSealSection();
+      scheduleSave();
     });
-    refs.fromWho.addEventListener('input', function (e) { state.fromWho = e.target.value; renderSealSection(); });
-    refs.custodyHolder.addEventListener('input', function (e) { state.custodyHolder = e.target.value; renderSealSection(); });
-    refs.custodyNote.addEventListener('input', function (e) { state.custodyNote = e.target.value; renderSealSection(); });
+    refs.fromWho.addEventListener('input', function (e) { state.fromWho = e.target.value; renderSealSection(); scheduleSave(); });
+    refs.custodyHolder.addEventListener('input', function (e) { state.custodyHolder = e.target.value; renderSealSection(); scheduleSave(); });
+    refs.custodyNote.addEventListener('input', function (e) { state.custodyNote = e.target.value; renderSealSection(); scheduleSave(); });
     refs.passPhrase.addEventListener('input', function (e) { state.passphrase = e.target.value; renderSealSection(); });
     refs.passConfirm.addEventListener('input', function (e) { state.passConfirm = e.target.value; renderSealSection(); });
     refs.passHint.addEventListener('input', function (e) { state.passHint = e.target.value; });
@@ -1270,7 +1347,7 @@
       state.sealPickerOpen = !state.sealPickerOpen;
       renderSealSection();
     });
-    refs.keepCopy.addEventListener('change', function (e) { state.keepCopy = e.target.checked; });
+    refs.keepCopy.addEventListener('change', function (e) { state.keepCopy = e.target.checked; scheduleSave(); });
     refs.sealLetterBtn.addEventListener('click', sealNow);
     $('sealed-print').addEventListener('click', function () {
       if (!state.sealed) return;
@@ -1326,6 +1403,7 @@
   }
 
   function startDemo() {
+    if (hasResumableDraft()) return; /* a saved letter resumes instead of the demo */
     if (!reduced()) {
       autoT = setTimeout(function () {
         if (state.phase === 'idle' && !state.value) {
@@ -1351,6 +1429,7 @@
       buildOccasionSelect();
       paintStoryToken();
       renderShelf();
+      resumedDraft = restoreDraft();
     }
     if (window.TesseraOccasions && window.TesseraToken) whenData();
     else {
