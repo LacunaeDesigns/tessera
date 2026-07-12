@@ -109,7 +109,21 @@
         'Write down one thing about them, right now, that you never want to forget.',
         'What did you two survive this year? Name it plainly and kindly.',
         'Make them one small promise for the year the letter opens.'
-      ]
+      ],
+      /* a ladder of anniversaries: rungs share the occasion prompts above.
+         years count from the anchor (the day you married). */
+      series: {
+        label: 'Write one for every anniversary, in one sitting.',
+        anchor: 'When did you marry?',
+        rungs: [
+          { years: 1, title: 'the first year' },
+          { years: 5, title: 'five years' },
+          { years: 10, title: 'ten years' },
+          { years: 15, title: 'fifteen years' },
+          { years: 20, title: 'twenty years' },
+          { years: 25, title: 'twenty-five years' }
+        ]
+      }
     },
     {
       slug: 'stranger-2126',
@@ -190,6 +204,57 @@
         'What happened here that mattered to you? Name the actual room, so they can stand in it.',
         'Wish them something for their life inside these walls. Be specific to the rooms, not to life in general.'
       ]
+    },
+    {
+      slug: 'child-years',
+      group: 'milestone',
+      title: 'To my child, across the years',
+      coverLine: 'To be opened on a birthday, a long way off.',
+      prompts: [
+        'Tell them what they were like this year, in a detail you are afraid you will forget.',
+        'What do you hope is still true of them by the time they read this?',
+        'Say the one thing you would want them to hear from you, in your voice and no one else’s.'
+      ],
+      /* the child ladder: each rung carries its own prompts, because five and
+         eighteen want different company. years count from the anchor (birth). */
+      series: {
+        label: 'Write the whole ladder in one sitting.',
+        anchor: 'When were they born?',
+        rungs: [
+          {
+            years: 5, title: 'at five',
+            prompts: [
+              'Write down how they say a word wrong right now, before they learn to say it right.',
+              'What are they sure of at five that you hope the years stay gentle with?',
+              'Tell them about one ordinary morning this week, so they can meet the child they were.'
+            ]
+          },
+          {
+            years: 10, title: 'at ten',
+            prompts: [
+              'Tell them who they are becoming, in the small things you have started to notice.',
+              'What did they love this year with their whole self? Name it, so they remember they were made that way.',
+              'Say one thing you are proud of that has nothing to do with school or being good.'
+            ]
+          },
+          {
+            years: 15, title: 'at fifteen',
+            prompts: [
+              'You do not know yet what this year is like for them. Tell them you are on their side anyway.',
+              'Remind them of the child at the start of this ladder, in case fifteen has made them forget.',
+              'What do you want them to know about who you were at fifteen? Be honest, not a lesson.'
+            ]
+          },
+          {
+            years: 18, title: 'at eighteen',
+            prompts: [
+              'Tell them the thing you were afraid to say out loud while they still lived under your roof.',
+              'What do you hope they kept from being small? Name it exactly.',
+              'Give them one thing to carry out the door, in your words and not advice’s.'
+            ]
+          }
+        ]
+      }
     },
     {
       slug: 'custom',
