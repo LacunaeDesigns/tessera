@@ -247,12 +247,16 @@ a:hover { color: #8A4B2D; }
   font-family: var(--ui);
   font-size: 12.5px;
   background: none;
-  border: none;
+  border: 1px solid rgba(57,46,31,0.22);
+  border-radius: 100px;
   color: #B65432;
   cursor: pointer;
-  padding: 2px;
+  padding: 5px 13px;
+  transition: border-color 0.15s, background-color 0.15s;
 }
-.hw-link--muted { color: rgba(57,46,31,0.55); text-decoration: underline; }
+.hw-link:hover { border-color: #B65432; background-color: rgba(182,84,50,0.06); }
+.hw-link--muted { color: rgba(57,46,31,0.6); }
+.hw-link--muted:hover { border-color: rgba(57,46,31,0.4); background-color: rgba(57,46,31,0.04); }
 .hw-seal { font-size: 13.5px; padding: 8px 18px; }
 .hw-seal:disabled { cursor: default; }
 .hw-prompts {
@@ -1552,4 +1556,5 @@ body.open-mode { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .ladder-mark { transition: none; }
   .env-card.ladder-hi { transition: none; }
+  .hw-link { transition: none; }
 }
