@@ -12,7 +12,7 @@
     "print": "add printKits(sealedList) to print.js (concat kitSheets -> show); presentation-only, not a format event"
   },
   "chunks": [
-    {"id": "c1-data", "status": "pending", "commit": null, "notes": "decisions.md entry + occasions.js series data (child per-rung prompts via /occasion, anniversary shared). Verify: node --check data/occasions.js; node tools/prose-check.js data/occasions.js. Idempotent: series field present on child-years + anniversary occasions."},
+    {"id": "c1-data", "status": "done", "commit": "e6228d0", "notes": "DONE. decisions.md entry + occasions.js series data. child-years occasion added (per-rung prompts 5/10/15/18) + series on anniversary (shared prompts, rungs 1/5/10/15/20/25). prose-check clean (only pre-existing header WARN); all 6 suites green. Idempotent: series field present on child-years + anniversary occasions."},
     {"id": "c2-print", "status": "pending", "commit": null, "notes": "print.js printKits(sealedList, opts). Verify: node --check js/print.js; all 7 test suites green. Idempotent: printKits present in TesseraPrint api."},
     {"id": "c3-wizard-a", "status": "pending", "commit": null, "notes": "landing.js: series state fields + entry offer after occasion step + wizard overlay scaffold + anchor-date -> prefilled editable/removable rung date list. Verify: node --check landing/landing.js. Idempotent: series state + #series-* elements present."},
     {"id": "c4-wizard-b", "status": "pending", "commit": null, "notes": "landing.js: per-rung compose screens + running sidebar + series seal loop (N seal/download/registry rows date-ordered) + one print job via printKits + 'series' draft slot autosave/restore. Verify: node --check landing/landing.js. Idempotent: sealSeries() present."},
