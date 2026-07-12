@@ -416,10 +416,23 @@
   }
 
   function printKit(sealed, opts) { show(kitSheets(sealed, opts)); }
+  /* a milestone series prints as one job: each letter's own kit, concatenated
+     in date order. Same per-letter kitSheets, so every cover/footer still
+     self-identifies (features/occasions.md: "N print kits batched into one
+     print job"). Presentation only — the folders are unchanged. */
+  function printKits(sealedList, opts) {
+    var list = sealedList.slice().sort(function (a, b) {
+      var ao = (a.fields && a.fields.openOn) || '', bo = (b.fields && b.fields.openOn) || '';
+      return ao < bo ? -1 : ao > bo ? 1 : 0;
+    });
+    var sheets = [];
+    for (var i = 0; i < list.length; i++) sheets = sheets.concat(kitSheets(list[i], opts));
+    show(sheets);
+  }
   function printRegister(entries) { show([registerSheet(entries)]); }
   function printCard(entries) { show([cardSheet(entries)]); }
   function printEscrowCard(o) { show([escrowSheet(o)]); }
 
-  var api = { printKit: printKit, printRegister: printRegister, printCard: printCard, printEscrowCard: printEscrowCard, hide: hide, kitSheets: kitSheets };
+  var api = { printKit: printKit, printKits: printKits, printRegister: printRegister, printCard: printCard, printEscrowCard: printEscrowCard, hide: hide, kitSheets: kitSheets };
   root.TesseraPrint = api;
 })(typeof self !== 'undefined' ? self : this);
