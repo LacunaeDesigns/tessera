@@ -1,23 +1,15 @@
 {
-  "job": "v0.3-task3-series-wizard",
+  "job": "v0.3-task5-cowritten",
   "created": "2026-07-12T00:00:00Z",
   "decisions": {
-    "series_shape": "occasion.series = { label, rungs: [{ years, title, prompts? }] }; rung.prompts optional, falls back to occasion.prompts",
-    "series_scope": "two ladders: child birthdays (per-rung prompts) + anniversaries (shared prompts)",
-    "anniversary_default_rungs": "[1,5,10,15,20,25] not the literal 25 (author flagged, data-only reversible)",
-    "dates": "wizard collects one anchor date; each rung openOn = anchor + years, editable per rung, rung removable",
-    "zip": "N separate self-contained tessera-<ID>.zip downloads (no family-zip container) — author settled 2026-07-12",
-    "state": "'series' draft slot via setDraft/getDraft; NO migrate() bump",
-    "seal": "loop existing TesseraExport.seal per rung in date order — one seal path preserved",
-    "print": "add printKits(sealedList) to print.js (concat kitSheets -> show); presentation-only, not a format event"
+    "format_shape": "AUTHOR OK'd: keep `from` a single string (e.g. 'Maria and Tomas'); add optional writers:[...]. Additive optional field, token seed (from-string) UNCHANGED, SPEC stays 0.1, existing fixtures byte-identical. Same pattern as encryption/media.",
+    "voices": "AUTHOR OK'd: merged voice default (one letter, two names); offer an 'alternating turns' mode that inserts labelled turns as plain text.",
+    "token_break": "DEFERRED: the three-way token break (two keeper halves) is Step 3, a /token-lab decision on rendered visual evidence — NOT in this ledger. Co-written letters authenticate on the existing 2-half token meanwhile."
   },
   "chunks": [
-    {"id": "c1-data", "status": "done", "commit": "e6228d0", "notes": "DONE. decisions.md entry + occasions.js series data. child-years occasion added (per-rung prompts 5/10/15/18) + series on anniversary (shared prompts, rungs 1/5/10/15/20/25). prose-check clean (only pre-existing header WARN); all 6 suites green. Idempotent: series field present on child-years + anniversary occasions."},
-    {"id": "c2-print", "status": "done", "commit": "ec245fb", "notes": "DONE. printKits(sealedList, opts) added + exported in TesseraPrint api. Sorts by openOn, concatenates kitSheets, one show(). node --check clean; all 6 suites green. Idempotent: printKits present in TesseraPrint api."},
-    {"id": "c3-wizard-a", "status": "done", "commit": "25a2181", "notes": "DONE (landed with c4 in one commit 25a2181 — the wizard JS is one cohesive block). index.html #series-overlay (4 screens) + #setup-series offer; landing.css wizard styles + mobile stack; landing.js state.series, refs, openSeriesWizard, renderSeries dispatcher + setup screen, anchor->rung date compute, edit/remove rungs, autosave+restore. node --check clean; 6 suites green. Idempotent: state.series + #series-overlay present."},
-    {"id": "c4-wizard-b", "status": "done", "commit": "25a2181", "notes": "DONE (same commit 25a2181). landing.js per-rung write screen + sidebar, seal screen, sealSeries() loop (N seal/download/registry date-ordered, 350ms download gap) + printKits one print job + done screen. node --check clean. Idempotent: sealSeries() present. NOTE: full browser walkthrough deferred to c5-qa."},
-    {"id": "c5-qa", "status": "done", "commit": "1a29919", "notes": "DONE. Browser walkthrough (real DOM events; pane screenshot/read_page stalled on animated hero, JS drive used instead): offer appears for series occasions; anchor->rungs prefill; 3-letter fixture => 3 distinct IDs, 3 downloads, 3 registry rows date-ordered, done screen '3 letters, sealed.'; printKits => 15 sheets (3 kits) with per-letter footers correct; 375px zero overflow; zero console errors. No format-file diff since main (spec-sync clean). PROGRESS.md + plan checkboxes updated. Commit hash recorded in ledger fast-follow."}
+    {"id": "c1-format", "status": "pending", "commit": null, "notes": "FORMAT EVENT (one sitting): manifest.js buildManifest emits optional writers[] (after `to`, seed untouched); test-manifest.js co-written case (writers carried, from drives seed/ID, stays 0.1, omitted when absent); SPEC.md §3 note + docs/spec/manifest-schema.md writers row; decisions.md entry; spec-sync check (fixtures byte-identical). Verify: node --check js/manifest.js; test-manifest green; all 6 suites green. Idempotent: writers row in schema + writers in buildManifest."},
+    {"id": "c2-compose", "status": "pending", "commit": null, "notes": "landing.js co-written UI: setup gains 'We are writing this together' -> second writer field; state.secondWriter; seal fields set from=combined string + writers[]; merged default + alternating-turns mode (labelled turns inserted as plain text). index.html + landing.css + landing.js. Verify: node --check landing/landing.js. Idempotent: #setup-cowrite present."},
+    {"id": "c3-qa", "status": "pending", "commit": null, "notes": "QA browser: co-written seal -> manifest writers[] present, from combined, from drives ID; alternating turns render; single-writer unaffected (no writers key). PROGRESS.md + plan Task 5 steps 1-2 ticked (step 3 token deferred) + vault. Verify in-browser. Idempotent: PROGRESS notes co-written format+compose done."}
   ],
-  "summary": "v0.3 Task 3 series wizard COMPLETE on dev (unreleased). c1 occasions data (e6228d0), c2 printKits (ec245fb), c3+c4 wizard (25a2181), c5 QA+docs. No format change; all gates green; 3-letter fixture verified in-browser. Author's gated next step: /release (version bump + main promotion). Task 5 (co-written, writers[] format event) and Task 6 (grief, outside reader) remain. .checkpoint/ may be deleted or kept.",
-  "resume_hint": "COMPLETE. If resuming: nothing to do for Task 3. Next v0.3 work is Task 5 (co-written) — gated on author OK for the writers[] format event — then Task 6 (grief) — gated on an outside reader."
+  "resume_hint": "Start c1-format (the writers[] format event, one sitting). Then c2-compose, c3-qa. Token three-way break (Step 3) is DEFERRED to a /token-lab session, not part of this job."
 }
