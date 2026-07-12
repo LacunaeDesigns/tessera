@@ -56,6 +56,7 @@
           <span class="hw-occasion" id="hw-occasion" hidden></span>
           <span class="hw-wordline" id="hw-wordline"></span>
           <button class="hw-link" id="hw-prompts-toggle" hidden></button>
+          <button class="hw-link" id="hw-deck" hidden>Answer a few questions instead</button>
           <button class="hw-link hw-link--muted" id="hw-change">change recipient</button>
           <button class="btn-cta hw-seal" id="hw-seal">Seal this letter ↓</button>
         </div>
@@ -180,6 +181,32 @@
           </div>
         </div>
       </div>
+
+      <!-- the deck interview: reuses the setup-overlay pattern (positioning +
+           mobile dialog behaviour) with its own card -->
+      <div class="setup-overlay" id="interview-overlay" hidden>
+        <div class="setup-card" role="dialog" aria-modal="true" aria-label="Answer a few questions">
+          <button class="setup-x" id="iv-x" aria-label="Close">×</button>
+
+          <div id="iv-ask">
+            <div class="setup-eyebrow" id="iv-progress"></div>
+            <h3 class="setup-title" id="iv-q"></h3>
+            <textarea class="setup-input iv-answer" id="iv-answer" rows="4"></textarea>
+            <div class="setup-footer">
+              <button class="setup-skip setup-back" id="iv-back">← Back</button>
+              <button class="btn-cta setup-go" id="iv-next">Next →</button>
+            </div>
+          </div>
+
+          <div id="iv-stitch" hidden>
+            <h3 class="setup-title">Now make it sound like you.</h3>
+            <div class="setup-footer">
+              <button class="setup-skip setup-back" id="iv-stitch-back">← Back</button>
+              <button class="btn-cta setup-go" id="iv-put">Put it in the letter →</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="cta-row" id="reopen-row" hidden>
@@ -248,6 +275,7 @@
           <span class="fact-k">Kept by</span><span id="pv-kept"></span>
         </div>
         <div class="seal-preview-text" id="pv-text"></div>
+        <p class="seal-note" id="deck-note" hidden>These are still the questions’ words. Make them yours first.</p>
         <label class="seal-check seal-check--keep">
           <input type="checkbox" id="keep-copy">
           <span>Keep a copy of the text in this browser. (The folder is the letter; a browser is not an archive.)</span>

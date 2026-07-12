@@ -78,6 +78,15 @@
         'Tell them what they were like the week you wrote this. The details you’re sure you’ll remember are the ones that go first.',
         'What do you hope they’ve kept from being small? Name it.',
         'Give them one piece of advice you’d want them to hear from you and no one else.'
+      ],
+      deck: [
+        { q: 'What were they like the week you wrote this? Start with something small and specific.' },
+        { q: 'What did they do, when they were small, that you never want them to forget about themselves?' },
+        { q: 'What were you afraid of for them when you wrote this? Say it plainly.' },
+        { q: 'What did they teach you without meaning to?' },
+        { q: 'What do you hope they have kept from being a child?' },
+        { q: 'What is one thing you want them to hear from you and from no one else?' },
+        { q: 'If you could be in the room when they read this, what would you say first?' }
       ]
     },
     {

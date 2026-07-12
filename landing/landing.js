@@ -50,7 +50,8 @@
     openOn: '', openWhenNeeded: false, fromWho: '', custodyHolder: '', custodyNote: '', keepCopy: false,
     passphrase: '', passConfirm: '', passHint: '',
     sealed: null, freshId: '', sealing: false, soundOnU: null, shelfStyleU: null,
-    sealChoice: 'blue', sealPickerOpen: false, writeback: null
+    sealChoice: 'blue', sealPickerOpen: false, writeback: null,
+    deckAnswers: null, stitchedText: '', ivIndex: 0, ivStitch: false
   };
 
   var refs = {};
@@ -193,10 +194,12 @@
        pill's height) must be accounted for differently there */
     if (isMobile()) {
       refs.setupOverlay.style.paddingTop = '';
+      refs.interviewOverlay.style.paddingTop = '';
       refs.soundToggle.style.right = '';
       wrap.style.height = Math.round(700 * s + refs.soundToggle.offsetHeight + 8) + 'px';
     } else {
       refs.setupOverlay.style.paddingTop = Math.round(300 * s) + 'px';
+      refs.interviewOverlay.style.paddingTop = Math.round(300 * s) + 'px';
       refs.soundToggle.style.right = Math.max(0, Math.round((w - 960 * s) / 2)) + 'px';
       wrap.style.height = Math.round(700 * s) + 'px';
     }
@@ -519,10 +522,75 @@
     state.sealed = null; state.openOn = ''; state.openWhenNeeded = false;
     state.custodyHolder = ''; state.custodyNote = ''; state.keepCopy = false;
     state.passphrase = ''; state.passConfirm = ''; state.passHint = '';
+    state.deckAnswers = null; state.stitchedText = ''; state.ivIndex = 0; state.ivStitch = false;
     renderPaper(); renderCaret(); renderSealSection(); renderHero();
     setSetupStep(1);
     updateCarriage(false);
     setTimeout(function () { scrollToEl(refs.heroWrap, 90); }, 60);
+  }
+
+  /* ---------- the deck interview (in-memory writing aid; never persisted,
+     never touches the sealed folder) ---------- */
+  function currentDeck() {
+    var occ = currentOcc();
+    return (occ && occ.deck && occ.deck.length) ? occ.deck : null;
+  }
+  function openInterview() {
+    var deck = currentDeck();
+    if (!deck) return;
+    if (!state.deckAnswers || state.deckAnswers.length !== deck.length) {
+      var seeded = [];
+      for (var i = 0; i < deck.length; i++) seeded.push(state.deckAnswers && state.deckAnswers[i] ? state.deckAnswers[i] : '');
+      state.deckAnswers = seeded;
+    }
+    state.ivIndex = 0;
+    state.ivStitch = false;
+    renderInterview();
+  }
+  function closeInterview() {
+    state.ivStitch = false;
+    refs.interviewOverlay.hidden = true;
+  }
+  function renderInterview() {
+    var deck = currentDeck();
+    if (!deck) { closeInterview(); return; }
+    refs.interviewOverlay.hidden = false;
+    refs.ivAsk.hidden = state.ivStitch;
+    refs.ivStitch.hidden = !state.ivStitch;
+    if (state.ivStitch) { refs.ivPut.focus({ preventScroll: true }); return; }
+    var i = state.ivIndex;
+    refs.ivProgress.textContent = (i + 1) + ' of ' + deck.length;
+    refs.ivQ.textContent = deck[i].q;
+    refs.ivAnswer.value = state.deckAnswers[i] || '';
+    refs.ivBack.style.visibility = i === 0 ? 'hidden' : 'visible';
+    refs.ivNext.textContent = (i === deck.length - 1) ? 'Last one →' : 'Next →';
+    refs.ivAnswer.focus({ preventScroll: true });
+  }
+  function ivGoNext() {
+    var deck = currentDeck();
+    if (!deck) return;
+    if (state.ivIndex < deck.length - 1) { state.ivIndex++; renderInterview(); }
+    else { state.ivStitch = true; renderInterview(); }
+  }
+  function ivGoBack() {
+    var deck = currentDeck();
+    if (!deck) return;
+    if (state.ivStitch) { state.ivStitch = false; renderInterview(); }
+    else if (state.ivIndex > 0) { state.ivIndex--; renderInterview(); }
+  }
+  function stitchIntoLetter() {
+    var answers = state.deckAnswers || [];
+    var kept = [];
+    for (var i = 0; i < answers.length; i++) if (answers[i] && answers[i].trim()) kept.push(answers[i].trim());
+    var stitched = kept.join('\n\n');
+    state.stitchedText = stitched;
+    /* mirror the greeting-set path in confirmSetup: assign the textarea, then
+       route through handleValue so caret, wrap, and draft state stay in sync */
+    refs.ta.value = stitched;
+    handleValue(stitched, null, true);
+    closeInterview();
+    focusTa();
+    scrollToEl(refs.sceneWrap, -20);
   }
 
   /* ---------- render: hero + writing bar ---------- */
@@ -554,6 +622,7 @@
       : 'the page is listening';
     var prompts = occ ? occ.prompts : [];
     refs.hwPromptsToggle.hidden = !(occ && prompts.length);
+    refs.hwDeck.hidden = !currentDeck();
     if (occ && prompts.length) refs.hwPromptsToggle.textContent = state.showPrompts ? 'hide prompts' : 'show prompts';
     var showPrompts = state.showPrompts && !!occ && prompts.length > 0;
     refs.hwPrompts.hidden = !showPrompts;
@@ -681,6 +750,9 @@
       refs.pvOpens.textContent = state.openWhenNeeded ? 'when it’s needed' : (validDate ? dateInWords(state.openOn) : '—');
       refs.pvKept.textContent = state.custodyHolder.trim() || 'you';
       refs.pvText.textContent = state.value;
+      /* advisory only: the stitched answers are still the questions' words
+         until the writer edits them. Never blocks sealing. */
+      refs.deckNote.hidden = !(state.stitchedText && state.value === state.stitchedText);
       refs.keepCopy.checked = state.keepCopy;
       /* a passphrase must be confirmed before it can lock a letter. A mistyped
          passphrase is a lost letter, so we never seal on an unconfirmed one */
@@ -1036,6 +1108,7 @@
     refs.hwOccasion = $('hw-occasion');
     refs.hwWordline = $('hw-wordline');
     refs.hwPromptsToggle = $('hw-prompts-toggle');
+    refs.hwDeck = $('hw-deck');
     refs.hwPrompts = $('hw-prompts');
     refs.hwSeal = $('hw-seal');
     refs.sceneWrap = $('scene-wrap');
@@ -1059,6 +1132,16 @@
     refs.setupOcc = $('setup-occ');
     refs.setupCustom = $('setup-custom');
     refs.setupNext = $('setup-next');
+    refs.interviewOverlay = $('interview-overlay');
+    refs.ivAsk = $('iv-ask');
+    refs.ivStitch = $('iv-stitch');
+    refs.ivProgress = $('iv-progress');
+    refs.ivQ = $('iv-q');
+    refs.ivAnswer = $('iv-answer');
+    refs.ivBack = $('iv-back');
+    refs.ivNext = $('iv-next');
+    refs.ivPut = $('iv-put');
+    refs.deckNote = $('deck-note');
     refs.reopenRow = $('reopen-row');
     refs.finishRow = $('finish-row');
     refs.mcSwatches = $('mc-swatches');
@@ -1113,12 +1196,24 @@
       state.showPrompts = !state.showPrompts;
       renderWriting();
     });
+    refs.hwDeck.addEventListener('click', openInterview);
+    $('iv-x').addEventListener('click', closeInterview);
+    refs.ivBack.addEventListener('click', ivGoBack);
+    refs.ivNext.addEventListener('click', ivGoNext);
+    $('iv-stitch-back').addEventListener('click', ivGoBack);
+    refs.ivPut.addEventListener('click', stitchIntoLetter);
+    refs.ivAnswer.addEventListener('input', function (e) {
+      if (state.deckAnswers) state.deckAnswers[state.ivIndex] = e.target.value;
+    });
 
     refs.sceneWrap.addEventListener('click', function (e) {
       /* the setup dialog lives inside scene-wrap, so its own button clicks
          (which can flip setupStep to null before this bubbles up) must not
          fall through to a focus grab */
       if (state.setupStep !== null || refs.setupOverlay.contains(e.target)) return;
+      /* the deck interview is also an in-scene overlay; its clicks must not
+         fall through to the focus grab either */
+      if (!refs.interviewOverlay.hidden || refs.interviewOverlay.contains(e.target)) return;
       /* phones: if focus lingers from a non-gesture path the keypad may be
          down even though the field is focused; a blur inside this real tap
          lets the re-focus summon it again */
@@ -1150,6 +1245,8 @@
     });
     refs.setupOcc.addEventListener('change', function (e) {
       state.occasion = e.target.value || null;
+      /* answers are indexed to a specific deck; a new occasion starts fresh */
+      state.deckAnswers = null; state.ivIndex = 0; state.ivStitch = false;
       renderSetup();
     });
     refs.setupCustom.addEventListener('input', function (e) { state.customOccasion = e.target.value; });
