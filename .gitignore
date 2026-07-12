@@ -13,3 +13,10 @@ desktop.ini
 letters/
 .playwright-mcp/
 .superpowers/
+
+# EB Garamond specimen candidate (v0.3 Task 4) — downloaded locally for the
+# print comparison; NOT committed unless the author adopts it after judging
+# the printed specimen. Adoption commits these properly (SW CORE + cache bump).
+fonts/EBGaramond-Regular.ttf
+fonts/EBGaramond-Italic.ttf
+fonts/OFL-EBGaramond.txt
