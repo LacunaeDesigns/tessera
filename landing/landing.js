@@ -862,7 +862,7 @@
     refs.letterLadder.hidden = false;
 
     var todayMs = isoToMs(data.today);
-    var W = 640, H = 100, leftPad = 32, rightPad = 22, axisY = 48, axisWidth = W - leftPad - rightPad;
+    var W = 640, H = 100, leftPad = 40, rightPad = 60, axisY = 48, axisWidth = W - leftPad - rightPad;
     var years = [], maxYears = 0;
     for (var i = 0; i < waiting.length; i++) {
       var y = (isoToMs(waiting[i].openOn) - todayMs) / MS_PER_YEAR;
@@ -891,7 +891,8 @@
       var tx = xFor(tYears);
       var isMinor = (tYears === 25);
       svg.appendChild(svgEl('line', { class: 'ladder-tick', x1: tx, y1: axisY - 6, x2: tx, y2: axisY + 6 }));
-      var label = svgEl('text', { class: 'ladder-tick-label' + (isMinor ? ' ladder-tick-label--minor' : ''), x: tx, y: axisY + 22, 'text-anchor': 'middle' });
+      var tanchor = tx > W - 56 ? 'end' : (tx < 56 ? 'start' : 'middle');
+      var label = svgEl('text', { class: 'ladder-tick-label' + (isMinor ? ' ladder-tick-label--minor' : ''), x: tx, y: axisY + 22, 'text-anchor': tanchor });
       label.textContent = yearsWords(Math.round(tYears));
       svg.appendChild(label);
     }

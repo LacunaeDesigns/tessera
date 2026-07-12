@@ -281,7 +281,7 @@
     if (!waiting.length) return null;
 
     var occ = root.TesseraOccasions;
-    var W = 640, H = 100, leftPad = 32, rightPad = 22, axisY = 48, axisWidth = W - leftPad - rightPad;
+    var W = 640, H = 100, leftPad = 40, rightPad = 60, axisY = 48, axisWidth = W - leftPad - rightPad;
     var years = [], maxYears = 0, i;
     for (i = 0; i < waiting.length; i++) {
       var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(waiting[i].openOn);
@@ -306,7 +306,8 @@
     for (var ti = 0; ti < ticks.length; ti++) {
       var tYears = ticks[ti], tx = xFor(tYears), isMinor = (tYears === 25);
       svg.appendChild(svgEl('line', { class: 'ladder-tick', x1: tx, y1: axisY - 6, x2: tx, y2: axisY + 6 }));
-      var label = svgEl('text', { class: 'ladder-tick-label' + (isMinor ? ' ladder-tick-label--minor' : ''), x: tx, y: axisY + 22, 'text-anchor': 'middle' });
+      var tanchor = tx > W - 56 ? 'end' : (tx < 56 ? 'start' : 'middle');
+      var label = svgEl('text', { class: 'ladder-tick-label' + (isMinor ? ' ladder-tick-label--minor' : ''), x: tx, y: axisY + 22, 'text-anchor': tanchor });
       label.textContent = ladderYearsWords(Math.round(tYears));
       svg.appendChild(label);
     }
