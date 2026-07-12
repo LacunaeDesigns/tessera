@@ -1,0 +1,22 @@
+{
+  "job": "v0.3-task3-series-wizard",
+  "created": "2026-07-12T00:00:00Z",
+  "decisions": {
+    "series_shape": "occasion.series = { label, rungs: [{ years, title, prompts? }] }; rung.prompts optional, falls back to occasion.prompts",
+    "series_scope": "two ladders: child birthdays (per-rung prompts) + anniversaries (shared prompts)",
+    "anniversary_default_rungs": "[1,5,10,15,20,25] not the literal 25 (author flagged, data-only reversible)",
+    "dates": "wizard collects one anchor date; each rung openOn = anchor + years, editable per rung, rung removable",
+    "zip": "N separate self-contained tessera-<ID>.zip downloads (no family-zip container) — author settled 2026-07-12",
+    "state": "'series' draft slot via setDraft/getDraft; NO migrate() bump",
+    "seal": "loop existing TesseraExport.seal per rung in date order — one seal path preserved",
+    "print": "add printKits(sealedList) to print.js (concat kitSheets -> show); presentation-only, not a format event"
+  },
+  "chunks": [
+    {"id": "c1-data", "status": "pending", "commit": null, "notes": "decisions.md entry + occasions.js series data (child per-rung prompts via /occasion, anniversary shared). Verify: node --check data/occasions.js; node tools/prose-check.js data/occasions.js. Idempotent: series field present on child-years + anniversary occasions."},
+    {"id": "c2-print", "status": "pending", "commit": null, "notes": "print.js printKits(sealedList, opts). Verify: node --check js/print.js; all 7 test suites green. Idempotent: printKits present in TesseraPrint api."},
+    {"id": "c3-wizard-a", "status": "pending", "commit": null, "notes": "landing.js: series state fields + entry offer after occasion step + wizard overlay scaffold + anchor-date -> prefilled editable/removable rung date list. Verify: node --check landing/landing.js. Idempotent: series state + #series-* elements present."},
+    {"id": "c4-wizard-b", "status": "pending", "commit": null, "notes": "landing.js: per-rung compose screens + running sidebar + series seal loop (N seal/download/registry rows date-ordered) + one print job via printKits + 'series' draft slot autosave/restore. Verify: node --check landing/landing.js. Idempotent: sealSeries() present."},
+    {"id": "c5-qa", "status": "pending", "commit": null, "notes": "QA: browser walkthrough at 375px (3-letter series => 3 zips, 3 registry rows, one print job, per-letter footers), fixture verify, PROGRESS.md update, spec-sync check clean. Idempotent: PROGRESS.md marks Task 3 done."}
+  ],
+  "resume_hint": "Start c1-data: add series design entry to docs/decisions.md, then add series data to data/occasions.js (new child-years occasion with per-rung prompts via /occasion; add series to existing anniversary occasion, shared prompts). Then c2..c5 in order."
+}
