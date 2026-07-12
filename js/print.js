@@ -27,6 +27,17 @@
     return p[0] + ' ' + (MONTHS[Number(p[1]) - 1] || p[1]) + ' ' + p[2];
   }
 
+  /* a compact date for the ledger surfaces (register table, wallet card):
+     2036-07-12 -> "12 Jul 2036". One line, and locale-unambiguous (the month
+     is named) so it still reads plainly a century on. The cover, envelope
+     flap and opening ceremony keep the full spelled-out words. */
+  var MON_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function shortDate(iso) {
+    var p = String(iso || '').split('-');
+    if (p.length < 3) return '';
+    return Number(p[2]) + ' ' + (MON_ABBR[Number(p[1]) - 1] || p[1]) + ' ' + p[0];
+  }
+
   function coverSheet(s) {
     var M = root.TesseraManifest;
     var f = s.fields;
@@ -329,8 +340,8 @@
       var tr = el('tr', '');
       tr.appendChild(el('td', 'mono', e.id));
       tr.appendChild(el('td', '', e.to));
-      tr.appendChild(el('td', '', e.written));
-      tr.appendChild(el('td', '', e.openWhenNeeded ? 'when needed' : M.dateInWords(e.openOn)));
+      tr.appendChild(el('td', '', shortDate(e.written)));
+      tr.appendChild(el('td', '', e.openWhenNeeded ? 'when needed' : shortDate(e.openOn)));
       tr.appendChild(el('td', '', e.custodyHolder || 'the writer'));
       table.appendChild(tr);
     });
@@ -350,7 +361,7 @@
       var row = el('p', 'card-row');
       row.appendChild(el('span', 'mono card-id', e.id));
       row.appendChild(el('span', 'card-when',
-        e.openWhenNeeded ? 'when needed' : M.dateInWords(e.openOn)));
+        e.openWhenNeeded ? 'when needed' : shortDate(e.openOn)));
       row.appendChild(el('span', 'card-for', 'for ' + (e.to || 'someone')));
       list.appendChild(row);
     });
