@@ -725,17 +725,24 @@
         leaves.push(bkBindLeafSequential());
         sheets = sequentialSheets(leaves);
       }
-      show(sheets);
+      show(sheets, { booklet: true });
       return mode;
     });
   }
 
-  /* show sheets in the print preview overlay; printing prints only #print-root */
-  function show(sheets) {
+  /* show sheets in the print preview overlay; printing prints only #print-root.
+     Booklet jobs hide the envelope/theme controls (neither applies — themes
+     only ever styled the single-letter kit's cover/envelope/token sheets)
+     and relabel the print button, since the overlay and its toolbar are
+     shared across every print job. */
+  function show(sheets, opts) {
     var overlay = document.getElementById('print-overlay');
     var rootEl = document.getElementById('print-root');
     rootEl.innerHTML = '';
     for (var i = 0; i < sheets.length; i++) rootEl.appendChild(sheets[i]);
+    overlay.classList.toggle('print-overlay--booklet', !!(opts && opts.booklet));
+    var goBtn = document.getElementById('print-go');
+    if (goBtn) goBtn.textContent = (opts && opts.booklet) ? 'Print the booklet' : 'Print the kit';
     overlay.hidden = false;
     document.body.classList.add('printing-preview');
   }
