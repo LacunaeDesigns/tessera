@@ -8,7 +8,7 @@
   var cache = null;
 
   function fresh() {
-    return { schema: 3, drafts: {}, registry: [], settings: {} };
+    return { schema: 4, drafts: {}, registry: [], settings: {} };
   }
 
   function migrate(data) {
@@ -33,6 +33,16 @@
         if (data.registry[j].role === undefined) data.registry[j].role = 'writer';
       }
       data.schema = 3;
+    }
+    if (data.schema < 4) {
+      /* schema 4: registry entries carry inReplyTo — the id of the letter
+         this one write-back replies to (features/booklet.md write-back
+         interleaving), or null; everything before schema 4 predates the
+         field and has no reply relationship to record */
+      for (var k = 0; k < data.registry.length; k++) {
+        if (data.registry[k].inReplyTo === undefined) data.registry[k].inReplyTo = null;
+      }
+      data.schema = 4;
     }
     return data;
   }

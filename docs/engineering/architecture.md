@@ -25,7 +25,7 @@ sw.js               offline precache; CACHE_VERSION part of the versioning tripl
 version.json        { "version": "x.y.z" }
 js/
   version.js        LOCAL_VERSION + the footer version note (SW registration lives in landing.js)
-  state.js          localStorage under key `tessera_v1`: { schema, drafts, registry, settings }, with migrate() seam (schema 3: registry sealKey + role)
+  state.js          localStorage under key `tessera_v1`: { schema, drafts, registry, settings }, with migrate() seam (schema 3: registry sealKey + role; schema 4: registry inReplyTo)
   manifest.js       PURE: buildManifest, renderReadme, datesInWords, deriveId, tokenSeedString-input canonicalisation
   token.js          PURE: sfc32 PRNG, renderTokenSvg(seedHex) → {full,left,right,sheet} (art generation 2, watercolor mosaic)
   token-legacy.js   PURE, FROZEN: art generation 1 (mosaic ring); verification fallback only — old tokens never become wrong

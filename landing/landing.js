@@ -579,7 +579,8 @@
         keptText: d.keepCopy ? d.value : null,
         status: 'sealed',
         sealKey: d.sealChoice || 'blue',
-        role: 'writer'
+        role: 'writer',
+        inReplyTo: sealed.fields.writeback ? sealed.fields.writeback.inReplyTo : null
       });
       state.sealed = sealed;
       state.freshId = sealed.fields.id;
@@ -1457,7 +1458,8 @@
       var text = (l.keptText && String(l.keptText).trim()) ? String(l.keptText) : '';
       return {
         id: l.id, to: l.to, from: l.from, written: l.written, openOn: l.openOn,
-        openWhenNeeded: !!l.openWhenNeeded, text: text, hasText: !!text
+        openWhenNeeded: !!l.openWhenNeeded, text: text, hasText: !!text,
+        inReplyTo: l.inReplyTo || null
       };
     });
     cands.sort(function (a, b) { var ka = bkDateKey(a), kb = bkDateKey(b); return ka < kb ? -1 : ka > kb ? 1 : 0; });
@@ -1531,16 +1533,35 @@
     var t = b.sel[i]; b.sel[i] = b.sel[j]; b.sel[j] = t;
     renderBkSelect();
   }
+  /* write-back interleaving (features/booklet.md Task 2 Step 4): a selection
+     "includes write-back replies" when some selected letter's inReplyTo
+     names another selected letter — the correspondence, not just a series. */
+  function bkIsCorrespondence(rows) {
+    var ids = {};
+    rows.forEach(function (r) { ids[r.id] = true; });
+    return rows.some(function (r) { return r.inReplyTo && ids[r.inReplyTo]; });
+  }
   function composeBooklet() {
     var b = state.booklet;
     if (!b.sel.length) return;
     var rows = b.sel.map(bkCand);
+    var isCorrespondence = bkIsCorrespondence(rows);
+    if (isCorrespondence) {
+      /* a correspondence reads in the order its letters were WRITTEN, not
+         opened (bkDateKey/openOn is right for a general series read "as
+         they become relevant" — a reply's own openOn can easily predate the
+         letter it's replying to, so open-date order would misorder it) */
+      rows.sort(function (a, c) { return a.written < c.written ? -1 : a.written > c.written ? 1 : 0; });
+      b.sel = rows.map(function (r) { return r.id; });
+    }
     var tos = [];
     rows.forEach(function (r) { if (tos.indexOf(r.to) < 0) tos.push(r.to); });
     var to = tos.length === 1 ? tos[0] : null;
     var years = rows.map(function (r) { return String(bkDateKey(r)).slice(0, 4); }).filter(Boolean).sort();
     var span = years.length ? years[0] + (years[years.length - 1] !== years[0] ? '–' + years[years.length - 1] : '') : '';
-    var title = (to ? 'Letters to ' + to : 'Letters') + (span ? ', ' + span : '');
+    var title = isCorrespondence
+      ? 'The correspondence, whole'
+      : (to ? 'Letters to ' + to : 'Letters') + (span ? ', ' + span : '');
     var pages = [{ kind: 'title', desc: title }];
     rows.forEach(function (r) {
       pages.push({ kind: 'facts', desc: 'For ' + r.to + ' · from ' + (r.from || '—') + ' · opens ' + (r.openWhenNeeded ? 'when needed' : shortDate(r.openOn)) + ' · ' + r.id });
