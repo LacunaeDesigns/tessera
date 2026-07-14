@@ -94,6 +94,8 @@ Format: date · decision · reasoning · who.
 
 - **2026-07-12 · Grief set (`open-when-grieving`) outside-reader sign-off recorded — cleared to ship.** A reader with lived experience of loss read the four prompts and approved them **as written** (no edits requested), per the author. This satisfies the binding gate from `features/occasions.md` and the v0.3 plan ("no sign-off, no ship"). The `PENDING` code comment in `data/occasions.js` is replaced with the recorded sign-off, standing author gate 7 is closed, and the door is cleared for the next `/release`. The prompts are unchanged, so the prose gate and fixtures are untouched. v0.3 Task 6 is complete; with Task 4 (webfont) closed, this leaves no gated v0.3 content items — only the author's `/release` timing.
 
+- **2026-07-14 · Code licence changed: MIT → PolyForm Noncommercial 1.0.0**, matching the house default set by the sibling project Folium (LacunaeDesigns/folium). Author-directed. The 2026-07-10 licence-split entry (spec CC0, code MIT) is superseded for the code half only — the CC0 format exception is unchanged and still lives in `LICENSE`. `LICENSE`, `README.md`, `index.html`'s footer/hint lines, and the century-test checklist (`docs/spec/century-test.md`) were updated to read "PolyForm Noncommercial" / "source-available, noncommercial" in place of "MIT". Dated historical records (`docs/decisions.md`'s own past entries, `docs/PROGRESS.md`'s per-release century-test tables, `docs/plans/*`, `docs/superpowers/*`) are left as-is — they record what was true at each past checkpoint and are not rewritten.
+
 ## Standing author gates
 1. Real USPTO/EUIPO trademark clearance before anything commercial (classes 9 + 16).
 2. v1.0 public announcement timing + copy.

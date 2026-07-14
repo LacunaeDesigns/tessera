@@ -23,7 +23,7 @@ The century test is the format's single design constraint (SPEC, preamble): ever
 ## C. Author-death checks
 
 - [ ] The spec and templates are CC0 — no permission needed from anyone, ever.
-- [ ] The tool is MIT and self-contained — no build step, no dependency registry, vendored code only.
+- [ ] The tool is source-available (PolyForm Noncommercial) and self-contained — no build step, no dependency registry, vendored code only.
 - [ ] Nothing in the format requires Tessera-the-project to exist: SPEC.md alone (or the printed instructions page alone) is enough to understand and even reimplement a letter.
 - [ ] The docs record every decision an heir/maintainer would need (decisions.md is append-only).
 

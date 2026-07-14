@@ -22,7 +22,7 @@ Tessera makes no promise that depends on a company, a server, or its author stay
 
 - **Paper is the reference copy.** The printed kit contains everything; the digital folder is the convenience.
 - **The format is public domain** (CC0). One letter = one folder of plain text files. Readable in 2126 with no software but patience.
-- **The tool is a static page** (MIT). Fork it, mirror it, save it to a USB stick. It has no build step and no dependencies.
+- **The tool is a static page** (source-available, noncommercial). Fork it, mirror it, save it to a USB stick for personal or noncommercial use. It has no build step and no dependencies.
 - **Sealing is a ritual, not a lock.** Tessera is honest about this: no cryptography can stop someone opening an envelope early. Custody, promises, and care do that — the way they always have.
 
 ## What Tessera is not
@@ -37,7 +37,7 @@ No accounts. No cloud storage of your letters. No delivery service that emails y
 
 ## Licence
 
-Code: [MIT](LICENSE). The Tessera **format** (SPEC.md, docs/spec/, the README template): **CC0 1.0** — public domain, forever. A format that must outlive its author cannot belong to her.
+Code: [PolyForm Noncommercial 1.0.0](LICENSE) — free to use, study, modify, and share for any noncommercial purpose; commercial use requires a separate license from the author. The Tessera **format** (SPEC.md, docs/spec/, the README template): **CC0 1.0** — public domain, forever. A format that must outlive its author cannot belong to her.
 
 ---
 
